@@ -1,9 +1,11 @@
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 export default function ReportScreen() {
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
       <View style={styles.content}>
         <Text style={styles.placeholder}>Báo cáo</Text>
       </View>
