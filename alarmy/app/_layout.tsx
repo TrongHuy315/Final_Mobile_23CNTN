@@ -23,111 +23,14 @@ export default function RootLayout() {
       <ThemeProvider value={CustomDarkTheme}>
         <Stack
           screenOptions={{
+            headerShown: false,
             contentStyle: { backgroundColor: '#0f172a' },
             animation: 'fade',
             animationDuration: 100,
           }}
         >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen 
-            name="events" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="optimize-alarms" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="dismiss-alarm-task" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="general-settings" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="prevent-power-off" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="prevent-power-off-info" 
-            options={{ 
-              headerShown: false,
-              presentation: 'modal',
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="alarm-settings" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="invite-friends" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="wake-up-challenge" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="display-settings" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="language-settings" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="send-feedback" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="login" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#0f172a' },
-            }} 
-          />
-          <Stack.Screen 
-            name="upgrade-pro" 
-            options={{ 
-              headerShown: false,
-              contentStyle: { backgroundColor: '#1e3a8a' },
-            }} 
-          />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(settings)" />
         </Stack>
         <StatusBar style="light" />
       </ThemeProvider>
