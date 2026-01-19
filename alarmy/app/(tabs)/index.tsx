@@ -2,6 +2,7 @@ import { AlarmCard } from '@/components/alarm-card';
 import { FloatingActionButton } from '@/components/floating-action-button';
 import { NewFeatureBanner } from '@/components/new-feature-banner';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
   ScrollView,
@@ -10,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Alarm {
   id: string;
@@ -21,6 +22,7 @@ interface Alarm {
 }
 
 export default function AlarmsScreen() {
+  const insets = useSafeAreaInsets
   const [alarms, setAlarms] = useState<Alarm[]>([
     {
       id: '1',
