@@ -2,7 +2,6 @@ import { AlarmCard } from '@/components/alarm-card';
 import { FloatingActionButton } from '@/components/floating-action-button';
 import { NewFeatureBanner } from '@/components/new-feature-banner';
 import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import {
   ScrollView,

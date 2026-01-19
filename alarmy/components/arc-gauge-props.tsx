@@ -12,8 +12,8 @@ export const ArcGauge: React.FC<ArcGaugeProps> = ({ score }) => {
     const radius = (size - strokeWidth) / 2;
     const center = size / 2;
 
-    const startAngle = -135 / 2 - 90; // cân giữa cho đẹp
-    const totalAngle = 135;
+    const startAngle = -220 / 2 - 90; // cân giữa cho đẹp
+    const totalAngle = 220;
     const progressAngle = (score / 100) * totalAngle;
 
     const polarToCartesian = (
@@ -75,8 +75,9 @@ export const ArcGauge: React.FC<ArcGaugeProps> = ({ score }) => {
 
         {/* Điểm ở tâm */}
         <View style={styles.centerText}>
-            <Text style={[styles.score, { color }]}>{score}</Text>
-            <Text style={styles.label}>POINTS</Text>
+          <Text style={styles.subText}>Chất lượng giấc ngủ</Text>
+          <Text style={[styles.score, { color }]}>{score}</Text>
+          {/* <Text style={styles.label}>POINTS</Text> */}
         </View>
         </View>
     );
@@ -92,6 +93,11 @@ const styles = StyleSheet.create({
   centerText: {
     position: 'absolute',
     alignItems: 'center',
+  },
+  subText: {
+    color: "#FFFFFF",
+    fontWeight: 500,
+    fontSize: 15
   },
   score: {
     fontSize: 36,
