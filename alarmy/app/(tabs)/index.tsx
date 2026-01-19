@@ -2,6 +2,7 @@ import { AlarmCard } from '@/components/alarm-card';
 import { FloatingActionButton } from '@/components/floating-action-button';
 import { NewFeatureBanner } from '@/components/new-feature-banner';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ScrollView,
@@ -21,6 +22,7 @@ interface Alarm {
 }
 
 export default function AlarmsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets
   const [alarms, setAlarms] = useState<Alarm[]>([
     {
@@ -107,7 +109,13 @@ export default function AlarmsScreen() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => {
+                setMenu(false);
+                router.push('/add-alarm');
+              }}
+            >
               <Text style={styles.menuText}>
                 Báo thức
               </Text>

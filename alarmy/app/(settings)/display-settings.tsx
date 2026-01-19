@@ -2,13 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type DisplayMode = 'dark' | 'light';
 
@@ -18,7 +17,7 @@ export default function DisplaySettingsScreen() {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('dark');
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
@@ -83,7 +82,7 @@ export default function DisplaySettingsScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

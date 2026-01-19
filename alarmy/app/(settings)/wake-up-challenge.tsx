@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,7 +11,7 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -116,7 +115,7 @@ export default function WakeUpChallengeScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       <StatusBar style="light" />
       
       {/* Header */}
@@ -239,7 +238,7 @@ export default function WakeUpChallengeScreen() {
         </TouchableOpacity>
         <Text style={styles.footerNote}>Kết quả này được tính dựa trên hồ sơ báo thức</Text>
       </View>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
