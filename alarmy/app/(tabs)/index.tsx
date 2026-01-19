@@ -4,13 +4,13 @@ import { NewFeatureBanner } from '@/components/new-feature-banner';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 interface Alarm {
   id: string;
@@ -38,18 +38,18 @@ export default function AlarmsScreen() {
     },
   ]);
 
+  const [menu, setMenu] = useState(false);
+
   const handleToggleAlarm = (id: string, enabled: boolean) => {
     setAlarms(alarms.map(alarm =>
       alarm.id === id ? { ...alarm, enabled } : alarm
     ));
   };
 
-  const handleAddAlarm = () => {
-    console.log('Add new alarm');
-  };
+  const handleAddAlarm = () => setMenu(!menu);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>PRO Start</Text>
         <TouchableOpacity>
@@ -65,7 +65,7 @@ export default function AlarmsScreen() {
         <NewFeatureBanner />
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Đó chuông sau 2ngày</Text>
+          <Text style={styles.sectionTitle}>Đó chuông sau 2 ngày</Text>
         </View>
 
         <View style={styles.alarmsList}>
@@ -84,7 +84,37 @@ export default function AlarmsScreen() {
       </ScrollView>
 
       <FloatingActionButton onPress={handleAddAlarm} />
-    </SafeAreaView>
+
+      {menu && (
+        <View style={styles.overlay}>
+          <TouchableOpacity 
+            style={styles.backdrop}
+            activeOpacity={1}
+            onPress={() => setMenu(false)}
+          />
+
+          <View style={styles.menu}>
+            <TouchableOpacity style={styles.menuItem}>
+              <Text style={styles.menuText}>
+                Báo thức thói quen
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+              <Text style={styles.menuText}>
+                Báo thức nhanh
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.menuItem}>
+              <Text style={styles.menuText}>
+                Báo thức
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </SafeAreaProvider>
   );
 }
 
@@ -101,6 +131,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b',
+    marginTop: 50
   },
   headerTitle: {
     fontSize: 18,
@@ -126,4 +157,41 @@ const styles = StyleSheet.create({
   alarmsList: {
     marginBottom: 20,
   },
+
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: "box-none"
+  },
+
+  backdrop: {
+    ...StyleSheet.absoluteFillObject, // Thay cho top, left, right, bottom
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    zIndex: 1,
+  },
+
+  menu: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    backgroundColor: '#1a202c',
+    borderRadius: 12,
+    paddingVertical: 8,
+    width: 180,
+    zIndex: 2,          // Phải lớn hơn zIndex của backdrop
+    elevation: 10,      // Bắt buộc để nổi lên trên Android
+  },
+
+  menuText: {
+    color: '#ffffff',   // Thêm dòng này để chữ không bị "tàng hình"
+    fontSize: 14,
+  },
+
+  menuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  }
 });

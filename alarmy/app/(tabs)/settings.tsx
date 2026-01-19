@@ -1,13 +1,14 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.placeholder}>Cài đặt</Text>
       </View>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

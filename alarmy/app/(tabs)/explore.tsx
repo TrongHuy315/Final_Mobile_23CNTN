@@ -1,13 +1,27 @@
+import { ArcGauge } from '@/components/arc-gauge-props';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function SleepScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.placeholder}>Giấc ngủ</Text>
+    <SafeAreaProvider style={styles.container}>
+      <Text style={styles.header}>
+        Giấc ngủ
+      </Text>
+
+      <View>
+        <Text>
+          Tìm hiểu vấn đề về giấc ngủ của bạn
+        </Text>
+
+        <ArcGauge score={80} />
       </View>
-    </SafeAreaView>
+
+      <TouchableOpacity>
+
+      </TouchableOpacity>
+    </SafeAreaProvider>
   );
 }
 
@@ -15,14 +29,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
+    padding: 20
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholder: {
-    fontSize: 18,
-    color: '#a0aec0',
-  },
+  
+  header: {
+    fontSize: 24,
+    color: "#FFFFFF",
+    marginTop: 150
+  }
 });
