@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import FlashAlarmScreen from '../flash-alarm';
 
 interface Alarm {
   id: string;
@@ -40,6 +41,7 @@ export default function AlarmsScreen() {
   ]);
 
   const [menu, setMenu] = useState(false);
+  const [quickAlarmVisible, setQuickAlarmVisible] = useState(false);
 
   const handleToggleAlarm = (id: string, enabled: boolean) => {
     setAlarms(alarms.map(alarm =>
@@ -102,7 +104,10 @@ export default function AlarmsScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuText}>
+              <Text style={styles.menuText} onPress={() => {
+                setMenu(false);
+                setQuickAlarmVisible(true);
+              }}>
                 Báo thức nhanh
               </Text>
             </TouchableOpacity>
@@ -115,6 +120,11 @@ export default function AlarmsScreen() {
           </View>
         </View>
       )}
+
+      <FlashAlarmScreen
+        visible={quickAlarmVisible}
+        onClose={() => setQuickAlarmVisible(false)}
+      />
     </SafeAreaProvider>
   );
 }
