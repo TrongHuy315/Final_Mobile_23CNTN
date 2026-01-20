@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,17 @@ import {
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { snoozeStore } from '../stores/snoozeStore';
 
 export default function SnoozeSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
-  const [snoozeEnabled, setSnoozeEnabled] = useState(true);
-  const [snoozeInterval, setSnoozeInterval] = useState('5'); // in minutes
-  const [maxSnoozeCount, setMaxSnoozeCount] = useState('3');
+  // Initialize from store
+  const initialSettings = snoozeStore.getSettings();
+  const [snoozeEnabled, setSnoozeEnabled] = useState(initialSettings.snoozeEnabled);
+  const [snoozeInterval, setSnoozeInterval] = useState(initialSettings.snoozeInterval);
+  const [maxSnoozeCount, setMaxSnoozeCount] = useState(initialSettings.maxSnoozeCount);
   const [showMoreIntervals, setShowMoreIntervals] = useState(false);
   const [showMoreCounts, setShowMoreCounts] = useState(false);
 
@@ -30,11 +33,21 @@ export default function SnoozeSettingsScreen() {
     return `${value} lần`;
   };
 
+  // Handle back navigation - save to store and go back
+  const handleBack = () => {
+    snoozeStore.setSettings({
+      snoozeEnabled,
+      snoozeInterval,
+      maxSnoozeCount,
+    });
+    router.back();
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#ffffff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Báo lại</Text>

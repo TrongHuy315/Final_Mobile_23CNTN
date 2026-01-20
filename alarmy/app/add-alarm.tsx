@@ -1,5 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { snoozeStore } from '../stores/snoozeStore';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   ScrollView,
@@ -227,6 +228,18 @@ const DAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const ITEM_HEIGHT = 60;
 const VISIBLE_ITEMS = 3;
 
+// Task type definition
+type AlarmTask = {
+  id: string;
+  type: 'find_household' | 'tap_challenge' | 'find_colors' | 'typing' | 'math' | 'steps' | 'qr_code' | 'shake' | 'photo' | 'squat';
+  name: string;
+  icon: string;
+  iconColor: string;
+  settings?: {
+    itemCount?: number;
+  };
+};
+
 // Get current time rounded up to next minute
 const getDefaultTime = () => {
   const now = new Date();
@@ -250,7 +263,7 @@ export default function AddAlarmScreen() {
   const [selectedHour, setSelectedHour] = useState(defaultTime.hour);
   const [selectedMinute, setSelectedMinute] = useState(defaultTime.minute);
   const [selectedDays, setSelectedDays] = useState<string[]>(['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']);
-  const [alarmTasks, setAlarmTasks] = useState<string[]>([]);
+  const [alarmTasks, setAlarmTasks] = useState<(AlarmTask | null)[]>([null, null, null, null, null]);
   const [volume, setVolume] = useState(0.5);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [timePressure, setTimePressure] = useState(false);
@@ -259,9 +272,134 @@ export default function AddAlarmScreen() {
   const [backupSound, setBackupSound] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showFindHouseholdModal, setShowFindHouseholdModal] = useState(false);
+  const [showTapChallengeModal, setShowTapChallengeModal] = useState(false);
   const [showGentleWakeModal, setShowGentleWakeModal] = useState(false);
   const [gentleWake, setGentleWake] = useState('30s'); // 'off', '15s', '30s', '60s', '5m', '10m'
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedTaskSlot, setSelectedTaskSlot] = useState(0);
+  const [findHouseholdItemCount, setFindHouseholdItemCount] = useState(20);
+  const [tapChallengeCount, setTapChallengeCount] = useState(50);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [tapAnimCount, setTapAnimCount] = useState(0);
+  const [tapCleared, setTapCleared] = useState(false);
+  
+  // Animation refs
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
+  const tapButtonScale = useRef(new Animated.Value(1)).current;
+  const clearTextScale = useRef(new Animated.Value(0)).current;
+  
+  // Start tap animation when modal opens
+  useEffect(() => {
+    if (showTapChallengeModal) {
+      setTapAnimCount(0);
+      setTapCleared(false);
+      clearTextScale.setValue(0);
+      
+      // Simulate 50 taps in 5 seconds (100ms per tap)
+      let currentCount = 0;
+      const tapInterval = setInterval(() => {
+        currentCount++;
+        setTapAnimCount(currentCount);
+        
+        // Button pulse animation
+        Animated.sequence([
+          Animated.timing(tapButtonScale, {
+            toValue: 0.85,
+            duration: 40,
+            useNativeDriver: true,
+          }),
+          Animated.timing(tapButtonScale, {
+            toValue: 1,
+            duration: 40,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        
+        if (currentCount >= 50) {
+          clearInterval(tapInterval);
+          setTapCleared(true);
+          // Animate CLEAR text appearance
+          Animated.spring(clearTextScale, {
+            toValue: 1,
+            useNativeDriver: true,
+            friction: 4,
+          }).start();
+        }
+      }, 100); // 50 taps in 5000ms = 100ms per tap
+      
+      return () => {
+        clearInterval(tapInterval);
+      };
+    }
+  }, [showTapChallengeModal]);
+  
+  // Start scan animation when modal opens
+  useEffect(() => {
+    if (showFindHouseholdModal) {
+      setScanComplete(false);
+      checkmarkScale.setValue(0);
+      
+      // Scanning animation loop
+      const scanAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanLineAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+          Animated.timing(scanLineAnim, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+        ])
+      );
+      scanAnimation.start();
+      
+      // Complete scan after 3 seconds
+      const completeTimer = setTimeout(() => {
+        scanAnimation.stop();
+        setScanComplete(true);
+        Animated.spring(checkmarkScale, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 4,
+        }).start();
+      }, 3000);
+      
+      return () => {
+        scanAnimation.stop();
+        clearTimeout(completeTimer);
+      };
+    }
+  }, [showFindHouseholdModal]);
+  
+  // Snooze settings state - initialize from store
+  const [snoozeEnabled, setSnoozeEnabled] = useState(snoozeStore.getSettings().snoozeEnabled);
+  const [snoozeInterval, setSnoozeInterval] = useState(snoozeStore.getSettings().snoozeInterval);
+  const [maxSnoozeCount, setMaxSnoozeCount] = useState(snoozeStore.getSettings().maxSnoozeCount);
+  
+  // Subscribe to snooze store changes
+  useEffect(() => {
+    const unsubscribe = snoozeStore.subscribe(() => {
+      const settings = snoozeStore.getSettings();
+      setSnoozeEnabled(settings.snoozeEnabled);
+      setSnoozeInterval(settings.snoozeInterval);
+      setMaxSnoozeCount(settings.maxSnoozeCount);
+    });
+    return unsubscribe;
+  }, []);
+  
+  // Get snooze display text
+  const getSnoozeDisplayText = () => {
+    if (!snoozeEnabled) return 'Tắt';
+    const countText = maxSnoozeCount === 'unlimited' ? 'Vô hạn' : `${maxSnoozeCount} lần`;
+    return `${snoozeInterval} phút, ${countText}`;
+  };
   const sliderWidthRef = useRef(0);
   const startVolumeRef = useRef(0);
   const volumeRef = useRef(volume);
@@ -470,6 +608,283 @@ export default function AddAlarmScreen() {
     );
   };
 
+  // Count actual tasks
+  const getTaskCount = () => alarmTasks.filter(task => task !== null).length;
+  
+  // Add task to a specific slot
+  const addTaskToSlot = (task: AlarmTask) => {
+    const newTasks = [...alarmTasks];
+    newTasks[selectedTaskSlot] = task;
+    setAlarmTasks(newTasks);
+  };
+  
+  // Remove task from slot
+  const removeTask = (index: number) => {
+    const newTasks = [...alarmTasks];
+    newTasks[index] = null;
+    setAlarmTasks(newTasks);
+  };
+  
+  // Handle opening task modal from a specific slot
+  const handleOpenTaskModal = (slotIndex: number) => {
+    setSelectedTaskSlot(slotIndex);
+    setShowTaskModal(true);
+  };
+  
+  // Handle selecting "Tìm đồ gia dụng" task
+  const handleSelectFindHousehold = () => {
+    setShowTaskModal(false);
+    setShowFindHouseholdModal(true);
+  };
+  
+  // Handle completing the find household task
+  const handleCompleteFindHousehold = () => {
+    const newTask: AlarmTask = {
+      id: `find_household_${Date.now()}`,
+      type: 'find_household',
+      name: 'Tìm đồ v...',
+      icon: 'search',
+      iconColor: '#7d3a3a',
+      settings: {
+        itemCount: findHouseholdItemCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowFindHouseholdModal(false);
+  };
+  
+  // Handle selecting "Thử thách lượt nhấn" task
+  const handleSelectTapChallenge = () => {
+    setShowTaskModal(false);
+    setShowTapChallengeModal(true);
+  };
+  
+  // Handle completing the tap challenge task
+  const handleCompleteTapChallenge = () => {
+    const newTask: AlarmTask = {
+      id: `tap_challenge_${Date.now()}`,
+      type: 'tap_challenge',
+      name: `${tapChallengeCount} lần`,
+      icon: 'hand-left',
+      iconColor: '#7d3a3a',
+      settings: {
+        itemCount: tapChallengeCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowTapChallengeModal(false);
+  };
+
+  // Render Find Household Items Modal
+  const renderFindHouseholdModal = () => (
+    <Modal
+      visible={showFindHouseholdModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowFindHouseholdModal(false)}
+    >
+      <View style={styles.taskModalOverlay}>
+        <View style={styles.findHouseholdModalContent}>
+          {/* Header */}
+          <View style={styles.findHouseholdHeader}>
+            <TouchableOpacity onPress={() => {
+              setShowFindHouseholdModal(false);
+              setShowTaskModal(true);
+            }}>
+              <Ionicons name="chevron-back" size={24} color="#ffffff" />
+            </TouchableOpacity>
+            <Text style={styles.findHouseholdTitle}>Tìm đồ gia dụng</Text>
+            <TouchableOpacity onPress={() => setShowFindHouseholdModal(false)}>
+              <Ionicons name="close" size={24} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Description */}
+          <Text style={styles.findHouseholdDescription}>
+            Tìm đồ vật trên màn hình để tắt báo thức
+          </Text>
+
+          {/* Preview Image Area */}
+          <View style={styles.findHouseholdPreview}>
+            <View style={styles.previewImageContainer}>
+              {/* Scanning Frame with corners */}
+              <View style={styles.scanFrame}>
+                {/* Cup Icon */}
+                <View style={styles.cupContainer}>
+                  <MaterialCommunityIcons name="coffee" size={80} color="#f59e0b" />
+                </View>
+                
+                {/* Label above cup */}
+                <View style={styles.objectLabel}>
+                  <Text style={styles.objectLabelText}>Cup</Text>
+                </View>
+                
+                {/* Corner markers */}
+                <View style={[styles.cornerMarker, styles.cornerTopLeft]} />
+                <View style={[styles.cornerMarker, styles.cornerTopRight]} />
+                <View style={[styles.cornerMarker, styles.cornerBottomLeft]} />
+                <View style={[styles.cornerMarker, styles.cornerBottomRight]} />
+                
+                {/* Scanning line animation */}
+                {!scanComplete && (
+                  <Animated.View 
+                    style={[
+                      styles.scanLine,
+                      {
+                        transform: [{
+                          translateY: scanLineAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-60, 60],
+                          }),
+                        }],
+                      },
+                    ]}
+                  />
+                )}
+                
+                {/* Success checkmark overlay */}
+                {scanComplete && (
+                  <Animated.View 
+                    style={[
+                      styles.scanSuccessOverlay,
+                      {
+                        transform: [{ scale: checkmarkScale }],
+                      },
+                    ]}
+                  >
+                    <View style={styles.successCheckmark}>
+                      <Ionicons name="checkmark" size={32} color="#ffffff" />
+                    </View>
+                  </Animated.View>
+                )}
+              </View>
+              
+              {/* Camera needed badge */}
+              <View style={styles.cameraNeededBadge}>
+                <Ionicons name="camera" size={14} color="#ffffff" />
+                <Text style={styles.cameraNeededText}>Camera needed</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Hint Text */}
+          <Text style={styles.findHouseholdHint}>
+            Bạn không có đồ vật đó? Nhấn thử lại để nhận đồ vật mới!
+          </Text>
+
+          {/* Select Items Row */}
+          <TouchableOpacity style={styles.selectItemsRow}>
+            <Text style={styles.selectItemsLabel}>Chọn đồ vật</Text>
+            <View style={styles.selectItemsRight}>
+              <Text style={styles.selectItemsValue}>{findHouseholdItemCount} đồ vật</Text>
+              <Ionicons name="chevron-forward" size={20} color="#0ea5e9" />
+            </View>
+          </TouchableOpacity>
+
+          {/* Bottom Buttons */}
+          <View style={styles.findHouseholdButtons}>
+            <TouchableOpacity style={styles.previewButton}>
+              <Text style={styles.previewButtonText}>Xem trước</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.completeButton}
+              onPress={handleCompleteFindHousehold}
+            >
+              <Text style={styles.completeButtonText}>Hoàn tất</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Render Tap Challenge Modal
+  const renderTapChallengeModal = () => (
+    <Modal
+      visible={showTapChallengeModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowTapChallengeModal(false)}
+    >
+      <View style={styles.taskModalOverlay}>
+        <View style={styles.tapChallengeModalContent}>
+          {/* Header */}
+          <View style={styles.findHouseholdHeader}>
+            <TouchableOpacity onPress={() => {
+              setShowTapChallengeModal(false);
+              setShowTaskModal(true);
+            }}>
+              <Ionicons name="chevron-back" size={24} color="#ffffff" />
+            </TouchableOpacity>
+            <Text style={styles.findHouseholdTitle}>Thử thách lượt nhấn</Text>
+            <TouchableOpacity onPress={() => setShowTapChallengeModal(false)}>
+              <Ionicons name="close" size={24} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Preview Image Area */}
+          <View style={styles.tapChallengePreview}>
+            <View style={styles.tapPreviewContainer}>
+              {/* Background sparkle effect */}
+              <View style={styles.sparkleBackground}>
+                <MaterialCommunityIcons name="shimmer" size={120} color="rgba(255, 215, 0, 0.3)" />
+              </View>
+              
+              {/* Tap count display during animation */}
+              {!tapCleared && (
+                <View style={styles.tapProgressContainer}>
+                  <Text style={styles.tapProgressNumber}>{tapAnimCount}</Text>
+                  <Text style={styles.tapProgressLabel}>/ 50</Text>
+                </View>
+              )}
+              
+              {/* CLEAR text - only show when completed */}
+              {tapCleared && (
+                <Animated.Text 
+                  style={[
+                    styles.clearText,
+                    { transform: [{ scale: clearTextScale }] }
+                  ]}
+                >
+                  CLEAR!
+                </Animated.Text>
+              )}
+              
+              {/* Tap button with pulse animation */}
+              <Animated.View 
+                style={[
+                  styles.tapButton,
+                  { transform: [{ scale: tapButtonScale }] }
+                ]}
+              >
+                <Text style={styles.tapButtonText}>Tap!</Text>
+              </Animated.View>
+            </View>
+          </View>
+
+          {/* Tap Count Card */}
+          <View style={styles.tapCountCard}>
+            <Text style={styles.tapCountNumber}>{tapChallengeCount}</Text>
+            <Text style={styles.tapCountLabel}>lần</Text>
+          </View>
+
+          {/* Bottom Buttons */}
+          <View style={styles.findHouseholdButtons}>
+            <TouchableOpacity style={styles.previewButton}>
+              <Text style={styles.previewButtonText}>Xem trước</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.completeButton}
+              onPress={handleCompleteTapChallenge}
+            >
+              <Text style={styles.completeButtonText}>Hoàn tất</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   const renderTaskModal = () => (
     <Modal
       visible={showTaskModal}
@@ -490,7 +905,7 @@ export default function AddAlarmScreen() {
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Popular Tasks */}
             <Text style={styles.taskCategoryTitle}>Nhiệm vụ phổ biến</Text>
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectFindHousehold}>
               <View style={[styles.taskIcon, { backgroundColor: '#7d3a3a' }]}>
                 <Ionicons name="search" size={24} color="#ffffff" />
               </View>
@@ -500,7 +915,7 @@ export default function AddAlarmScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectTapChallenge}>
               <View style={[styles.taskIcon, { backgroundColor: '#7d3a3a' }]}>
                 <Ionicons name="hand-left" size={24} color="#ffffff" />
               </View>
@@ -596,7 +1011,9 @@ export default function AddAlarmScreen() {
         onClose={() => setShowGentleWakeModal(false)}
         onSelect={setGentleWake}
       />
-      {renderTaskModal()}      
+      {renderTaskModal()}
+      {renderFindHouseholdModal()}
+      {renderTapChallengeModal()}      
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -749,7 +1166,7 @@ export default function AddAlarmScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Nhiệm vụ báo thức</Text>
-            <Text style={styles.sectionCount}>{alarmTasks.length}/5</Text>
+            <Text style={styles.sectionCount}>{getTaskCount()}/5</Text>
           </View>
           
           <View style={{ height: 92, marginBottom: 0 }}>
@@ -759,24 +1176,49 @@ export default function AddAlarmScreen() {
               contentContainerStyle={styles.taskButtonsContainer}
               nestedScrollEnabled={true}
             >
-              {[0, 1, 2, 3, 4].map((index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.taskButton,
-                    index === 0 && styles.taskButtonFirst,
-                  ]}
-                  onPress={() => setShowTaskModal(true)}
-                >
-                  <Ionicons name="add" size={28} color={index === 0 ? "#ffffff" : "#64748b"} />
-                </TouchableOpacity>
+              {alarmTasks.map((task, index) => (
+                <View key={index} style={styles.taskSlotWrapper}>
+                  {task ? (
+                    // Task is added - show task info
+                    <TouchableOpacity
+                      style={[styles.taskButton, styles.taskButtonFilled]}
+                      onPress={() => handleOpenTaskModal(index)}
+                    >
+                      <TouchableOpacity 
+                        style={styles.taskRemoveButton}
+                        onPress={() => removeTask(index)}
+                      >
+                        <Ionicons name="close" size={12} color="#ffffff" />
+                      </TouchableOpacity>
+                      <View style={[styles.taskIconSmall, { backgroundColor: task.iconColor }]}>
+                        <Ionicons name={task.icon as any} size={18} color="#ffffff" />
+                      </View>
+                      <Text style={styles.taskButtonLabel} numberOfLines={1}>{task.name}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    // Empty slot - show add button
+                    <TouchableOpacity
+                      style={[
+                        styles.taskButton,
+                        index === 0 && getTaskCount() === 0 && styles.taskButtonFirst,
+                      ]}
+                      onPress={() => handleOpenTaskModal(index)}
+                    >
+                      <Ionicons 
+                        name={index > 0 ? "lock-closed" : "add"} 
+                        size={index > 0 ? 20 : 28} 
+                        color={index === 0 && getTaskCount() === 0 ? "#ffffff" : "#64748b"} 
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
               ))}
             </ScrollView>
           </View>
 
           {/* Wake Up Check */}
           <TouchableOpacity 
-            style={styles.settingRow}
+            style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}
             onPress={() => router.push('/wake-up-check')}
           >
             <View style={styles.settingRowLeft}>
@@ -792,20 +1234,7 @@ export default function AddAlarmScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Snooze / Báo lại */}
-          <TouchableOpacity 
-            style={styles.settingRow}
-            activeOpacity={0.5}
-            onPress={() => {
-              router.push('/snooze-settings');
-            }}
-          >
-            <Text style={styles.settingText}>Báo lại</Text>
-            <View style={styles.settingRowRight}>
-              <Text style={styles.settingValue}>3 lần</Text>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
-            </View>
-          </TouchableOpacity>
+
 
         </View>
 
@@ -858,7 +1287,7 @@ export default function AddAlarmScreen() {
 
           {/* Gentle Wake */}
           <TouchableOpacity 
-            style={styles.settingRow}
+            style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155', marginTop: 8 }]}
             onPress={() => setShowGentleWakeModal(true)}
           >
             <Text style={styles.settingText}>Thức giấc nhẹ nhàng</Text>
@@ -878,7 +1307,7 @@ export default function AddAlarmScreen() {
           </TouchableOpacity>
 
           {/* Time Pressure */}
-          <View style={styles.settingRow}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <View style={styles.settingRowLeft}>
               <Text style={styles.settingText}>Áp lực thời gian</Text>
               <TouchableOpacity style={styles.exampleButton}>
@@ -895,7 +1324,7 @@ export default function AddAlarmScreen() {
           </View>
 
           {/* Weather Reminder */}
-          <View style={styles.settingRow}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <View style={styles.settingRowLeft}>
               <Text style={styles.settingText}>Lời nhắc thời tiết</Text>
               <TouchableOpacity style={styles.exampleButton}>
@@ -912,7 +1341,7 @@ export default function AddAlarmScreen() {
           </View>
 
           {/* Label Reminder */}
-          <View style={styles.settingRow}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <View style={styles.settingRowLeft}>
               <Text style={styles.settingText}>Lời nhắc nhãn</Text>
               <Ionicons name="lock-closed" size={14} color="#64748b" style={styles.lockIcon} />
@@ -926,7 +1355,7 @@ export default function AddAlarmScreen() {
           </View>
 
           {/* Backup Sound */}
-          <View style={styles.settingRow}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <View style={styles.settingRowLeft}>
               <Text style={styles.settingText}>Âm thanh dự phòng</Text>
               <Ionicons name="lock-closed" size={14} color="#64748b" style={styles.lockIcon} />
@@ -943,15 +1372,21 @@ export default function AddAlarmScreen() {
         {/* Custom Settings Section */}
         <Text style={styles.sectionLabel}>Cài đặt tùy chỉnh</Text>
         <View style={styles.sectionCard}>
-          <TouchableOpacity style={styles.settingRow}>
+          <TouchableOpacity 
+            style={styles.settingRow}
+            onPress={() => router.push('/snooze-settings')}
+          >
             <Text style={styles.settingText}>Báo lại</Text>
             <View style={styles.settingRowRight}>
-              <Text style={styles.settingValue}>5 phút, 3 lần</Text>
+              <Text style={[
+                styles.settingValue,
+                snoozeEnabled ? { color: '#ffffff' } : { color: '#64748b' }
+              ]}>{getSnoozeDisplayText()}</Text>
               <Ionicons name="chevron-forward" size={20} color="#64748b" />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingRow}>
+          <TouchableOpacity style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <Text style={styles.settingText}>Cài đặt hình nền</Text>
             <View style={styles.wallpaperThumbnail}>
               <Text style={styles.wallpaperText}>IT'S{'\n'}YOU VS YOU</Text>
@@ -1166,8 +1601,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: '#334155',
   },
   settingRowLeft: {
     flexDirection: 'row',
@@ -1527,5 +1960,362 @@ const styles = StyleSheet.create({
   },
   gentleWakeOffText: {
     color: '#64748b',
+  },
+  // Find Household Modal styles
+  findHouseholdModalContent: {
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    marginTop: 'auto',
+  },
+  findHouseholdHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  findHouseholdTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  findHouseholdDescription: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  findHouseholdPreview: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  previewImageContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 200,
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewImage: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewLabel: {
+    fontSize: 16,
+    color: '#ffffff',
+    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  previewCheckmark: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#22c55e',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraNeededBadge: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 6,
+  },
+  cameraNeededText: {
+    fontSize: 12,
+    color: '#ffffff',
+  },
+  findHouseholdHint: {
+    fontSize: 14,
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  selectItemsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: 24,
+  },
+  selectItemsLabel: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '500',
+  },
+  selectItemsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  selectItemsValue: {
+    fontSize: 16,
+    color: '#0ea5e9',
+    fontWeight: '500',
+  },
+  findHouseholdButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  previewButton: {
+    flex: 1,
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  previewButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  completeButton: {
+    flex: 1,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#64748b',
+  },
+  completeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  // Task slot styles
+  taskSlotWrapper: {
+    position: 'relative',
+  },
+  taskButtonFilled: {
+    backgroundColor: '#7d3a3a',
+    borderStyle: 'solid',
+    borderColor: '#7d3a3a',
+    padding: 8,
+    paddingTop: 16,
+  },
+  taskRemoveButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  taskIconSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  taskButtonLabel: {
+    fontSize: 10,
+    color: '#ffffff',
+    textAlign: 'center',
+    width: 56,
+  },
+  // Scanning animation styles
+  scanFrame: {
+    width: 160,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  cupContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  objectLabel: {
+    position: 'absolute',
+    top: 10,
+    backgroundColor: 'rgba(59, 130, 246, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  objectLabelText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  cornerMarker: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderColor: '#22c55e',
+  },
+  cornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderTopLeftRadius: 4,
+  },
+  cornerTopRight: {
+    top: 0,
+    right: 0,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderTopRightRadius: 4,
+  },
+  cornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderBottomLeftRadius: 4,
+  },
+  cornerBottomRight: {
+    bottom: 0,
+    right: 0,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderBottomRightRadius: 4,
+  },
+  scanLine: {
+    position: 'absolute',
+    width: '100%',
+    height: 3,
+    backgroundColor: '#22c55e',
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  scanSuccessOverlay: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successCheckmark: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#22c55e',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#22c55e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  // Tap Challenge Modal styles
+  tapChallengeModalContent: {
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    marginTop: 'auto',
+  },
+  tapChallengePreview: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  tapPreviewContainer: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  sparkleBackground: {
+    position: 'absolute',
+    opacity: 0.5,
+  },
+  clearText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fde047',
+    textShadowColor: 'rgba(253, 224, 71, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
+    marginBottom: 16,
+  },
+  tapButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  tapButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  tapCountCard: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 24,
+    paddingHorizontal: 48,
+    marginBottom: 24,
+    gap: 8,
+  },
+  tapCountNumber: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  tapCountLabel: {
+    fontSize: 20,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  // Tap progress animation styles
+  tapProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 12,
+  },
+  tapProgressNumber: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  tapProgressLabel: {
+    fontSize: 24,
+    color: '#94a3b8',
+    fontWeight: '500',
+    marginLeft: 4,
   },
 });
