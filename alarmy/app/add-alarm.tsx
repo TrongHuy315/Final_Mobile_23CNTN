@@ -1,7 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { snoozeStore } from '../stores/snoozeStore';
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -278,11 +278,20 @@ export default function AddAlarmScreen() {
   const [gentleWake, setGentleWake] = useState('30s'); // 'off', '15s', '30s', '60s', '5m', '10m'
   const [isDragging, setIsDragging] = useState(false);
   const [selectedTaskSlot, setSelectedTaskSlot] = useState(0);
-  const [findHouseholdItemCount, setFindHouseholdItemCount] = useState(20);
-  const [tapChallengeCount, setTapChallengeCount] = useState(50);
+  const [findHouseholdItemCount] = useState(20);
+  const [tapChallengeCount] = useState(50);
   const [scanComplete, setScanComplete] = useState(false);
   const [tapAnimCount, setTapAnimCount] = useState(0);
   const [tapCleared, setTapCleared] = useState(false);
+  const [showTypingModal, setShowTypingModal] = useState(false);
+  const [typingCount, setTypingCount] = useState(99);
+  const [typingPhraseCount] = useState(40);
+  const [showFindColorsModal, setShowFindColorsModal] = useState(false);
+  const [findColorsDifficulty, setFindColorsDifficulty] = useState(4); // 0: Rất dễ, 1: Dễ, 2: Trung bình, 3: Khó, 4: Rất khó
+  const [findColorsRoundCount, setFindColorsRoundCount] = useState(99);
+  const [showMathModal, setShowMathModal] = useState(false);
+  const [mathDifficulty, setMathDifficulty] = useState(6); // 0: Rất dễ, 1: Dễ, 2: Trung bình, 3: Khó, 4: Rất khó, 5: Siêu khó, 6: Cực kì khó
+  const [mathRoundCount, setMathRoundCount] = useState(99);
   
   // Animation refs
   const scanLineAnim = useRef(new Animated.Value(0)).current;
@@ -674,6 +683,98 @@ export default function AddAlarmScreen() {
     addTaskToSlot(newTask);
     setShowTapChallengeModal(false);
   };
+  
+  // Handle selecting "Gõ văn bản" task
+  const handleSelectTyping = () => {
+    setShowTaskModal(false);
+    setShowTypingModal(true);
+  };
+  
+  // Handle completing the typing task
+  const handleCompleteTyping = () => {
+    const newTask: AlarmTask = {
+      id: `typing_${Date.now()}`,
+      type: 'typing',
+      name: `${typingCount} vòng...`,
+      icon: 'keypad',
+      iconColor: '#3a5a5f',
+      settings: {
+        itemCount: typingCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowTypingModal(false);
+  };
+  
+  // Handle selecting "Tìm các ô màu" task
+  const handleSelectFindColors = () => {
+    setShowTaskModal(false);
+    setShowFindColorsModal(true);
+  };
+  
+  // Get difficulty label
+  const getDifficultyLabel = (level: number) => {
+    const labels = ['Rất dễ', 'Dễ', 'Trung bình', 'Khó', 'Rất khó'];
+    return labels[level] || 'Trung bình';
+  };
+  
+  // Handle completing the find colors task
+  const handleCompleteFindColors = () => {
+    const newTask: AlarmTask = {
+      id: `find_colors_${Date.now()}`,
+      type: 'find_colors',
+      name: `${findColorsRoundCount} vòng...`,
+      icon: 'grid',
+      iconColor: '#3a5a5f',
+      settings: {
+        itemCount: findColorsRoundCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowFindColorsModal(false);
+  };
+  
+  // Handle selecting "Giải toán" task
+  const handleSelectMath = () => {
+    setShowTaskModal(false);
+    setShowMathModal(true);
+  };
+  
+  // Get math difficulty label
+  const getMathDifficultyLabel = (level: number) => {
+    const labels = ['Rất dễ', 'Dễ', 'Trung bình', 'Khó', 'Rất khó', 'Siêu khó', 'Cực kì khó'];
+    return labels[level] || 'Trung bình';
+  };
+  
+  // Get math example based on difficulty
+  const getMathExample = (level: number) => {
+    const examples = [
+      '3+4=',           // Rất dễ
+      '14+2=',          // Dễ
+      '23+17=',         // Trung bình
+      '43+23+34=',      // Khó
+      '(72x6)+32=',     // Rất khó
+      '(37x11)+321=',   // Siêu khó
+      '(167x87)+1878=', // Cực kì khó
+    ];
+    return examples[level] || examples[2];
+  };
+  
+  // Handle completing the math task
+  const handleCompleteMath = () => {
+    const newTask: AlarmTask = {
+      id: `math_${Date.now()}`,
+      type: 'math',
+      name: `${mathRoundCount} vòng...`,
+      icon: 'calculator',
+      iconColor: '#3a5a5f',
+      settings: {
+        itemCount: mathRoundCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowMathModal(false);
+  };
 
   // Render Find Household Items Modal
   const renderFindHouseholdModal = () => (
@@ -885,6 +986,469 @@ export default function AddAlarmScreen() {
     </Modal>
   );
 
+  // Render Typing Task Modal
+  const renderTypingModal = () => {
+    // Generate typing count array for picker (1-99)
+    const typingCountArray = Array.from({ length: 99 }, (_, i) => i + 1);
+    
+    return (
+      <Modal
+        visible={showTypingModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowTypingModal(false)}
+      >
+        <View style={styles.taskModalOverlay}>
+          <View style={styles.typingModalContent}>
+            {/* Header */}
+            <View style={styles.findHouseholdHeader}>
+              <TouchableOpacity onPress={() => {
+                setShowTypingModal(false);
+                setShowTaskModal(true);
+              }}>
+                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+              <Text style={styles.findHouseholdTitle}>Gõ văn bản</Text>
+              <TouchableOpacity onPress={() => setShowTypingModal(false)}>
+                <Ionicons name="close" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Preview Area */}
+            <View style={styles.typingPreviewArea}>
+              {/* Example badge */}
+              <View style={styles.typingExampleBadge}>
+                <Text style={styles.typingExampleText}>Ví dụ</Text>
+              </View>
+              
+              {/* Example Text */}
+              <Text style={styles.typingExamplePhrase}>Choose hope</Text>
+            </View>
+
+            {/* Count Picker Card */}
+            <View style={styles.typingCountCard}>
+              <View style={styles.typingPickerWrapper}>
+                {/* Number Picker Column */}
+                <View style={styles.typingPickerColumn}>
+                  <FlatList
+                    data={typingCountArray}
+                    keyExtractor={(item) => `typing-count-${item}`}
+                    showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled={true}
+                    snapToInterval={50}
+                    decelerationRate="fast"
+                    initialScrollIndex={typingCount - 1 > 0 ? typingCount - 1 : 0}
+                    getItemLayout={(_, index) => ({
+                      length: 50,
+                      offset: 50 * index,
+                      index,
+                    })}
+                    onMomentumScrollEnd={(e) => {
+                      const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                      if (index >= 0 && index < typingCountArray.length) {
+                        setTypingCount(typingCountArray[index]);
+                      }
+                    }}
+                    contentContainerStyle={{
+                      paddingVertical: 50,
+                    }}
+                    style={styles.typingFlatList}
+                    renderItem={({ item }) => {
+                      const isSelected = item === typingCount;
+                      return (
+                        <View style={styles.typingPickerItem}>
+                          <Text style={[
+                            styles.typingPickerText,
+                            isSelected && styles.typingPickerTextSelected,
+                            !isSelected && styles.typingPickerTextFaded,
+                          ]}>
+                            {item}
+                          </Text>
+                        </View>
+                      );
+                    }}
+                  />
+                  {/* Top indicator line */}
+                  <View style={styles.typingPickerLineTop} />
+                  {/* Bottom indicator line */}
+                  <View style={styles.typingPickerLineBottom} />
+                </View>
+                
+                {/* "lần" Label */}
+                <Text style={styles.typingCountLabel}>lần</Text>
+              </View>
+            </View>
+
+            {/* Choose Phrase Row */}
+            <TouchableOpacity style={styles.selectItemsRow}>
+              <Text style={styles.selectItemsLabel}>Chọn cụm từ</Text>
+              <View style={styles.selectItemsRight}>
+                <Text style={styles.selectItemsValue}>{typingPhraseCount} cụm từ</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Bottom Buttons */}
+            <View style={styles.findHouseholdButtons}>
+              <TouchableOpacity style={styles.previewButton}>
+                <Text style={styles.previewButtonText}>Xem trước</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.completeButton}
+                onPress={handleCompleteTyping}
+              >
+                <Text style={styles.completeButtonText}>Hoàn tất</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // Render Find Colors Modal
+  const renderFindColorsModal = () => {
+    // Grid configuration based on difficulty
+    const getGridConfig = (level: number) => {
+      switch (level) {
+        case 0: return { rows: 3, cols: 3, highlighted: [[0, 0], [1, 0], [1, 1]] }; // Rất dễ
+        case 1: return { rows: 4, cols: 4, highlighted: [[0, 0], [1, 1], [2, 2], [3, 0], [3, 1]] }; // Dễ
+        case 2: return { rows: 4, cols: 4, highlighted: [[0, 1], [0, 2], [1, 0], [1, 1], [1, 3], [2, 2], [3, 0], [3, 1]] }; // Trung bình
+        case 3: return { rows: 5, cols: 5, highlighted: [[0, 1], [0, 2], [1, 0], [1, 1], [2, 2], [3, 2], [3, 3], [4, 0], [4, 1]] }; // Khó
+        case 4: return { rows: 6, cols: 5, highlighted: [[0, 0], [0, 1], [1, 2], [1, 3], [2, 1], [2, 2], [3, 2], [3, 3], [4, 0], [4, 1], [5, 2]] }; // Rất khó
+        default: return { rows: 4, cols: 4, highlighted: [[0, 1], [1, 0], [1, 1], [2, 2]] };
+      }
+    };
+
+    const gridConfig = getGridConfig(findColorsDifficulty);
+    
+    const isHighlighted = (row: number, col: number) => {
+      return gridConfig.highlighted.some(([r, c]) => r === row && c === col);
+    };
+
+    const renderGrid = () => {
+      const rows = [];
+      for (let r = 0; r < gridConfig.rows; r++) {
+        const cols = [];
+        for (let c = 0; c < gridConfig.cols; c++) {
+          cols.push(
+            <View 
+              key={`${r}-${c}`}
+              style={[
+                styles.colorGridCell,
+                isHighlighted(r, c) && styles.colorGridCellHighlighted,
+              ]}
+            />
+          );
+        }
+        rows.push(
+          <View key={r} style={styles.colorGridRow}>
+            {cols}
+          </View>
+        );
+      }
+      return rows;
+    };
+
+    return (
+      <Modal
+        visible={showFindColorsModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFindColorsModal(false)}
+      >
+        <View style={styles.taskModalOverlay}>
+          <View style={styles.findColorsModalContent}>
+            {/* Header */}
+            <View style={styles.findHouseholdHeader}>
+              <TouchableOpacity onPress={() => {
+                setShowFindColorsModal(false);
+                setShowTaskModal(true);
+              }}>
+                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+              <Text style={styles.findHouseholdTitle}>Tìm các ô màu</Text>
+              <TouchableOpacity onPress={() => setShowFindColorsModal(false)}>
+                <Ionicons name="close" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              {/* Preview Area */}
+              <View style={styles.findColorsPreviewArea}>
+                {/* Example badge */}
+                <View style={styles.typingExampleBadge}>
+                  <Text style={styles.typingExampleText}>Ví dụ</Text>
+                </View>
+                
+                {/* Color Grid */}
+                <View style={styles.colorGrid}>
+                  {renderGrid()}
+                </View>
+              </View>
+
+              {/* Difficulty Card */}
+              <View style={styles.difficultyCard}>
+                <Text style={styles.difficultyTitle}>{getDifficultyLabel(findColorsDifficulty)}</Text>
+                
+                {/* Slider */}
+                <View style={styles.difficultySliderContainer}>
+                  <Slider
+                    style={styles.difficultySlider}
+                    minimumValue={0}
+                    maximumValue={4}
+                    step={1}
+                    value={findColorsDifficulty}
+                    onValueChange={setFindColorsDifficulty}
+                    minimumTrackTintColor="#3b82f6"
+                    maximumTrackTintColor="#475569"
+                    thumbTintColor="#ffffff"
+                  />
+                  {/* Dots */}
+                  <View style={styles.difficultyDots}>
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <View 
+                        key={i} 
+                        style={[
+                          styles.difficultyDot,
+                          i <= findColorsDifficulty && styles.difficultyDotActive,
+                        ]} 
+                      />
+                    ))}
+                  </View>
+                </View>
+                
+                <View style={styles.difficultyLabels}>
+                  <Text style={styles.difficultyLabelText}>Dễ</Text>
+                  <Text style={styles.difficultyLabelText}>Khó</Text>
+                </View>
+              </View>
+
+              {/* Round Count Picker Card */}
+              <View style={styles.typingCountCard}>
+                <View style={styles.typingPickerWrapper}>
+                  {/* Number Picker Column */}
+                  <View style={styles.typingPickerColumn}>
+                    <FlatList
+                      data={Array.from({ length: 99 }, (_, i) => i + 1)}
+                      keyExtractor={(item) => `colors-count-${item}`}
+                      showsVerticalScrollIndicator={false}
+                      nestedScrollEnabled={true}
+                      snapToInterval={50}
+                      decelerationRate="fast"
+                      initialScrollIndex={findColorsRoundCount - 1 > 0 ? findColorsRoundCount - 1 : 0}
+                      getItemLayout={(_, index) => ({
+                        length: 50,
+                        offset: 50 * index,
+                        index,
+                      })}
+                      onMomentumScrollEnd={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 99) {
+                          setFindColorsRoundCount(index + 1);
+                        }
+                      }}
+                      contentContainerStyle={{
+                        paddingVertical: 50,
+                      }}
+                      style={styles.typingFlatList}
+                      renderItem={({ item }) => {
+                        const isSelected = item === findColorsRoundCount;
+                        return (
+                          <View style={styles.typingPickerItem}>
+                            <Text style={[
+                              styles.typingPickerText,
+                              isSelected && styles.typingPickerTextSelected,
+                              !isSelected && styles.typingPickerTextFaded,
+                            ]}>
+                              {item}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                    {/* Top indicator line */}
+                    <View style={styles.typingPickerLineTop} />
+                    {/* Bottom indicator line */}
+                    <View style={styles.typingPickerLineBottom} />
+                  </View>
+                  
+                  {/* "vòng" Label */}
+                  <Text style={styles.typingCountLabel}>vòng</Text>
+                </View>
+              </View>
+
+              {/* Bottom Buttons */}
+              <View style={styles.findHouseholdButtons}>
+                <TouchableOpacity style={styles.previewButton}>
+                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.completeButton}
+                  onPress={handleCompleteFindColors}
+                >
+                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // Render Math Task Modal
+  const renderMathModal = () => {
+    return (
+      <Modal
+        visible={showMathModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowMathModal(false)}
+      >
+        <View style={styles.taskModalOverlay}>
+          <View style={styles.findColorsModalContent}>
+            {/* Header */}
+            <View style={styles.findHouseholdHeader}>
+              <TouchableOpacity onPress={() => {
+                setShowMathModal(false);
+                setShowTaskModal(true);
+              }}>
+                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+              <Text style={styles.findHouseholdTitle}>Giải toán</Text>
+              <TouchableOpacity onPress={() => setShowMathModal(false)}>
+                <Ionicons name="close" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              {/* Preview Area with Math Example */}
+              <View style={styles.mathPreviewArea}>
+                {/* Example badge */}
+                <View style={styles.typingExampleBadge}>
+                  <Text style={styles.typingExampleText}>Ví dụ</Text>
+                </View>
+                
+                {/* Math Example */}
+                <Text style={styles.mathExample}>{getMathExample(mathDifficulty)}</Text>
+              </View>
+
+              {/* Difficulty Card */}
+              <View style={styles.difficultyCard}>
+                <Text style={styles.difficultyTitle}>{getMathDifficultyLabel(mathDifficulty)}</Text>
+                
+                {/* Slider */}
+                <View style={styles.difficultySliderContainer}>
+                  <Slider
+                    style={styles.difficultySlider}
+                    minimumValue={0}
+                    maximumValue={6}
+                    step={1}
+                    value={mathDifficulty}
+                    onValueChange={setMathDifficulty}
+                    minimumTrackTintColor="#3b82f6"
+                    maximumTrackTintColor="#475569"
+                    thumbTintColor="#ffffff"
+                  />
+                  {/* Dots */}
+                  <View style={styles.difficultyDots}>
+                    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                      <View 
+                        key={i} 
+                        style={[
+                          styles.difficultyDot,
+                          i <= mathDifficulty && styles.difficultyDotActive,
+                        ]} 
+                      />
+                    ))}
+                  </View>
+                </View>
+                
+                <View style={styles.difficultyLabels}>
+                  <Text style={styles.difficultyLabelText}>Dễ</Text>
+                  <Text style={styles.difficultyLabelText}>Khó</Text>
+                </View>
+              </View>
+
+              {/* Round Count Picker Card */}
+              <View style={styles.typingCountCard}>
+                <View style={styles.typingPickerWrapper}>
+                  {/* Number Picker Column */}
+                  <View style={styles.typingPickerColumn}>
+                    <FlatList
+                      data={Array.from({ length: 99 }, (_, i) => i + 1)}
+                      keyExtractor={(item) => `math-count-${item}`}
+                      showsVerticalScrollIndicator={false}
+                      nestedScrollEnabled={true}
+                      snapToInterval={50}
+                      decelerationRate="fast"
+                      initialScrollIndex={mathRoundCount - 1 > 0 ? mathRoundCount - 1 : 0}
+                      getItemLayout={(_, index) => ({
+                        length: 50,
+                        offset: 50 * index,
+                        index,
+                      })}
+                      onMomentumScrollEnd={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 99) {
+                          setMathRoundCount(index + 1);
+                        }
+                      }}
+                      contentContainerStyle={{
+                        paddingVertical: 50,
+                      }}
+                      style={styles.typingFlatList}
+                      renderItem={({ item }) => {
+                        const isSelected = item === mathRoundCount;
+                        return (
+                          <View style={styles.typingPickerItem}>
+                            <Text style={[
+                              styles.typingPickerText,
+                              isSelected && styles.typingPickerTextSelected,
+                              !isSelected && styles.typingPickerTextFaded,
+                            ]}>
+                              {item}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                    {/* Top indicator line */}
+                    <View style={styles.typingPickerLineTop} />
+                    {/* Bottom indicator line */}
+                    <View style={styles.typingPickerLineBottom} />
+                  </View>
+                  
+                  {/* "vòng" Label */}
+                  <Text style={styles.typingCountLabel}>vòng</Text>
+                </View>
+              </View>
+
+              {/* Bottom Buttons */}
+              <View style={styles.findHouseholdButtons}>
+                <TouchableOpacity style={styles.previewButton}>
+                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.completeButton}
+                  onPress={handleCompleteMath}
+                >
+                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const renderTaskModal = () => (
     <Modal
       visible={showTaskModal}
@@ -924,21 +1488,21 @@ export default function AddAlarmScreen() {
 
             {/* Brain Tasks */}
             <Text style={styles.taskCategoryTitle}>Đánh thức bộ não của bạn</Text>
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectFindColors}>
               <View style={[styles.taskIcon, { backgroundColor: '#3a5a5f' }]}>
                 <Ionicons name="grid" size={24} color="#ffffff" />
               </View>
               <Text style={styles.taskItemText}>Tìm các ô màu</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectTyping}>
               <View style={[styles.taskIcon, { backgroundColor: '#3a5a5f' }]}>
                 <Ionicons name="keypad" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Gõ vấn bàn</Text>
+              <Text style={styles.taskItemText}>Gõ văn bản</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectMath}>
               <View style={[styles.taskIcon, { backgroundColor: '#3a5a5f' }]}>
                 <Ionicons name="calculator" size={24} color="#ffffff" />
               </View>
@@ -1013,7 +1577,10 @@ export default function AddAlarmScreen() {
       />
       {renderTaskModal()}
       {renderFindHouseholdModal()}
-      {renderTapChallengeModal()}      
+      {renderTapChallengeModal()}
+      {renderTypingModal()}
+      {renderFindColorsModal()}
+      {renderMathModal()}
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -2317,5 +2884,216 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontWeight: '500',
     marginLeft: 4,
+  },
+  // Typing Modal styles
+  typingModalContent: {
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    marginTop: 'auto',
+  },
+  typingPreviewArea: {
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  typingExampleBadge: {
+    backgroundColor: '#3b5998',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 24,
+  },
+  typingExampleText: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  typingExamplePhrase: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  typingCountCard: {
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+  },
+  typingPickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  typingPickerColumn: {
+    width: 100,
+    height: 150,
+    position: 'relative',
+  },
+  typingFlatList: {
+    flex: 1,
+  },
+  typingPickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 150,
+  },
+  typingPickerItem: {
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  typingPickerText: {
+    fontSize: 36,
+    fontWeight: '400',
+    color: '#475569',
+  },
+  typingPickerTextSelected: {
+    fontSize: 42,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  typingPickerTextFaded: {
+    color: '#475569',
+  },
+  typingCountLabel: {
+    fontSize: 20,
+    color: '#94a3b8',
+    fontWeight: '500',
+    marginLeft: 16,
+  },
+  typingPickerLineTop: {
+    position: 'absolute',
+    top: 50,
+    left: 10,
+    right: 10,
+    height: 1,
+    backgroundColor: '#64748b',
+  },
+  typingPickerLineBottom: {
+    position: 'absolute',
+    top: 100,
+    left: 10,
+    right: 10,
+    height: 1,
+    backgroundColor: '#64748b',
+  },
+  typingPickerIndicator: {
+    position: 'absolute',
+    top: '50%',
+    left: 20,
+    right: 20,
+    height: 2,
+    backgroundColor: '#64748b',
+    marginTop: -1,
+  },
+  // Find Colors Modal styles
+  findColorsModalContent: {
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    marginTop: 'auto',
+  },
+  findColorsPreviewArea: {
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  colorGrid: {
+    marginTop: 16,
+  },
+  colorGridRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  colorGridCell: {
+    width: 40,
+    height: 40,
+    borderRadius: 6,
+    backgroundColor: '#475569',
+  },
+  colorGridCellHighlighted: {
+    backgroundColor: '#f59e0b',
+  },
+  difficultyCard: {
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  difficultyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  difficultySliderContainer: {
+    width: '100%',
+    position: 'relative',
+    marginBottom: 8,
+  },
+  difficultySlider: {
+    width: '100%',
+    height: 40,
+  },
+  difficultyDots: {
+    position: 'absolute',
+    top: 18,
+    left: 10,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    pointerEvents: 'none',
+  },
+  difficultyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#475569',
+  },
+  difficultyDotActive: {
+    backgroundColor: '#3b82f6',
+  },
+  difficultyLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 4,
+  },
+  difficultyLabelText: {
+    fontSize: 14,
+    color: '#94a3b8',
+  },
+  // Math Modal styles
+  mathPreviewArea: {
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  mathExample: {
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginTop: 16,
   },
 });
