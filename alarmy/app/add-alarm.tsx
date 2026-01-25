@@ -292,12 +292,21 @@ export default function AddAlarmScreen() {
   const [showMathModal, setShowMathModal] = useState(false);
   const [mathDifficulty, setMathDifficulty] = useState(6); // 0: Rất dễ, 1: Dễ, 2: Trung bình, 3: Khó, 4: Rất khó, 5: Siêu khó, 6: Cực kì khó
   const [mathRoundCount, setMathRoundCount] = useState(99);
+  const [showShakeModal, setShowShakeModal] = useState(false);
+  const [shakeCount, setShakeCount] = useState(100);
+  const [showStepsModal, setShowStepsModal] = useState(false);
+  const [stepsCount, setStepsCount] = useState(100);
+  const [showSquatModal, setShowSquatModal] = useState(false);
+  const [squatCount, setSquatCount] = useState(20);
   
   // Animation refs
   const scanLineAnim = useRef(new Animated.Value(0)).current;
   const checkmarkScale = useRef(new Animated.Value(0)).current;
   const tapButtonScale = useRef(new Animated.Value(1)).current;
   const clearTextScale = useRef(new Animated.Value(0)).current;
+  const shakeAnimValue = useRef(new Animated.Value(0)).current;
+  const stepsAnimValue = useRef(new Animated.Value(0)).current;
+  const squatAnimValue = useRef(new Animated.Value(0)).current;
   
   // Start tap animation when modal opens
   useEffect(() => {
@@ -343,6 +352,73 @@ export default function AddAlarmScreen() {
       };
     }
   }, [showTapChallengeModal]);
+
+  // Start shake animation when modal opens
+  useEffect(() => {
+    if (showShakeModal) {
+      const shakeAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(shakeAnimValue, {
+            toValue: 1,
+            duration: 80,
+            useNativeDriver: true,
+          }),
+          Animated.timing(shakeAnimValue, {
+            toValue: -1,
+            duration: 80,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      shakeAnimation.start();
+      return () => shakeAnimation.stop();
+    } else {
+      shakeAnimValue.setValue(0);
+    }
+  }, [showShakeModal]);
+
+  // Start walking animation when steps modal opens
+  useEffect(() => {
+    if (showStepsModal) {
+      stepsAnimValue.setValue(0);
+      const walkAnimation = Animated.loop(
+        Animated.timing(stepsAnimValue, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
+      walkAnimation.start();
+      return () => walkAnimation.stop();
+    } else {
+      stepsAnimValue.setValue(0);
+    }
+  }, [showStepsModal]);
+
+  // Start squat animation when modal opens
+  useEffect(() => {
+    if (showSquatModal) {
+      const squatAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(squatAnimValue, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(squatAnimValue, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      squatAnimation.start();
+      return () => squatAnimation.stop();
+    } else {
+      squatAnimValue.setValue(0);
+    }
+  }, [showSquatModal]);
   
   // Start scan animation when modal opens
   useEffect(() => {
@@ -774,6 +850,72 @@ export default function AddAlarmScreen() {
     };
     addTaskToSlot(newTask);
     setShowMathModal(false);
+  };
+
+  // Handle selecting "Lắc điện thoại" task
+  const handleSelectShake = () => {
+    setShowTaskModal(false);
+    setShowShakeModal(true);
+  };
+
+  // Handle completing the shake task
+  const handleCompleteShake = () => {
+    const newTask: AlarmTask = {
+      id: `shake_${Date.now()}`,
+      type: 'shake',
+      name: `${shakeCount} lần`,
+      icon: 'vibrate',
+      iconColor: '#4a3a6e',
+      settings: {
+        itemCount: shakeCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowShakeModal(false);
+  };
+
+  // Handle selecting "Bước" task
+  const handleSelectSteps = () => {
+    setShowTaskModal(false);
+    setShowStepsModal(true);
+  };
+
+  // Handle completing the steps task
+  const handleCompleteSteps = () => {
+    const newTask: AlarmTask = {
+      id: `steps_${Date.now()}`,
+      type: 'steps',
+      name: `${stepsCount} bước`,
+      icon: 'walk',
+      iconColor: '#4a3a6e',
+      settings: {
+        itemCount: stepsCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowStepsModal(false);
+  };
+
+  // Handle selecting "Squat" task
+  const handleSelectSquat = () => {
+    setShowTaskModal(false);
+    setShowSquatModal(true);
+  };
+
+  // Handle completing the squat task
+  const handleCompleteSquat = () => {
+    const newTask: AlarmTask = {
+      id: `squat_${Date.now()}`,
+      type: 'squat',
+      name: `${squatCount} lần`,
+      icon: 'arm-flex',
+      iconColor: '#e11d48',
+      settings: {
+        itemCount: squatCount,
+      },
+    };
+    addTaskToSlot(newTask);
+    setShowSquatModal(false);
   };
 
   // Render Find Household Items Modal
@@ -1449,6 +1591,589 @@ export default function AddAlarmScreen() {
     );
   };
 
+  // Render Shake phone modal
+  const renderShakeModal = () => {
+    return (
+      <Modal
+        visible={showShakeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowShakeModal(false)}
+      >
+        <View style={styles.taskModalOverlay}>
+          <View style={styles.findColorsModalContent}>
+            {/* Header */}
+            <View style={styles.findHouseholdHeader}>
+              <TouchableOpacity onPress={() => {
+                setShowShakeModal(false);
+                setShowTaskModal(true);
+              }}>
+                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+              <Text style={styles.findHouseholdTitle}>Lắc điện thoại</Text>
+              <TouchableOpacity onPress={() => setShowShakeModal(false)}>
+                <Ionicons name="close" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              {/* Preview Area with Shake Animation */}
+              <View style={styles.shakePreviewArea}>
+                <Animated.View style={{
+                  transform: [
+                    { translateX: shakeAnimValue.interpolate({
+                        inputRange: [-1, 1],
+                        outputRange: [-20, 20]
+                      })
+                    },
+                    { rotate: shakeAnimValue.interpolate({
+                        inputRange: [-1, 1],
+                        outputRange: ['-15deg', '15deg']
+                      })
+                    }
+                  ]
+                }}>
+                  <MaterialCommunityIcons name="cellphone" size={120} color="#ffffff" />
+                </Animated.View>
+              </View>
+
+              {/* Shake Count Picker Card */}
+              <View style={styles.typingCountCard}>
+                <View style={styles.typingPickerWrapper}>
+                  {/* Number Picker Column */}
+                  <View style={styles.typingPickerColumn}>
+                    <FlatList
+                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
+                      keyExtractor={(item) => `shake-count-${item}`}
+                      showsVerticalScrollIndicator={false}
+                      nestedScrollEnabled={true}
+                      snapToInterval={50}
+                      decelerationRate="fast"
+                      initialScrollIndex={Math.floor(shakeCount / 5) - 1 >= 0 ? Math.floor(shakeCount / 5) - 1 : 0}
+                      getItemLayout={(_, index) => ({
+                        length: 50,
+                        offset: 50 * index,
+                        index,
+                      })}
+                      onScroll={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 20) {
+                          const newValue = (index + 1) * 5;
+                          if (newValue !== shakeCount) {
+                            setShakeCount(newValue);
+                          }
+                        }
+                      }}
+                      onMomentumScrollEnd={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 20) {
+                          setShakeCount((index + 1) * 5);
+                        }
+                      }}
+                      contentContainerStyle={{
+                        paddingVertical: 50,
+                      }}
+                      style={styles.typingFlatList}
+                      renderItem={({ item }) => {
+                        const isSelected = item === shakeCount;
+                        return (
+                          <View style={styles.typingPickerItem}>
+                            <Text style={[
+                              styles.typingPickerText,
+                              isSelected && styles.typingPickerTextSelected,
+                              !isSelected && styles.typingPickerTextFaded,
+                            ]}>
+                              {item}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                    {/* Top indicator line */}
+                    <View style={styles.typingPickerLineTop} />
+                    {/* Bottom indicator line */}
+                    <View style={styles.typingPickerLineBottom} />
+                  </View>
+                  
+                  {/* "lần" Label */}
+                  <Text style={styles.typingCountLabel}>lần</Text>
+                </View>
+              </View>
+
+              {/* Bottom Buttons */}
+              <View style={styles.findHouseholdButtons}>
+                <TouchableOpacity style={styles.previewButton}>
+                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.completeButton}
+                  onPress={handleCompleteShake}
+                >
+                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // Render Steps modal
+  const renderStepsModal = () => {
+    return (
+      <Modal
+        visible={showStepsModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowStepsModal(false)}
+      >
+        <View style={styles.taskModalOverlay}>
+          <View style={styles.findColorsModalContent}>
+            {/* Header */}
+            <View style={styles.findHouseholdHeader}>
+              <TouchableOpacity onPress={() => {
+                setShowStepsModal(false);
+                setShowTaskModal(true);
+              }}>
+                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+              <Text style={styles.findHouseholdTitle}>Bước</Text>
+              <TouchableOpacity onPress={() => setShowStepsModal(false)}>
+                <Ionicons name="close" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              {/* Preview Area with Walking Animation */}
+              <View style={styles.shakePreviewArea}>
+                {/* Moving Ground (Road) */}
+                <View style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 60,
+                  backgroundColor: '#293547',
+                  zIndex: 0,
+                }}>
+                   {/* Moving Stripes */}
+                   <Animated.View style={{
+                     flexDirection: 'row',
+                     position: 'absolute',
+                     top: 20,
+                     left: 0,
+                     transform: [{
+                       translateX: stepsAnimValue.interpolate({
+                         inputRange: [0, 1],
+                         outputRange: [0, -50] // Pattern width: 20 (width) + 30 (margin)
+                       })
+                     }]
+                   }}>
+                     {Array.from({length: 20}).map((_, i) => (
+                       <View key={i} style={{
+                         width: 20,
+                         height: 4,
+                         borderRadius: 2,
+                         backgroundColor: '#475569',
+                         marginRight: 30,
+                       }} />
+                     ))}
+                   </Animated.View>
+                </View>
+
+                {/* Walking Person */}
+                <Animated.View style={{
+                  zIndex: 10,
+                  marginBottom: 10,
+                  transform: [
+                    { translateY: stepsAnimValue.interpolate({
+                        inputRange: [0, 0.25, 0.5, 0.75, 1],
+                        outputRange: [0, -10, 0, -10, 0]
+                      })
+                    },
+                    { rotate: stepsAnimValue.interpolate({
+                        inputRange: [0, 0.25, 0.5, 0.75, 1],
+                        outputRange: ['5deg', '0deg', '5deg', '10deg', '5deg'] // Lean forward
+                      })
+                    }
+                  ]
+                }}>
+                  {/* Walking Person - Frame Animation */}
+                  <View>
+                    <Animated.View style={{
+                      opacity: stepsAnimValue.interpolate({
+                        inputRange: [0, 0.49, 0.5, 1],
+                        outputRange: [1, 1, 0, 0]
+                      })
+                    }}>
+                      <MaterialCommunityIcons name="walk" size={120} color="#ffffff" />
+                    </Animated.View>
+                    <Animated.View style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      opacity: stepsAnimValue.interpolate({
+                        inputRange: [0, 0.49, 0.5, 1],
+                        outputRange: [0, 0, 1, 1]
+                      })
+                    }}>
+                      <MaterialCommunityIcons name="run" size={120} color="#ffffff" />
+                    </Animated.View>
+                  </View>
+                  
+                  {/* Phone in hand (simulated) */}
+                  <Animated.View style={{
+                    position: 'absolute',
+                    top: 40,
+                    right: 45,
+                    transform: [
+                      { rotate: stepsAnimValue.interpolate({
+                          inputRange: [0, 0.25, 0.5, 0.75, 1],
+                          outputRange: ['0deg', '25deg', '0deg', '25deg', '0deg']
+                        })
+                      }
+                    ]
+                  }}>
+                    <MaterialCommunityIcons name="cellphone" size={30} color="#ffffff" />
+                  </Animated.View>
+                </Animated.View>
+              </View>
+
+              {/* Steps Count Picker Card */}
+              <View style={styles.typingCountCard}>
+                <View style={styles.typingPickerWrapper}>
+                  {/* Number Picker Column */}
+                  <View style={styles.typingPickerColumn}>
+                    <FlatList
+                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
+                      keyExtractor={(item) => `steps-count-${item}`}
+                      showsVerticalScrollIndicator={false}
+                      nestedScrollEnabled={true}
+                      snapToInterval={50}
+                      decelerationRate="fast"
+                      initialScrollIndex={Math.floor(stepsCount / 5) - 1 >= 0 ? Math.floor(stepsCount / 5) - 1 : 0}
+                      getItemLayout={(_, index) => ({
+                        length: 50,
+                        offset: 50 * index,
+                        index,
+                      })}
+                      onScroll={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 20) {
+                          const newValue = (index + 1) * 5;
+                          if (newValue !== stepsCount) {
+                            setStepsCount(newValue);
+                          }
+                        }
+                      }}
+                      onMomentumScrollEnd={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 20) {
+                          setStepsCount((index + 1) * 5);
+                        }
+                      }}
+                      contentContainerStyle={{
+                        paddingVertical: 50,
+                      }}
+                      style={styles.typingFlatList}
+                      renderItem={({ item }) => {
+                        const isSelected = item === stepsCount;
+                        return (
+                          <View style={styles.typingPickerItem}>
+                            <Text style={[
+                              styles.typingPickerText,
+                              isSelected && styles.typingPickerTextSelected,
+                              !isSelected && styles.typingPickerTextFaded,
+                            ]}>
+                              {item}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                    {/* Top indicator line */}
+                    <View style={styles.typingPickerLineTop} />
+                    {/* Bottom indicator line */}
+                    <View style={styles.typingPickerLineBottom} />
+                  </View>
+                  
+                  {/* "bước" Label */}
+                  <Text style={styles.typingCountLabel}>bước</Text>
+                </View>
+              </View>
+
+              {/* Bottom Buttons */}
+              <View style={styles.findHouseholdButtons}>
+                <TouchableOpacity style={styles.previewButton}>
+                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.completeButton}
+                  onPress={handleCompleteSteps}
+                >
+                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  // Render Squat modal
+  const renderSquatModal = () => {
+    return (
+      <Modal
+        visible={showSquatModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowSquatModal(false)}
+      >
+        <View style={styles.taskModalOverlay}>
+          <View style={styles.findColorsModalContent}>
+            {/* Header */}
+            <View style={styles.findHouseholdHeader}>
+              <TouchableOpacity onPress={() => {
+                setShowSquatModal(false);
+                setShowTaskModal(true);
+              }}>
+                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              </TouchableOpacity>
+              <Text style={styles.findHouseholdTitle}>Squat</Text>
+              <TouchableOpacity onPress={() => setShowSquatModal(false)}>
+                <Ionicons name="close" size={24} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              {/* Preview Area with Squat Animation */}
+              <View style={styles.shakePreviewArea}>
+                <View style={styles.stickFigureOuterContainer}>
+                  {/* The Hip is the main pivot and base for the whole figure */}
+                  <Animated.View style={[
+                    styles.hipJoint,
+                    {
+                      transform: [
+                        { translateY: squatAnimValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 50] 
+                          }) 
+                        },
+                        { translateX: squatAnimValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, -20]
+                          })
+                        }
+                      ]
+                    }
+                  ]}>
+                    {/* TORSO UNIT - Rotates from the hip */}
+                    <Animated.View style={[
+                      styles.jointContainer,
+                      {
+                        transform: [{
+                          rotate: squatAnimValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '25deg']
+                          })
+                        }]
+                      }
+                    ]}>
+                      {/* Visual Torso - anchored at the joint container (hip) */}
+                      <View style={[styles.torso, { bottom: 0 }]} />
+                      
+                      {/* Head - relative to torso top */}
+                      <View style={[styles.head, { top: -81, position: 'absolute' }]} />
+
+                      {/* ARMS - rotating from the shoulder area (top of torso) */}
+                      <View style={{ position: 'absolute', top: -50, width: 0, height: 0, alignItems: 'center' }}>
+                        {/* Back Arm */}
+                        <Animated.View style={[
+                          styles.jointContainer,
+                          { 
+                            opacity: 0.4,
+                            transform: [{ 
+                              rotate: squatAnimValue.interpolate({ 
+                                inputRange: [0, 1], 
+                                outputRange: ['15deg', '-80deg'] 
+                              }) 
+                            }] 
+                          }
+                        ]}>
+                          <View style={styles.arm} />
+                        </Animated.View>
+                        
+                        {/* Front Arm */}
+                        <Animated.View style={[
+                          styles.jointContainer,
+                          { 
+                            transform: [{ 
+                              rotate: squatAnimValue.interpolate({ 
+                                inputRange: [0, 1], 
+                                outputRange: ['15deg', '-95deg'] 
+                              }) 
+                            }] 
+                          }
+                        ]}>
+                          <View style={styles.arm} />
+                        </Animated.View>
+                      </View>
+                    </Animated.View>
+
+                    {/* LEGS UNIT - Both pivot from the hip */}
+                    
+                    {/* Back Leg (dimmer) */}
+                    <Animated.View style={[
+                      styles.jointContainer,
+                      {
+                        opacity: 0.4,
+                        transform: [{ rotate: squatAnimValue.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['10deg', '-70deg']
+                        }) }]
+                      }
+                    ]}>
+                      <View style={[styles.limb, styles.thigh]} />
+                      {/* Back Knee */}
+                      <Animated.View style={[
+                        styles.jointContainer,
+                        {
+                          top: 40,
+                          transform: [{ rotate: squatAnimValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '80deg']
+                          }) }]
+                        }
+                      ]}>
+                        <View style={[styles.limb, styles.shin]} />
+                      </Animated.View>
+                    </Animated.View>
+
+                    {/* Front Leg */}
+                    <Animated.View style={[
+                      styles.jointContainer,
+                      {
+                        transform: [{ rotate: squatAnimValue.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['10deg', '-80deg']
+                        }) }]
+                      }
+                    ]}>
+                      <View style={[styles.limb, styles.thigh]} />
+                      {/* Front Knee */}
+                      <Animated.View style={[
+                        styles.jointContainer,
+                        {
+                          top: 40,
+                          transform: [{ rotate: squatAnimValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ['0deg', '95deg']
+                          }) }]
+                        }
+                      ]}>
+                        <View style={[styles.limb, styles.shin]} />
+                      </Animated.View>
+                    </Animated.View>
+                  </Animated.View>
+                  
+                  {/* Ground Line */}
+                  <View style={styles.squatGroundLine} />
+                </View>
+              </View>
+
+              {/* Squat Count Picker Card */}
+              <View style={styles.typingCountCard}>
+                <View style={styles.typingPickerWrapper}>
+                  {/* Number Picker Column */}
+                  <View style={styles.typingPickerColumn}>
+                    <FlatList
+                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
+                      keyExtractor={(item) => `squat-count-${item}`}
+                      showsVerticalScrollIndicator={false}
+                      nestedScrollEnabled={true}
+                      snapToInterval={50}
+                      decelerationRate="fast"
+                      initialScrollIndex={Math.floor(squatCount / 5) - 1 >= 0 ? Math.floor(squatCount / 5) - 1 : 0}
+                      getItemLayout={(_, index) => ({
+                        length: 50,
+                        offset: 50 * index,
+                        index,
+                      })}
+                      onScroll={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 20) {
+                          const newValue = (index + 1) * 5;
+                          if (newValue !== squatCount) {
+                            setSquatCount(newValue);
+                          }
+                        }
+                      }}
+                      onMomentumScrollEnd={(e) => {
+                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
+                        if (index >= 0 && index < 20) {
+                          setSquatCount((index + 1) * 5);
+                        }
+                      }}
+                      contentContainerStyle={{
+                        paddingVertical: 50,
+                      }}
+                      style={styles.typingFlatList}
+                      renderItem={({ item }) => {
+                        const isSelected = item === squatCount;
+                        return (
+                          <View style={styles.typingPickerItem}>
+                            <Text style={[
+                              styles.typingPickerText,
+                              isSelected && styles.typingPickerTextSelected,
+                              !isSelected && styles.typingPickerTextFaded,
+                            ]}>
+                              {item}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                    />
+                    {/* Top indicator line */}
+                    <View style={styles.typingPickerLineTop} />
+                    {/* Bottom indicator line */}
+                    <View style={styles.typingPickerLineBottom} />
+                  </View>
+                  
+                  {/* "lần" Label */}
+                  <Text style={styles.typingCountLabel}>lần</Text>
+                </View>
+              </View>
+
+              {/* Bottom Buttons */}
+              <View style={styles.findHouseholdButtons}>
+                <TouchableOpacity style={styles.previewButton}>
+                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.completeButton}
+                  onPress={handleCompleteSquat}
+                >
+                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const renderTaskModal = () => (
     <Modal
       visible={showTaskModal}
@@ -1514,7 +2239,7 @@ export default function AddAlarmScreen() {
 
             {/* Body Tasks */}
             <Text style={styles.taskCategoryTitle}>Đánh thức cơ thể của bạn</Text>
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectSteps}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <MaterialCommunityIcons name="foot-print" size={24} color="#ffffff" />
               </View>
@@ -1536,7 +2261,7 @@ export default function AddAlarmScreen() {
               <Text style={styles.taskItemText}>Mã QR/Mã vạch</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectShake}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <MaterialCommunityIcons name="vibrate" size={24} color="#ffffff" />
               </View>
@@ -1550,7 +2275,7 @@ export default function AddAlarmScreen() {
               <Text style={styles.taskItemText}>Ảnh chụp</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem}>
+            <TouchableOpacity style={styles.taskItem} onPress={handleSelectSquat}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <MaterialCommunityIcons name="arm-flex" size={24} color="#ffffff" />
               </View>
@@ -1581,6 +2306,9 @@ export default function AddAlarmScreen() {
       {renderTypingModal()}
       {renderFindColorsModal()}
       {renderMathModal()}
+      {renderShakeModal()}
+      {renderStepsModal()}
+      {renderSquatModal()}
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
@@ -1758,7 +2486,11 @@ export default function AddAlarmScreen() {
                         <Ionicons name="close" size={12} color="#ffffff" />
                       </TouchableOpacity>
                       <View style={[styles.taskIconSmall, { backgroundColor: task.iconColor }]}>
-                        <Ionicons name={task.icon as any} size={18} color="#ffffff" />
+                        {['shake', 'steps', 'squat'].includes(task.type) ? (
+                          <MaterialCommunityIcons name={task.icon as any} size={18} color="#ffffff" />
+                        ) : (
+                          <Ionicons name={task.icon as any} size={18} color="#ffffff" />
+                        )}
                       </View>
                       <Text style={styles.taskButtonLabel} numberOfLines={1}>{task.name}</Text>
                     </TouchableOpacity>
@@ -3095,5 +3827,93 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
     marginTop: 16,
+  },
+  // Shake Modal styles
+  shakePreviewArea: {
+    backgroundColor: '#334155',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    height: 220,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  // Squat Animation Styles
+  stickFigureOuterContainer: {
+    width: 200,
+    height: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    marginTop: 20,
+  },
+  hipJoint: {
+    position: 'absolute',
+    top: 60,
+    width: 0,
+    height: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  jointContainer: {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    alignItems: 'center',
+  },
+  shoulderJoint: {
+    position: 'absolute',
+    top: 5,
+    width: 0,
+    height: 0,
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  limb: {
+    position: 'absolute',
+    width: 6,
+    backgroundColor: '#ffffff',
+    borderRadius: 3,
+  },
+  thigh: {
+    height: 40,
+    top: 0,
+  },
+  shin: {
+    height: 45,
+    top: 0,
+  },
+  torso: {
+    position: 'absolute',
+    bottom: 0,
+    width: 8,
+    height: 55,
+    backgroundColor: '#ffffff',
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  head: {
+    position: 'absolute',
+    top: -30,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#ffffff',
+  },
+  arm: {
+    width: 6,
+    height: 35,
+    backgroundColor: '#ffffff',
+    borderRadius: 3,
+  },
+  squatGroundLine: {
+    position: 'absolute',
+    bottom: 25,
+    width: 140,
+    height: 3,
+    backgroundColor: '#475569',
+    borderRadius: 2,
   },
 });
