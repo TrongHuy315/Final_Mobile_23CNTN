@@ -97,7 +97,13 @@ export default function AlarmsScreen() {
           />
 
           <View style={styles.menu}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => {
+                setMenu(false);
+                router.push('/routine-selection');
+              }}
+            >
               <Text style={styles.menuText}>
                 Báo thức thói quen
               </Text>

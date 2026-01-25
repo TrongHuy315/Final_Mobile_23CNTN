@@ -1,5 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Image } from 'expo-image';
 import { snoozeStore } from '../stores/snoozeStore';
@@ -223,8 +223,92 @@ const modalStyles = StyleSheet.create({
   },
 });
 
-// Suppress VirtualizedLists warning - we're using nestedScrollEnabled
-LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+// Number Picker Component for better performance
+const NumberPicker = React.memo(({ 
+  data, 
+  initialValue, 
+  onValueChange, 
+  itemHeight = 50, 
+  unit = "" 
+}: { 
+  data: number[], 
+  initialValue: number, 
+  onValueChange: (val: number) => void,
+  itemHeight?: number,
+  unit?: string
+}) => {
+  const [selectedValue, setSelectedValue] = useState(initialValue);
+  const flatListRef = useRef<FlatList>(null);
+
+  const getItemLayout = (_: any, index: number) => ({
+    length: itemHeight,
+    offset: itemHeight * index,
+    index,
+  });
+
+  const onMomentumScrollEnd = (e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
+    if (index >= 0 && index < data.length) {
+      const val = data[index];
+      setSelectedValue(val);
+      onValueChange(val);
+    }
+  };
+
+  return (
+    <View style={styles.typingPickerWrapper}>
+      <View style={[styles.typingPickerColumn, { height: itemHeight * 3 }]}>
+        <FlatList
+          ref={flatListRef}
+          data={data}
+          keyExtractor={(item) => `picker-${item}`}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          snapToInterval={itemHeight}
+          decelerationRate="fast"
+          initialScrollIndex={data.indexOf(initialValue) >= 0 ? data.indexOf(initialValue) : 0}
+          getItemLayout={getItemLayout}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          onScrollEndDrag={onMomentumScrollEnd}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
+            if (index >= 0 && index < data.length) {
+              const val = data[index];
+              if (val !== selectedValue) setSelectedValue(val);
+            }
+          }}
+          contentContainerStyle={{
+            paddingVertical: itemHeight,
+          }}
+          removeClippedSubviews={true}
+          scrollEventThrottle={16}
+          style={styles.typingFlatList}
+          renderItem={({ item }) => {
+            const isSelected = item === selectedValue;
+            return (
+              <View style={[styles.typingPickerItem, { height: itemHeight }]}>
+                <Text style={[
+                  styles.typingPickerText,
+                  isSelected && styles.typingPickerTextSelected,
+                  !isSelected && styles.typingPickerTextFaded,
+                ]}>
+                  {item}
+                </Text>
+              </View>
+            );
+          }}
+        />
+        <View style={[styles.typingPickerLineTop, { top: itemHeight }]} />
+        <View style={[styles.typingPickerLineBottom, { top: itemHeight * 2 }]} />
+      </View>
+      {unit ? <Text style={styles.typingCountLabel}>{unit}</Text> : null}
+    </View>
+  );
+});
+
+// Pre-computed arrays for pickers
+const COUNT_99 = Array.from({ length: 99 }, (_, i) => i + 1);
+const SHAKE_COUNT_DATA = Array.from({ length: 20 }, (_, i) => (i + 1) * 5);
 
 const DAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const ITEM_HEIGHT = 60;
@@ -256,14 +340,15 @@ const getDefaultTime = () => {
   };
 };
 
-export default function AddAlarmScreen() {
+export default function HabitFormScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const defaultTime = getDefaultTime();
 
   // States
-  const [alarmIcon, setAlarmIcon] = useState('🌤️');
-  const [alarmName, setAlarmName] = useState('');
+  const [alarmIcon, setAlarmIcon] = useState(params.icon as string || '🌤️');
+  const [alarmName, setAlarmName] = useState(params.name as string || '');
   const [selectedHour, setSelectedHour] = useState(defaultTime.hour);
   const [selectedMinute, setSelectedMinute] = useState(defaultTime.minute);
   const [selectedDays, setSelectedDays] = useState<string[]>(['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']);
@@ -661,7 +746,7 @@ export default function AddAlarmScreen() {
 
   const handleSave = () => {
     // Save alarm logic here
-    router.back();
+    router.replace('/(tabs)');
   };
 
   const toggleDay = (day: string) => {
@@ -1306,69 +1391,12 @@ export default function AddAlarmScreen() {
 
             {/* Count Picker Card */}
             <View style={styles.typingCountCard}>
-              <View style={styles.typingPickerWrapper}>
-                {/* Number Picker Column */}
-                <View style={styles.typingPickerColumn}>
-                  <FlatList
-                    data={typingCountArray}
-                    keyExtractor={(item) => `typing-count-${item}`}
-                    showsVerticalScrollIndicator={false}
-                    nestedScrollEnabled={true}
-                    snapToInterval={50}
-                    decelerationRate="fast"
-                    initialScrollIndex={typingCount - 1 > 0 ? typingCount - 1 : 0}
-                    getItemLayout={(_, index) => ({
-                      length: 50,
-                      offset: 50 * index,
-                      index,
-                    })}
-                    onMomentumScrollEnd={(e) => {
-                      const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                      if (index >= 0 && index < typingCountArray.length) {
-                        setTypingCount(typingCountArray[index]);
-                      }
-                    }}
-                    onScrollEndDrag={(e) => {
-                      const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                      if (index >= 0 && index < typingCountArray.length) {
-                        setTypingCount(typingCountArray[index]);
-                      }
-                    }}
-                    onScroll={(e) => {
-                      const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                      if (index >= 0 && index < typingCountArray.length) {
-                        const val = typingCountArray[index];
-                        if (val !== typingCount) setTypingCount(val);
-                      }
-                    }}
-                    contentContainerStyle={{
-                      paddingVertical: 50,
-                    }}
-                    style={styles.typingFlatList}
-                    renderItem={({ item }) => {
-                      const isSelected = item === typingCount;
-                      return (
-                        <View style={styles.typingPickerItem}>
-                          <Text style={[
-                            styles.typingPickerText,
-                            isSelected && styles.typingPickerTextSelected,
-                            !isSelected && styles.typingPickerTextFaded,
-                          ]}>
-                            {item}
-                          </Text>
-                        </View>
-                      );
-                    }}
-                  />
-                  {/* Top indicator line */}
-                  <View style={styles.typingPickerLineTop} />
-                  {/* Bottom indicator line */}
-                  <View style={styles.typingPickerLineBottom} />
-                </View>
-                
-                {/* "lần" Label */}
-                <Text style={styles.typingCountLabel}>lần</Text>
-              </View>
+              <NumberPicker 
+                data={COUNT_99}
+                initialValue={typingCount}
+                onValueChange={setTypingCount}
+                unit="lần"
+              />
             </View>
 
             {/* Choose Phrase Row */}
@@ -1520,69 +1548,12 @@ export default function AddAlarmScreen() {
 
               {/* Round Count Picker Card */}
               <View style={styles.typingCountCard}>
-                <View style={styles.typingPickerWrapper}>
-                  {/* Number Picker Column */}
-                  <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 99 }, (_, i) => i + 1)}
-                      keyExtractor={(item) => `colors-count-${item}`}
-                      showsVerticalScrollIndicator={false}
-                      nestedScrollEnabled={true}
-                      snapToInterval={50}
-                      decelerationRate="fast"
-                      initialScrollIndex={findColorsRoundCount - 1 > 0 ? findColorsRoundCount - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
-                      onMomentumScrollEnd={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 99) {
-                          setFindColorsRoundCount(index + 1);
-                        }
-                      }}
-                      onScrollEndDrag={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 99) {
-                          setFindColorsRoundCount(index + 1);
-                        }
-                      }}
-                      onScroll={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 99) {
-                          const val = index + 1;
-                          if (val !== findColorsRoundCount) setFindColorsRoundCount(val);
-                        }
-                      }}
-                      contentContainerStyle={{
-                        paddingVertical: 50,
-                      }}
-                      style={styles.typingFlatList}
-                      renderItem={({ item }) => {
-                        const isSelected = item === findColorsRoundCount;
-                        return (
-                          <View style={styles.typingPickerItem}>
-                            <Text style={[
-                              styles.typingPickerText,
-                              isSelected && styles.typingPickerTextSelected,
-                              !isSelected && styles.typingPickerTextFaded,
-                            ]}>
-                              {item}
-                            </Text>
-                          </View>
-                        );
-                      }}
-                    />
-                    {/* Top indicator line */}
-                    <View style={styles.typingPickerLineTop} />
-                    {/* Bottom indicator line */}
-                    <View style={styles.typingPickerLineBottom} />
-                  </View>
-                  
-                  {/* "vòng" Label */}
-                  <Text style={styles.typingCountLabel}>vòng</Text>
-                </View>
+                <NumberPicker 
+                  data={COUNT_99}
+                  initialValue={findColorsRoundCount}
+                  onValueChange={setFindColorsRoundCount}
+                  unit="vòng"
+                />
               </View>
 
               {/* Bottom Buttons */}
@@ -1683,69 +1654,12 @@ export default function AddAlarmScreen() {
 
               {/* Round Count Picker Card */}
               <View style={styles.typingCountCard}>
-                <View style={styles.typingPickerWrapper}>
-                  {/* Number Picker Column */}
-                  <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 99 }, (_, i) => i + 1)}
-                      keyExtractor={(item) => `math-count-${item}`}
-                      showsVerticalScrollIndicator={false}
-                      nestedScrollEnabled={true}
-                      snapToInterval={50}
-                      decelerationRate="fast"
-                      initialScrollIndex={mathRoundCount - 1 > 0 ? mathRoundCount - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
-                      onMomentumScrollEnd={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 99) {
-                          setMathRoundCount(index + 1);
-                        }
-                      }}
-                      onScrollEndDrag={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 99) {
-                          setMathRoundCount(index + 1);
-                        }
-                      }}
-                      onScroll={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 99) {
-                          const val = index + 1;
-                          if (val !== mathRoundCount) setMathRoundCount(val);
-                        }
-                      }}
-                      contentContainerStyle={{
-                        paddingVertical: 50,
-                      }}
-                      style={styles.typingFlatList}
-                      renderItem={({ item }) => {
-                        const isSelected = item === mathRoundCount;
-                        return (
-                          <View style={styles.typingPickerItem}>
-                            <Text style={[
-                              styles.typingPickerText,
-                              isSelected && styles.typingPickerTextSelected,
-                              !isSelected && styles.typingPickerTextFaded,
-                            ]}>
-                              {item}
-                            </Text>
-                          </View>
-                        );
-                      }}
-                    />
-                    {/* Top indicator line */}
-                    <View style={styles.typingPickerLineTop} />
-                    {/* Bottom indicator line */}
-                    <View style={styles.typingPickerLineBottom} />
-                  </View>
-                  
-                  {/* "vòng" Label */}
-                  <Text style={styles.typingCountLabel}>vòng</Text>
-                </View>
+                <NumberPicker 
+                  data={COUNT_99}
+                  initialValue={mathRoundCount}
+                  onValueChange={setMathRoundCount}
+                  unit="vòng"
+                />
               </View>
 
               {/* Bottom Buttons */}
@@ -1818,71 +1732,12 @@ export default function AddAlarmScreen() {
 
               {/* Shake Count Picker Card */}
               <View style={styles.typingCountCard}>
-                <View style={styles.typingPickerWrapper}>
-                  {/* Number Picker Column */}
-                  <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
-                      keyExtractor={(item) => `shake-count-${item}`}
-                      showsVerticalScrollIndicator={false}
-                      nestedScrollEnabled={true}
-                      snapToInterval={50}
-                      decelerationRate="fast"
-                      initialScrollIndex={Math.floor(shakeCount / 5) - 1 >= 0 ? Math.floor(shakeCount / 5) - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
-                      onScroll={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          const newValue = (index + 1) * 5;
-                          if (newValue !== shakeCount) {
-                            setShakeCount(newValue);
-                          }
-                        }
-                      }}
-                      onMomentumScrollEnd={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          setShakeCount((index + 1) * 5);
-                        }
-                      }}
-                      onScrollEndDrag={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          setShakeCount((index + 1) * 5);
-                        }
-                      }}
-                      contentContainerStyle={{
-                        paddingVertical: 50,
-                      }}
-                      style={styles.typingFlatList}
-                      renderItem={({ item }) => {
-                        const isSelected = item === shakeCount;
-                        return (
-                          <View style={styles.typingPickerItem}>
-                            <Text style={[
-                              styles.typingPickerText,
-                              isSelected && styles.typingPickerTextSelected,
-                              !isSelected && styles.typingPickerTextFaded,
-                            ]}>
-                              {item}
-                            </Text>
-                          </View>
-                        );
-                      }}
-                    />
-                    {/* Top indicator line */}
-                    <View style={styles.typingPickerLineTop} />
-                    {/* Bottom indicator line */}
-                    <View style={styles.typingPickerLineBottom} />
-                  </View>
-                  
-                  {/* "lần" Label */}
-                  <Text style={styles.typingCountLabel}>lần</Text>
-                </View>
+                <NumberPicker 
+                  data={SHAKE_COUNT_DATA}
+                  initialValue={shakeCount}
+                  onValueChange={setShakeCount}
+                  unit="lần"
+                />
               </View>
 
               {/* Bottom Buttons */}
@@ -2030,71 +1885,12 @@ export default function AddAlarmScreen() {
 
               {/* Steps Count Picker Card */}
               <View style={styles.typingCountCard}>
-                <View style={styles.typingPickerWrapper}>
-                  {/* Number Picker Column */}
-                  <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
-                      keyExtractor={(item) => `steps-count-${item}`}
-                      showsVerticalScrollIndicator={false}
-                      nestedScrollEnabled={true}
-                      snapToInterval={50}
-                      decelerationRate="fast"
-                      initialScrollIndex={Math.floor(stepsCount / 5) - 1 >= 0 ? Math.floor(stepsCount / 5) - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
-                      onScroll={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          const newValue = (index + 1) * 5;
-                          if (newValue !== stepsCount) {
-                            setStepsCount(newValue);
-                          }
-                        }
-                      }}
-                      onMomentumScrollEnd={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          setStepsCount((index + 1) * 5);
-                        }
-                      }}
-                      onScrollEndDrag={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          setStepsCount((index + 1) * 5);
-                        }
-                      }}
-                      contentContainerStyle={{
-                        paddingVertical: 50,
-                      }}
-                      style={styles.typingFlatList}
-                      renderItem={({ item }) => {
-                        const isSelected = item === stepsCount;
-                        return (
-                          <View style={styles.typingPickerItem}>
-                            <Text style={[
-                              styles.typingPickerText,
-                              isSelected && styles.typingPickerTextSelected,
-                              !isSelected && styles.typingPickerTextFaded,
-                            ]}>
-                              {item}
-                            </Text>
-                          </View>
-                        );
-                      }}
-                    />
-                    {/* Top indicator line */}
-                    <View style={styles.typingPickerLineTop} />
-                    {/* Bottom indicator line */}
-                    <View style={styles.typingPickerLineBottom} />
-                  </View>
-                  
-                  {/* "bước" Label */}
-                  <Text style={styles.typingCountLabel}>bước</Text>
-                </View>
+                <NumberPicker 
+                  data={SHAKE_COUNT_DATA}
+                  initialValue={stepsCount}
+                  onValueChange={setStepsCount}
+                  unit="bước"
+                />
               </View>
 
               {/* Bottom Buttons */}
@@ -2282,71 +2078,12 @@ export default function AddAlarmScreen() {
 
               {/* Squat Count Picker Card */}
               <View style={styles.typingCountCard}>
-                <View style={styles.typingPickerWrapper}>
-                  {/* Number Picker Column */}
-                  <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
-                      keyExtractor={(item) => `squat-count-${item}`}
-                      showsVerticalScrollIndicator={false}
-                      nestedScrollEnabled={true}
-                      snapToInterval={50}
-                      decelerationRate="fast"
-                      initialScrollIndex={Math.floor(squatCount / 5) - 1 >= 0 ? Math.floor(squatCount / 5) - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
-                      onScroll={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          const newValue = (index + 1) * 5;
-                          if (newValue !== squatCount) {
-                            setSquatCount(newValue);
-                          }
-                        }
-                      }}
-                      onMomentumScrollEnd={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          setSquatCount((index + 1) * 5);
-                        }
-                      }}
-                      onScrollEndDrag={(e) => {
-                        const index = Math.round(e.nativeEvent.contentOffset.y / 50);
-                        if (index >= 0 && index < 20) {
-                          setSquatCount((index + 1) * 5);
-                        }
-                      }}
-                      contentContainerStyle={{
-                        paddingVertical: 50,
-                      }}
-                      style={styles.typingFlatList}
-                      renderItem={({ item }) => {
-                        const isSelected = item === squatCount;
-                        return (
-                          <View style={styles.typingPickerItem}>
-                            <Text style={[
-                              styles.typingPickerText,
-                              isSelected && styles.typingPickerTextSelected,
-                              !isSelected && styles.typingPickerTextFaded,
-                            ]}>
-                              {item}
-                            </Text>
-                          </View>
-                        );
-                      }}
-                    />
-                    {/* Top indicator line */}
-                    <View style={styles.typingPickerLineTop} />
-                    {/* Bottom indicator line */}
-                    <View style={styles.typingPickerLineBottom} />
-                  </View>
-                  
-                  {/* "lần" Label */}
-                  <Text style={styles.typingCountLabel}>lần</Text>
-                </View>
+                <NumberPicker 
+                  data={SHAKE_COUNT_DATA}
+                  initialValue={squatCount}
+                  onValueChange={setSquatCount}
+                  unit="lần"
+                />
               </View>
 
               {/* Bottom Buttons */}
@@ -2830,9 +2567,9 @@ export default function AddAlarmScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-          <Ionicons name="close" size={24} color="#ffffff" />
+          <Ionicons name="close" size={28} color="#ffffff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chuông báo thức</Text>
+        <Text style={styles.headerTitle}>Báo thức thói quen</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -2843,39 +2580,17 @@ export default function AddAlarmScreen() {
         keyboardShouldPersistTaps="handled"
         scrollEnabled={!isDragging}
       >
-        {/* Alarm Name Input */}
-        <View style={styles.nameInputContainer}>
-          <TouchableOpacity 
-            style={styles.emojiInputWrapper}
-            onPress={() => emojiInputRef.current?.focus()}
-          >
-            <Text style={styles.sunIcon}>{alarmIcon}</Text>
-            <TextInput
-              ref={emojiInputRef}
-              style={styles.hiddenEmojiInput}
-              value=""
-              onChangeText={(text: string) => {
-                // Get the last emoji from input
-                if (text.length > 0) {
-                  // Extract emoji (emojis can be multiple characters)
-                  const emojiMatch = text.match(/(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/gu);
-                  if (emojiMatch && emojiMatch.length > 0) {
-                    setAlarmIcon(emojiMatch[emojiMatch.length - 1]);
-                  }
-                }
-              }}
-              maxLength={2}
-              autoCorrect={false}
+        {/* Habit Display */}
+        <View style={styles.habitHeader}>
+          <View style={[styles.habitIconBox, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}>
+            <MaterialCommunityIcons 
+              name={(params.icon as any) || 'star'} 
+              size={32} 
+              color={(params.iconColor as string) || '#a855f7'} 
             />
-          </TouchableOpacity>
-          <TextInput
-            style={styles.nameInputText}
-            value={alarmName}
-            onChangeText={setAlarmName}
-            placeholder="Vui lòng điền tên báo thức"
-            placeholderTextColor="#94a3b8"
-          />
-          <TouchableOpacity>
+          </View>
+          <Text style={styles.habitName}>{alarmName}</Text>
+          <TouchableOpacity style={styles.editIcon} onPress={() => router.back()}>
             <Ionicons name="pencil" size={20} color="#64748b" />
           </TouchableOpacity>
         </View>
@@ -3249,6 +2964,29 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  habitHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  habitIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  habitName: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: '600',
+    flex: 1,
+  },
+  editIcon: {
+    padding: 8,
   },
   nameInputContainer: {
     flexDirection: 'row',
