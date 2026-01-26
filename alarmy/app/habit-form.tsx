@@ -25,6 +25,8 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import WheelPicker from '../components/WheelPicker';
+import { AlarmManager, Alarm, AlarmTask as AlarmTaskType } from '../utils/alarm-manager';
 
 // Suppress VirtualizedLists warning - we're using nestedScrollEnabled
 LogBox.ignoreLogs([
@@ -237,70 +239,16 @@ const NumberPicker = React.memo(({
   itemHeight?: number,
   unit?: string
 }) => {
-  const [selectedValue, setSelectedValue] = useState(initialValue);
-  const flatListRef = useRef<FlatList>(null);
-
-  const getItemLayout = (_: any, index: number) => ({
-    length: itemHeight,
-    offset: itemHeight * index,
-    index,
-  });
-
-  const onMomentumScrollEnd = (e: any) => {
-    const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
-    if (index >= 0 && index < data.length) {
-      const val = data[index];
-      setSelectedValue(val);
-      onValueChange(val);
-    }
-  };
-
   return (
     <View style={styles.typingPickerWrapper}>
-      <View style={[styles.typingPickerColumn, { height: itemHeight * 3 }]}>
-        <FlatList
-          ref={flatListRef}
-          data={data}
-          keyExtractor={(item) => `picker-${item}`}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
-          snapToInterval={itemHeight}
-          decelerationRate="fast"
-          initialScrollIndex={data.indexOf(initialValue) >= 0 ? data.indexOf(initialValue) : 0}
-          getItemLayout={getItemLayout}
-          onMomentumScrollEnd={onMomentumScrollEnd}
-          onScrollEndDrag={onMomentumScrollEnd}
-          onScroll={(e) => {
-            const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
-            if (index >= 0 && index < data.length) {
-              const val = data[index];
-              if (val !== selectedValue) setSelectedValue(val);
-            }
-          }}
-          contentContainerStyle={{
-            paddingVertical: itemHeight,
-          }}
-          removeClippedSubviews={true}
-          scrollEventThrottle={16}
-          style={styles.typingFlatList}
-          renderItem={({ item }) => {
-            const isSelected = item === selectedValue;
-            return (
-              <View style={[styles.typingPickerItem, { height: itemHeight }]}>
-                <Text style={[
-                  styles.typingPickerText,
-                  isSelected && styles.typingPickerTextSelected,
-                  !isSelected && styles.typingPickerTextFaded,
-                ]}>
-                  {item}
-                </Text>
-              </View>
-            );
-          }}
-        />
-        <View style={[styles.typingPickerLineTop, { top: itemHeight }]} />
-        <View style={[styles.typingPickerLineBottom, { top: itemHeight * 2 }]} />
-      </View>
+      <WheelPicker
+        data={data}
+        initialValue={initialValue}
+        onValueChange={onValueChange}
+        itemHeight={itemHeight}
+        visibleItems={3}
+        containerStyle={{ width: '100%', alignItems: 'center' }}
+      />
       {unit ? <Text style={styles.typingCountLabel}>{unit}</Text> : null}
     </View>
   );
@@ -344,6 +292,7 @@ export default function HabitFormScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const alarmId = params.id as string | undefined;
   const defaultTime = getDefaultTime();
 
   // States
@@ -360,6 +309,23 @@ export default function HabitFormScreen() {
   const [labelReminder, setLabelReminder] = useState(false);
   const [backupSound, setBackupSound] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // Snooze settings state - initialize from store
+  const [snoozeEnabled, setSnoozeEnabled] = useState(snoozeStore.getSettings().snoozeEnabled);
+  const [snoozeInterval, setSnoozeInterval] = useState(snoozeStore.getSettings().snoozeInterval);
+  const [maxSnoozeCount, setMaxSnoozeCount] = useState(snoozeStore.getSettings().maxSnoozeCount);
+
+  // Subscribe to snooze store changes
+  useEffect(() => {
+    const unsubscribe = snoozeStore.subscribe(() => {
+      const settings = snoozeStore.getSettings();
+      setSnoozeEnabled(settings.snoozeEnabled);
+      setSnoozeInterval(settings.snoozeInterval);
+      setMaxSnoozeCount(settings.maxSnoozeCount);
+    });
+    return unsubscribe;
+  }, []);
+
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showFindHouseholdModal, setShowFindHouseholdModal] = useState(false);
   const [showTapChallengeModal, setShowTapChallengeModal] = useState(false);
@@ -567,21 +533,6 @@ export default function HabitFormScreen() {
     }
   }, [showFindHouseholdModal]);
   
-  // Snooze settings state - initialize from store
-  const [snoozeEnabled, setSnoozeEnabled] = useState(snoozeStore.getSettings().snoozeEnabled);
-  const [snoozeInterval, setSnoozeInterval] = useState(snoozeStore.getSettings().snoozeInterval);
-  const [maxSnoozeCount, setMaxSnoozeCount] = useState(snoozeStore.getSettings().maxSnoozeCount);
-  
-  // Subscribe to snooze store changes
-  useEffect(() => {
-    const unsubscribe = snoozeStore.subscribe(() => {
-      const settings = snoozeStore.getSettings();
-      setSnoozeEnabled(settings.snoozeEnabled);
-      setSnoozeInterval(settings.snoozeInterval);
-      setMaxSnoozeCount(settings.maxSnoozeCount);
-    });
-    return unsubscribe;
-  }, []);
   
   // Get snooze display text
   const getSnoozeDisplayText = () => {
@@ -636,9 +587,7 @@ export default function HabitFormScreen() {
   };
 
 
-  // Refs for FlatList and emoji input
-  const hourListRef = useRef<FlatList>(null);
-  const minuteListRef = useRef<FlatList>(null);
+  // UI refs
   const emojiInputRef = useRef<TextInput>(null);
 
   // Update current time every second for accurate time diff
@@ -682,43 +631,6 @@ export default function HabitFormScreen() {
     }
   }, [selectedHour, selectedMinute, currentTime]);
 
-  // Scroll to initial position on mount
-  useEffect(() => {
-    setTimeout(() => {
-      hourListRef.current?.scrollToOffset({
-        offset: selectedHour * ITEM_HEIGHT,
-        animated: false,
-      });
-      minuteListRef.current?.scrollToOffset({
-        offset: selectedMinute * ITEM_HEIGHT,
-        animated: false,
-      });
-    }, 100);
-  }, []);
-
-  const handleHourScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-    if (index >= 0 && index < 24) {
-      setSelectedHour(index);
-    }
-  };
-
-  const handleMinuteScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-    if (index >= 0 && index < 60) {
-      setSelectedMinute(index);
-    }
-  };
-
-  const snapToHour = () => {
-    hourListRef.current?.scrollToOffset({
-      offset: selectedHour * ITEM_HEIGHT,
-      animated: true,
-    });
-  };
-
   // Calculate day label dynamically
   const dayLabel = useMemo(() => {
     if (selectedDays.length === 0) {
@@ -733,20 +645,47 @@ export default function HabitFormScreen() {
   // Check if all days are selected
   const isEveryday = selectedDays.length === 7;
 
-  const snapToMinute = () => {
-    minuteListRef.current?.scrollToOffset({
-      offset: selectedMinute * ITEM_HEIGHT,
-      animated: true,
-    });
-  };
-
   const handleClose = () => {
     router.replace('/');
   };
 
-  const handleSave = () => {
-    // Save alarm logic here
-    router.replace('/(tabs)');
+  const handleSave = async () => {
+    // Filter out empty task slots
+    const activeTasks = alarmTasks.filter(t => t !== null) as AlarmTaskType[];
+
+    const alarmData: Omit<Alarm, 'id' | 'createdAt'> = {
+      hour: selectedHour,
+      minute: selectedMinute,
+      enabled: true,
+      label: alarmName || 'Báo thức thói quen',
+      icon: alarmIcon,
+      days: selectedDays.length === 0 ? [] : selectedDays,
+      volume: Math.round(volume * 100),
+      vibration: vibrationEnabled,
+      gentleWake: gentleWake,
+      tasks: activeTasks,
+      snoozeSettings: {
+        enabled: snoozeEnabled,
+        interval: snoozeInterval,
+        maxCount: maxSnoozeCount,
+      },
+      type: 'regular',
+    };
+
+    console.log('💾 Saving habit alarm:', alarmData);
+
+    if (alarmId) {
+      // Update existing alarm
+      console.log('✏️ Updating alarm with ID:', alarmId);
+      await AlarmManager.updateAlarm(alarmId, alarmData);
+    } else {
+      // Add new alarm
+      console.log('➕ Adding new habit alarm');
+      await AlarmManager.addAlarm(alarmData);
+    }
+
+    console.log('✅ Habit alarm saved, navigating back');
+    router.replace('/(tabs)')
   };
 
   const toggleDay = (day: string) => {
@@ -767,35 +706,6 @@ export default function HabitFormScreen() {
     }
   };
 
-  const renderHourItem = ({ item }: { item: number }) => {
-    const isSelected = item === selectedHour;
-    return (
-      <View style={styles.timePickerItem}>
-        <Text style={[
-          styles.timePickerText,
-          isSelected && styles.timePickerTextSelected,
-          !isSelected && styles.timePickerTextFaded,
-        ]}>
-          {String(item).padStart(2, '0')}
-        </Text>
-      </View>
-    );
-  };
-
-  const renderMinuteItem = ({ item }: { item: number }) => {
-    const isSelected = item === selectedMinute;
-    return (
-      <View style={styles.timePickerItem}>
-        <Text style={[
-          styles.timePickerText,
-          isSelected && styles.timePickerTextSelected,
-          !isSelected && styles.timePickerTextFaded,
-        ]}>
-          {String(item).padStart(2, '0')}
-        </Text>
-      </View>
-    );
-  };
 
   // Count actual tasks
   const getTaskCount = () => alarmTasks.filter(task => task !== null).length;
@@ -2598,61 +2508,18 @@ export default function HabitFormScreen() {
         {/* Time Picker */}
         <View style={styles.timePickerContainer}>
           <View style={styles.timePickerWrapper}>
-            {/* Hour Picker */}
-            <View style={styles.pickerColumn}>
-              <FlatList
-                ref={hourListRef}
-                data={hours}
-                renderItem={renderHourItem}
-                keyExtractor={(item) => `hour-${item}`}
-                showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true}
-                snapToInterval={ITEM_HEIGHT}
-                decelerationRate="fast"
-                onScroll={handleHourScroll}
-                onMomentumScrollEnd={snapToHour}
-                onScrollEndDrag={snapToHour}
-                getItemLayout={(_, index) => ({
-                  length: ITEM_HEIGHT,
-                  offset: ITEM_HEIGHT * index,
-                  index,
-                })}
-                contentContainerStyle={{
-                  paddingVertical: ITEM_HEIGHT,
-                }}
-              />
-            </View>
-
+            <WheelPicker 
+              data={hours}
+              initialValue={selectedHour}
+              onValueChange={setSelectedHour}
+            />
             <Text style={styles.timeSeparatorMain}>:</Text>
-
-            {/* Minute Picker */}
-            <View style={styles.pickerColumn}>
-              <FlatList
-                ref={minuteListRef}
-                data={minutes}
-                renderItem={renderMinuteItem}
-                keyExtractor={(item) => `minute-${item}`}
-                showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true}
-                snapToInterval={ITEM_HEIGHT}
-                decelerationRate="fast"
-                onScroll={handleMinuteScroll}
-                onMomentumScrollEnd={snapToMinute}
-                onScrollEndDrag={snapToMinute}
-                getItemLayout={(_, index) => ({
-                  length: ITEM_HEIGHT,
-                  offset: ITEM_HEIGHT * index,
-                  index,
-                })}
-                contentContainerStyle={{
-                  paddingVertical: ITEM_HEIGHT,
-                }}
-              />
-            </View>
+            <WheelPicker 
+              data={minutes}
+              initialValue={selectedMinute}
+              onValueChange={setSelectedMinute}
+            />
           </View>
-
-          {/* Selection Indicator */}
-          <View style={styles.selectionIndicator} pointerEvents="none" />
         </View>
 
         {/* Time Until Alarm */}

@@ -27,6 +27,7 @@ import Slider from '@react-native-community/slider';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router'; // Thêm này để nhận ID khi sửa
 import { AlarmManager, Alarm, AlarmTask as AlarmTaskType } from '../utils/alarm-manager';
+import WheelPicker from '../components/WheelPicker';
 
 // Suppress VirtualizedLists warning - we're using nestedScrollEnabled
 LogBox.ignoreLogs([
@@ -397,8 +398,6 @@ export default function AddAlarmScreen() {
   const cameraRef = useRef<any>(null);
 
   // UI and scroll refs
-  const hourListRef = useRef<ScrollView>(null);
-  const minuteListRef = useRef<ScrollView>(null);
   const emojiInputRef = useRef<TextInput>(null);
   const sliderWidthRef = useRef(0);
   const startVolumeRef = useRef(0);
@@ -450,6 +449,161 @@ export default function AddAlarmScreen() {
       loadAlarm();
     }
   }, [alarmId]);
+
+  // Start tap animation when modal opens
+  useEffect(() => {
+    if (showTapChallengeModal) {
+      setTapAnimCount(0);
+      setTapCleared(false);
+      animRefs.clearTextScale.setValue(0);
+      
+      // Simulate 50 taps in 5 seconds (100ms per tap)
+      let currentCount = 0;
+      const tapInterval = setInterval(() => {
+        currentCount++;
+        setTapAnimCount(currentCount);
+        
+        // Button pulse animation
+        Animated.sequence([
+          Animated.timing(animRefs.tapButtonScale, {
+            toValue: 0.85,
+            duration: 40,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animRefs.tapButtonScale, {
+            toValue: 1,
+            duration: 40,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        
+        if (currentCount >= 50) {
+          clearInterval(tapInterval);
+          setTapCleared(true);
+          // Animate CLEAR text appearance
+          Animated.spring(animRefs.clearTextScale, {
+            toValue: 1,
+            useNativeDriver: true,
+            friction: 4,
+          }).start();
+        }
+      }, 100); // 50 taps in 5000ms = 100ms per tap
+      
+      return () => {
+        clearInterval(tapInterval);
+      };
+    }
+  }, [showTapChallengeModal]);
+
+  // Start shake animation when modal opens
+  useEffect(() => {
+    if (showShakeModal) {
+      const shakeAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(animRefs.shakeAnim, {
+            toValue: 1,
+            duration: 80,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animRefs.shakeAnim, {
+            toValue: -1,
+            duration: 80,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      shakeAnimation.start();
+      return () => shakeAnimation.stop();
+    } else {
+      animRefs.shakeAnim.setValue(0);
+    }
+  }, [showShakeModal]);
+
+  // Start walking animation when steps modal opens
+  useEffect(() => {
+    if (showStepsModal) {
+      animRefs.stepsAnim.setValue(0);
+      const walkAnimation = Animated.loop(
+        Animated.timing(animRefs.stepsAnim, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
+      walkAnimation.start();
+      return () => walkAnimation.stop();
+    } else {
+      animRefs.stepsAnim.setValue(0);
+    }
+  }, [showStepsModal]);
+
+  // Start squat animation when modal opens
+  useEffect(() => {
+    if (showSquatModal) {
+      const squatAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(animRefs.squatAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animRefs.squatAnim, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      squatAnimation.start();
+      return () => squatAnimation.stop();
+    } else {
+      animRefs.squatAnim.setValue(0);
+    }
+  }, [showSquatModal]);
+  
+  // Start scan animation when modal opens
+  useEffect(() => {
+    if (showFindHouseholdModal) {
+      setScanComplete(false);
+      animRefs.checkmarkScale.setValue(0);
+      
+      // Scanning animation loop
+      const scanAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(animRefs.scanLine, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+          Animated.timing(animRefs.scanLine, {
+            toValue: 0,
+            duration: 1500,
+            useNativeDriver: true,
+            easing: Easing.linear,
+          }),
+        ])
+      );
+      scanAnimation.start();
+      
+      // Complete scan after 3 seconds
+      const completeTimer = setTimeout(() => {
+        scanAnimation.stop();
+        setScanComplete(true);
+        Animated.spring(animRefs.checkmarkScale, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 4,
+        }).start();
+      }, 3000);
+      
+      return () => {
+        scanAnimation.stop();
+        clearTimeout(completeTimer);
+      };
+    }
+  }, [showFindHouseholdModal]);
   
   // Get snooze display text
   const getSnoozeDisplayText = () => {
@@ -541,43 +695,6 @@ export default function AddAlarmScreen() {
     }
   }, [selectedHour, selectedMinute, currentTime]);
 
-  // Scroll to initial position on mount
-  useEffect(() => {
-    setTimeout(() => {
-      hourListRef.current?.scrollTo({
-        y: selectedHour * ITEM_HEIGHT,
-        animated: false,
-      });
-      minuteListRef.current?.scrollTo({
-        y: selectedMinute * ITEM_HEIGHT,
-        animated: false,
-      });
-    }, 100);
-  }, []);
-
-  const handleHourScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-    if (index >= 0 && index < 24) {
-      setSelectedHour(index);
-    }
-  };
-
-  const handleMinuteScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const index = Math.round(offsetY / ITEM_HEIGHT);
-    if (index >= 0 && index < 60) {
-      setSelectedMinute(index);
-    }
-  };
-
-  const snapToHour = () => {
-    hourListRef.current?.scrollTo({
-      y: selectedHour * ITEM_HEIGHT,
-      animated: true,
-    });
-  };
-
   // Calculate day label dynamically
   const dayLabel = useMemo(() => {
     if (selectedDays.length === 0) {
@@ -591,13 +708,6 @@ export default function AddAlarmScreen() {
 
   // Check if all days are selected
   const isEveryday = selectedDays.length === 7;
-
-  const snapToMinute = () => {
-    minuteListRef.current?.scrollTo({
-      y: selectedMinute * ITEM_HEIGHT,
-      animated: true,
-    });
-  };
 
   const handleClose = () => {
     router.replace('/');
@@ -2861,70 +2971,18 @@ export default function AddAlarmScreen() {
         {/* Time Picker */}
         <View style={styles.timePickerContainer}>
           <View style={styles.timePickerWrapper}>
-            {/* Hour Picker */}
-            <View style={styles.pickerColumn}>
-              <ScrollView
-                ref={hourListRef as any}
-                showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true}
-                snapToInterval={ITEM_HEIGHT}
-                decelerationRate="fast"
-                onScroll={handleHourScroll}
-                scrollEventThrottle={16} // Quan trọng để bắt sự kiện mượt mà
-                onMomentumScrollEnd={snapToHour}
-                onScrollEndDrag={snapToHour}
-                contentContainerStyle={{
-                  paddingVertical: ITEM_HEIGHT, // Để số đầu và cuối có thể nằm giữa
-                }}
-              >
-                {hours.map((item) => (
-                  <View key={`hour-${item}`} style={styles.timePickerItem}>
-                    <Text style={[
-                      styles.timePickerText,
-                      item === selectedHour && styles.timePickerTextSelected,
-                      item !== selectedHour && styles.timePickerTextFaded,
-                    ]}>
-                      {String(item).padStart(2, '0')}
-                    </Text>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
+            <WheelPicker 
+              data={hours}
+              initialValue={selectedHour}
+              onValueChange={setSelectedHour}
+            />
             <Text style={styles.timeSeparatorMain}>:</Text>
-
-            {/* Minute Picker */}
-            <View style={styles.pickerColumn}>
-              <ScrollView
-                ref={minuteListRef as any}
-                showsVerticalScrollIndicator={false}
-                nestedScrollEnabled={true}
-                snapToInterval={ITEM_HEIGHT}
-                decelerationRate="fast"
-                onScroll={handleMinuteScroll}
-                scrollEventThrottle={16}
-                onMomentumScrollEnd={snapToMinute}
-                onScrollEndDrag={snapToMinute}
-                contentContainerStyle={{
-                  paddingVertical: ITEM_HEIGHT,
-                }}
-              >
-                {minutes.map((item) => (
-                  <View key={`minute-${item}`} style={styles.timePickerItem}>
-                    <Text style={[
-                      styles.timePickerText,
-                      item === selectedMinute && styles.timePickerTextSelected,
-                      item !== selectedMinute && styles.timePickerTextFaded,
-                    ]}>
-                      {String(item).padStart(2, '0')}
-                    </Text>
-                  </View>
-                ))}
-              </ScrollView>
-            </View>
+            <WheelPicker 
+              data={minutes}
+              initialValue={selectedMinute}
+              onValueChange={setSelectedMinute}
+            />
           </View>
-
-          {/* Selection Indicator */}
-          <View style={styles.selectionIndicator} pointerEvents="none" />
         </View>
 
         {/* Time Until Alarm */}

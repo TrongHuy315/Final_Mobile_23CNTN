@@ -17,7 +17,11 @@ const CustomDarkTheme = {
   },
 };
 
+import { useAlarmTrigger } from '../hooks/useAlarmTrigger';
+
 export default function RootLayout() {
+  useAlarmTrigger();
+
   return (
     <View style={{ flex: 1, backgroundColor: '#0f172a' }}>
       <ThemeProvider value={CustomDarkTheme}>

@@ -149,6 +149,12 @@ export default function AlarmsScreen() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
+  const formatDays = (days: string[]) => {
+    if (!days || days.length === 0) return 'Một lần';
+    if (days.length === 7) return 'Hàng ngày';
+    return days.join(', ');
+  };
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
@@ -179,7 +185,7 @@ export default function AlarmsScreen() {
               id={alarm.id}
               time={formatTime(alarm.hour, alarm.minute)}
               label={alarm.label || (alarm.type === 'flash' ? 'Báo thức nhanh' : 'Báo thức')}
-              days={alarm.type === 'flash' ? 'Một lần' : 'Hàng ngày'}
+              days={alarm.type === 'flash' ? 'Một lần' : formatDays(alarm.days)}
               enabled={alarm.enabled}
               onToggle={() => handleToggleAlarm(alarm.id)}
               onLongPress={() => handleDeleteAlarm(alarm.id)}
