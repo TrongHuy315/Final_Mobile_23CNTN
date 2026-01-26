@@ -77,9 +77,37 @@ export default function AlarmsScreen() {
 
   // 3. Xử lý Bật/Tắt báo thức
   const handleToggleAlarm = async (id: string) => {
-    const updated = await AlarmManager.toggleAlarm(id);
-    setAlarms(updated.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute)));
-    updateNextAlarmStatus();
+    // Find the alarm to check if it's flash type
+    const alarm = alarms.find(a => a.id === id);
+    
+    if (alarm?.type === 'flash') {
+      // For flash alarms, ask for delete confirmation instead of toggle
+      Alert.alert(
+        'Xóa báo thức nhanh',
+        'Báo thức nhanh chỉ dùng một lần. Bạn có muốn xóa nó?',
+        [
+          {
+            text: 'Hủy',
+            onPress: () => {},
+            style: 'cancel',
+          },
+          {
+            text: 'Xóa',
+            onPress: async () => {
+              const updated = await AlarmManager.removeAlarm(id);
+              setAlarms(updated.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute)));
+              await updateNextAlarmStatus();
+            },
+            style: 'destructive',
+          },
+        ]
+      );
+    } else {
+      // For regular alarms, toggle normally
+      const updated = await AlarmManager.toggleAlarm(id);
+      setAlarms(updated.sort((a, b) => (a.hour * 60 + a.minute) - (b.hour * 60 + b.minute)));
+      updateNextAlarmStatus();
+    }
   };
 
   // 4. Xử lý Xóa báo thức (Nhấn giữ)

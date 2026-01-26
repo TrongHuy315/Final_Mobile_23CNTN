@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ScrollView,
@@ -14,6 +14,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AlarmManager } from '@/utils/alarm-manager';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.65;
@@ -621,7 +622,24 @@ export default function WakeUpCheckScreen() {
     animationSequence();
   }, []);
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    const params = useLocalSearchParams();
+    const alarmId = params.id as string;
+    
+    // Auto-delete flash alarm when dismissed
+    if (alarmId) {
+      try {
+        const alarms = await AlarmManager.loadAlarms();
+        const alarm = alarms.find(a => a.id === alarmId);
+        if (alarm?.type === 'flash') {
+          console.log('🗑️ Auto-deleting flash alarm on dismiss:', alarmId);
+          await AlarmManager.removeAlarm(alarmId);
+        }
+      } catch (error) {
+        console.error('❌ Error auto-deleting flash alarm:', error);
+      }
+    }
+    
     router.back();
   };
 
