@@ -1,6 +1,6 @@
-import React from "react";
-import { TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TouchableOpacity, ViewStyle } from "react-native";
 
 interface CheckboxProps {
   checked: boolean;
@@ -17,14 +17,18 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   color = "#22c55e",
   style,
 }) => {
+  const toggle = () => {
+    onChange(!checked);
+  };
+
   return (
     <TouchableOpacity
       style={[styles.container, style]}
-      onPress={() => onChange(!checked)}
+      onPress={toggle}
       activeOpacity={0.7}
     >
       <Ionicons
-        name={checked ? "checkbox" : "checkbox-outline"}
+        name={checked ? "checkbox" : "square-outline"}
         size={size}
         color={checked ? color : "#94a3b8"}
       />

@@ -1,59 +1,72 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Animated, PanResponder, StyleSheet, View } from 'react-native';
 
-export function DraggableSlider() {
+interface DraggableSliderProps {
+  onValueChange?: (value: number) => void;
+}
+
+export function DraggableSlider({ onValueChange } : DraggableSliderProps) {
   const TRACK_WIDTH = 220;
   const KNOB_SIZE = 24;
   const MAX_X = TRACK_WIDTH - KNOB_SIZE;
 
-  // mặc định knob ở sát phải
   const pan = useRef(new Animated.Value(MAX_X)).current;
   const currentX = useRef(MAX_X);
-
-  const [value, setValue] = useState(100);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
 
       onPanResponderGrant: () => {
-        // lưu vị trí hiện tại khi bắt đầu kéo
-        pan.stopAnimation((v) => {
+        pan.stopAnimation(v => {
           currentX.current = v;
         });
       },
 
       onPanResponderMove: (_, gesture) => {
         let x = currentX.current + gesture.dx;
-
         if (x < 0) x = 0;
         if (x > MAX_X) x = MAX_X;
 
         pan.setValue(x);
 
         const percent = Math.round((x / MAX_X) * 100);
-        setValue(percent);
+        onValueChange?.(percent);
       },
 
       onPanResponderRelease: () => {
-        // cập nhật lại vị trí cuối
-        pan.stopAnimation((v) => {
+        pan.stopAnimation(v => {
           currentX.current = v;
         });
       },
     })
   ).current;
 
+  const activeTrackWidth = Animated.add(
+    pan,
+    new Animated.Value(KNOB_SIZE / 2)
+  );
+
   return (
     <View style={styles.container}>
-      <View style={styles.track}>
+      <View
+        style={styles.trackWrapper}
+        {...panResponder.panHandlers}
+      >
+        <View style={styles.trackBg} />
+
         <Animated.View
-          {...panResponder.panHandlers}
+          style={[
+            styles.activeTrack,
+            { width: activeTrackWidth },
+          ]}
+        />
+
+        <Animated.View
           style={[
             styles.knob,
-            {
-              transform: [{ translateX: pan }],
-            },
+            { transform: [{ translateX: pan }] },
           ]}
         />
       </View>
@@ -65,19 +78,37 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
   },
-  track: {
+
+  trackWrapper: {
+    width: 220,
+    height: 24,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+
+  trackBg: {
+    position: 'absolute',
     width: 220,
     height: 6,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#334155',
     borderRadius: 3,
-    justifyContent: 'center',
   },
+
+  activeTrack: {
+    position: 'absolute',
+    left: 0,
+    height: 6,
+    backgroundColor: '#38bdf8',
+    borderRadius: 3,
+  },
+
   knob: {
     position: 'absolute',
     width: 24,
     height: 24,
     borderRadius: 12,
     backgroundColor: '#38bdf8',
-    top: -9,
+    zIndex: 10,
+    elevation: 4,
   },
 });
