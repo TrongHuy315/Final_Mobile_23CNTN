@@ -30,6 +30,8 @@ export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenP
   const handleSave = async () => {
     if (time === 0) return;
 
+    console.log('⚡ Saving quick alarm for:', hour, ':', minute);
+    
     await AlarmManager.addAlarm({
       hour,
       minute,
@@ -37,8 +39,19 @@ export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenP
       vibration,
       enabled: true,
       label: "Báo thức nhanh",
-      type: 'flash', // Đánh dấu loại flash để chặn chỉnh sửa sau này
+      icon: '⏰',
+      days: [],
+      type: 'flash',
+      gentleWake: 'off',
+      tasks: [],
+      snoozeSettings: {
+        enabled: false,
+        interval: 5,
+        maxCount: 3,
+      },
     });
+
+    console.log('✅ Quick alarm saved');
 
     // Reset lại state sau khi lưu thành công
     setTime(0);

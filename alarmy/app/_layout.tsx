@@ -31,6 +31,10 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="(settings)" />
+          <Stack.Screen name="add-alarm" />
+          <Stack.Screen name="wake-up-check" />
+          <Stack.Screen name="snooze-settings" />
+          <Stack.Screen name="debug" />
         </Stack>
         <StatusBar style="light" />
       </ThemeProvider>

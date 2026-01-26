@@ -3,13 +3,12 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   Animated,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AlarmItem {
   time: string;
@@ -138,7 +137,7 @@ export default function UpgradeProScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       {/* Close Button */}
       <TouchableOpacity
         style={[styles.closeButton, { top: insets.top + 12 }]}
@@ -241,7 +240,7 @@ export default function UpgradeProScreen() {
           Không tính phí cho đến khi hết thời gian dùng thử
         </Text>
       </View>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

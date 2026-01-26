@@ -5,6 +5,7 @@ import { Alarm, AlarmManager } from '@/utils/alarm-manager';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   Alert,
   ScrollView,
@@ -17,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FlashAlarmScreen from '../flash-alarm';
 
 export default function AlarmsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [menu, setMenu] = useState(false);
@@ -27,6 +29,7 @@ export default function AlarmsScreen() {
   const loadAlarms = async () => {
     try {
       const data = await AlarmManager.loadAlarms();
+      console.log('📋 Loaded alarms from AsyncStorage:', data);
       // Sắp xếp báo thức theo thời gian (giờ rồi đến phút)
       const sortedData = [...data].sort((a, b) => {
         if (a.hour !== b.hour) return a.hour - b.hour;
@@ -62,9 +65,15 @@ export default function AlarmsScreen() {
   // Tự động làm mới dữ liệu mỗi khi màn hình được focus (quay lại từ màn hình khác)
   useFocusEffect(
     useCallback(() => {
+      console.log('🔄 Screen focused, loading alarms...');
       loadAlarms();
     }, [])
   );
+
+  // Debug: Log whenever alarms state changes
+  React.useEffect(() => {
+    console.log('📊 Alarms state updated:', alarms.length, 'alarms');
+  }, [alarms]);
 
   // 3. Xử lý Bật/Tắt báo thức
   const handleToggleAlarm = async (id: string) => {
@@ -101,9 +110,11 @@ export default function AlarmsScreen() {
       return;
     }
 
-    // Nếu là loại thường, mở logic chỉnh sửa tại đây
-    console.log("Mở màn hình chỉnh sửa cho báo thức:", alarm.id);
-    // navigation.navigate('EditAlarm', { alarmId: alarm.id });
+    // Navigate to add-alarm screen with alarm ID for editing
+    router.push({
+      pathname: '/add-alarm',
+      params: { id: alarm.id }
+    });
   };
 
   const formatTime = (h: number, m: number) => {
@@ -115,8 +126,8 @@ export default function AlarmsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>PRO Start</Text>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-vertical" size={24} color="#ffffff" />
+        <TouchableOpacity onPress={() => router.push('/debug')}>
+          <Ionicons name="bug" size={24} color="#ef4444" />
         </TouchableOpacity>
       </View>
 
@@ -169,8 +180,16 @@ export default function AlarmsScreen() {
             onPress={() => setMenu(false)} 
           />
           <View style={styles.menu}>
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuText}>Báo thức thói quen</Text>
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => {
+                setMenu(false);
+                router.push('../routine-selection');
+              }}
+            >
+              <Text style={styles.menuText}>
+                Báo thức thói quen
+              </Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -182,9 +201,17 @@ export default function AlarmsScreen() {
             >
               <Text style={styles.menuText}>Báo thức nhanh</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuText}>Báo thức thường</Text>
+
+            <TouchableOpacity 
+              style={styles.menuItem}
+              onPress={() => {
+                setMenu(false);
+                router.push('../add-alarm');
+              }}
+            >
+              <Text style={styles.menuText}>
+                Báo thức
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

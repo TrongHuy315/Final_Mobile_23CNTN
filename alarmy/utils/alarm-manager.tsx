@@ -1,16 +1,34 @@
 // AlarmManager.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+export type AlarmTask = {
+  id: string;
+  type: string;
+  name: string;
+  icon: string;
+  iconColor: string;
+  settings?: any;
+};
+
 export interface Alarm {
   id: string;
-  hour: number;        // 0 – 23
-  minute: number;      // 0 – 59
-  volume: number;      // 0 – 100
-  vibration: boolean;
+  hour: number;
+  minute: number;
   enabled: boolean;
-  label?: string;
-  createdAt: number;   // timestamp
+  label: string;
+  icon: string;
+  days: string[]; // ['T2', 'T3']
+  volume: number; // 0 - 100
+  vibration: boolean;
+  gentleWake: string; // 'off', '30s', ...
+  tasks: AlarmTask[];
+  snoozeSettings: {
+    enabled: boolean;
+    interval: number;
+    maxCount: number | 'unlimited';
+  };
   type: 'regular' | 'flash';
+  createdAt: number;
 }
 
 export class AlarmManager {
@@ -31,7 +49,9 @@ export class AlarmManager {
 
   static async saveAlarms(alarms: Alarm[]): Promise<void> {
     try {
+      console.log('💾 AlarmManager.saveAlarms called with', alarms.length, 'alarms');
       await AsyncStorage.setItem(this.STORAGE_KEY, JSON.stringify(alarms));
+      console.log('✅ Alarms saved to AsyncStorage successfully');
     } catch (err) {
       console.error("Save alarms error:", err);
     }
@@ -50,6 +70,7 @@ export class AlarmManager {
       createdAt: Date.now(),
     };
 
+    console.log('➕ AlarmManager.addAlarm - Adding alarm:', newAlarm);
     const updated = [...alarms, newAlarm];
     await this.saveAlarms(updated);
     return updated;
@@ -66,6 +87,7 @@ export class AlarmManager {
     id: string,
     newData: Partial<Alarm>
   ): Promise<Alarm[]> {
+    console.log('✏️ AlarmManager.updateAlarm - Updating alarm with ID:', id);
     const alarms = await this.loadAlarms();
 
     const updated = alarms.map(alarm =>
@@ -153,8 +175,17 @@ export class AlarmManager {
       volume,
       vibration,
       enabled: true,
-      label,
-      type
+      label: label || "Báo thức nhanh",
+      icon: '⏰',
+      days: [],
+      type,
+      gentleWake: 'off',
+      tasks: [],
+      snoozeSettings: {
+        enabled: false,
+        interval: 5,
+        maxCount: 3,
+      },
     };
   }
 }

@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Switch,
@@ -11,7 +10,7 @@ import {
   View,
   Modal,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const autoSilenceOptions = [
   { value: 'off', label: 'Tắt' },
@@ -52,7 +51,7 @@ export default function DismissAlarmTaskScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaProvider style={styles.container}>
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
@@ -222,7 +221,7 @@ export default function DismissAlarmTaskScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
