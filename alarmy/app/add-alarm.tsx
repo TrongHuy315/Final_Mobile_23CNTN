@@ -223,8 +223,7 @@ const modalStyles = StyleSheet.create({
   },
 });
 
-// Suppress VirtualizedLists warning - we're using nestedScrollEnabled
-LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+// Number pickers refactored to ScrollView to avoid VirtualizedLists nesting error
 
 const DAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 const ITEM_HEIGHT = 60;
@@ -552,8 +551,8 @@ export default function AddAlarmScreen() {
 
 
   // Refs for FlatList and emoji input
-  const hourListRef = useRef<FlatList>(null);
-  const minuteListRef = useRef<FlatList>(null);
+  const hourListRef = useRef<ScrollView>(null);
+  const minuteListRef = useRef<ScrollView>(null);
   const emojiInputRef = useRef<TextInput>(null);
 
   // Update current time every second for accurate time diff
@@ -600,12 +599,12 @@ export default function AddAlarmScreen() {
   // Scroll to initial position on mount
   useEffect(() => {
     setTimeout(() => {
-      hourListRef.current?.scrollToOffset({
-        offset: selectedHour * ITEM_HEIGHT,
+      hourListRef.current?.scrollTo({
+        y: selectedHour * ITEM_HEIGHT,
         animated: false,
       });
-      minuteListRef.current?.scrollToOffset({
-        offset: selectedMinute * ITEM_HEIGHT,
+      minuteListRef.current?.scrollTo({
+        y: selectedMinute * ITEM_HEIGHT,
         animated: false,
       });
     }, 100);
@@ -628,8 +627,8 @@ export default function AddAlarmScreen() {
   };
 
   const snapToHour = () => {
-    hourListRef.current?.scrollToOffset({
-      offset: selectedHour * ITEM_HEIGHT,
+    hourListRef.current?.scrollTo({
+      y: selectedHour * ITEM_HEIGHT,
       animated: true,
     });
   };
@@ -649,8 +648,8 @@ export default function AddAlarmScreen() {
   const isEveryday = selectedDays.length === 7;
 
   const snapToMinute = () => {
-    minuteListRef.current?.scrollToOffset({
-      offset: selectedMinute * ITEM_HEIGHT,
+    minuteListRef.current?.scrollTo({
+      y: selectedMinute * ITEM_HEIGHT,
       animated: true,
     });
   };
@@ -1309,19 +1308,11 @@ export default function AddAlarmScreen() {
               <View style={styles.typingPickerWrapper}>
                 {/* Number Picker Column */}
                 <View style={styles.typingPickerColumn}>
-                  <FlatList
-                    data={typingCountArray}
-                    keyExtractor={(item) => `typing-count-${item}`}
+                  <ScrollView
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                     snapToInterval={50}
                     decelerationRate="fast"
-                    initialScrollIndex={typingCount - 1 > 0 ? typingCount - 1 : 0}
-                    getItemLayout={(_, index) => ({
-                      length: 50,
-                      offset: 50 * index,
-                      index,
-                    })}
                     onMomentumScrollEnd={(e) => {
                       const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                       if (index >= 0 && index < typingCountArray.length) {
@@ -1341,14 +1332,16 @@ export default function AddAlarmScreen() {
                         if (val !== typingCount) setTypingCount(val);
                       }
                     }}
+                    scrollEventThrottle={16}
                     contentContainerStyle={{
                       paddingVertical: 50,
                     }}
                     style={styles.typingFlatList}
-                    renderItem={({ item }) => {
+                  >
+                    {typingCountArray.map((item) => {
                       const isSelected = item === typingCount;
                       return (
-                        <View style={styles.typingPickerItem}>
+                        <View key={`typing-count-${item}`} style={styles.typingPickerItem}>
                           <Text style={[
                             styles.typingPickerText,
                             isSelected && styles.typingPickerTextSelected,
@@ -1358,8 +1351,8 @@ export default function AddAlarmScreen() {
                           </Text>
                         </View>
                       );
-                    }}
-                  />
+                    })}
+                  </ScrollView>
                   {/* Top indicator line */}
                   <View style={styles.typingPickerLineTop} />
                   {/* Bottom indicator line */}
@@ -1523,19 +1516,11 @@ export default function AddAlarmScreen() {
                 <View style={styles.typingPickerWrapper}>
                   {/* Number Picker Column */}
                   <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 99 }, (_, i) => i + 1)}
-                      keyExtractor={(item) => `colors-count-${item}`}
+                    <ScrollView
                       showsVerticalScrollIndicator={false}
                       nestedScrollEnabled={true}
                       snapToInterval={50}
                       decelerationRate="fast"
-                      initialScrollIndex={findColorsRoundCount - 1 > 0 ? findColorsRoundCount - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
                       onMomentumScrollEnd={(e) => {
                         const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                         if (index >= 0 && index < 99) {
@@ -1555,14 +1540,16 @@ export default function AddAlarmScreen() {
                           if (val !== findColorsRoundCount) setFindColorsRoundCount(val);
                         }
                       }}
+                      scrollEventThrottle={16}
                       contentContainerStyle={{
                         paddingVertical: 50,
                       }}
                       style={styles.typingFlatList}
-                      renderItem={({ item }) => {
+                    >
+                      {Array.from({ length: 99 }, (_, i) => i + 1).map((item) => {
                         const isSelected = item === findColorsRoundCount;
                         return (
-                          <View style={styles.typingPickerItem}>
+                          <View key={`colors-count-${item}`} style={styles.typingPickerItem}>
                             <Text style={[
                               styles.typingPickerText,
                               isSelected && styles.typingPickerTextSelected,
@@ -1572,8 +1559,8 @@ export default function AddAlarmScreen() {
                             </Text>
                           </View>
                         );
-                      }}
-                    />
+                      })}
+                    </ScrollView>
                     {/* Top indicator line */}
                     <View style={styles.typingPickerLineTop} />
                     {/* Bottom indicator line */}
@@ -1686,19 +1673,11 @@ export default function AddAlarmScreen() {
                 <View style={styles.typingPickerWrapper}>
                   {/* Number Picker Column */}
                   <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 99 }, (_, i) => i + 1)}
-                      keyExtractor={(item) => `math-count-${item}`}
+                    <ScrollView
                       showsVerticalScrollIndicator={false}
                       nestedScrollEnabled={true}
                       snapToInterval={50}
                       decelerationRate="fast"
-                      initialScrollIndex={mathRoundCount - 1 > 0 ? mathRoundCount - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
                       onMomentumScrollEnd={(e) => {
                         const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                         if (index >= 0 && index < 99) {
@@ -1718,14 +1697,16 @@ export default function AddAlarmScreen() {
                           if (val !== mathRoundCount) setMathRoundCount(val);
                         }
                       }}
+                      scrollEventThrottle={16}
                       contentContainerStyle={{
                         paddingVertical: 50,
                       }}
                       style={styles.typingFlatList}
-                      renderItem={({ item }) => {
+                    >
+                      {Array.from({ length: 99 }, (_, i) => i + 1).map((item) => {
                         const isSelected = item === mathRoundCount;
                         return (
-                          <View style={styles.typingPickerItem}>
+                          <View key={`math-count-${item}`} style={styles.typingPickerItem}>
                             <Text style={[
                               styles.typingPickerText,
                               isSelected && styles.typingPickerTextSelected,
@@ -1735,8 +1716,8 @@ export default function AddAlarmScreen() {
                             </Text>
                           </View>
                         );
-                      }}
-                    />
+                      })}
+                    </ScrollView>
                     {/* Top indicator line */}
                     <View style={styles.typingPickerLineTop} />
                     {/* Bottom indicator line */}
@@ -1821,19 +1802,11 @@ export default function AddAlarmScreen() {
                 <View style={styles.typingPickerWrapper}>
                   {/* Number Picker Column */}
                   <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
-                      keyExtractor={(item) => `shake-count-${item}`}
+                    <ScrollView
                       showsVerticalScrollIndicator={false}
                       nestedScrollEnabled={true}
                       snapToInterval={50}
                       decelerationRate="fast"
-                      initialScrollIndex={Math.floor(shakeCount / 5) - 1 >= 0 ? Math.floor(shakeCount / 5) - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
                       onScroll={(e) => {
                         const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                         if (index >= 0 && index < 20) {
@@ -1855,14 +1828,16 @@ export default function AddAlarmScreen() {
                           setShakeCount((index + 1) * 5);
                         }
                       }}
+                      scrollEventThrottle={16}
                       contentContainerStyle={{
                         paddingVertical: 50,
                       }}
                       style={styles.typingFlatList}
-                      renderItem={({ item }) => {
+                    >
+                      {Array.from({ length: 20 }, (_, i) => (i + 1) * 5).map((item) => {
                         const isSelected = item === shakeCount;
                         return (
-                          <View style={styles.typingPickerItem}>
+                          <View key={`shake-count-${item}`} style={styles.typingPickerItem}>
                             <Text style={[
                               styles.typingPickerText,
                               isSelected && styles.typingPickerTextSelected,
@@ -1872,8 +1847,8 @@ export default function AddAlarmScreen() {
                             </Text>
                           </View>
                         );
-                      }}
-                    />
+                      })}
+                    </ScrollView>
                     {/* Top indicator line */}
                     <View style={styles.typingPickerLineTop} />
                     {/* Bottom indicator line */}
@@ -2033,19 +2008,11 @@ export default function AddAlarmScreen() {
                 <View style={styles.typingPickerWrapper}>
                   {/* Number Picker Column */}
                   <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
-                      keyExtractor={(item) => `steps-count-${item}`}
+                    <ScrollView
                       showsVerticalScrollIndicator={false}
                       nestedScrollEnabled={true}
                       snapToInterval={50}
                       decelerationRate="fast"
-                      initialScrollIndex={Math.floor(stepsCount / 5) - 1 >= 0 ? Math.floor(stepsCount / 5) - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
                       onScroll={(e) => {
                         const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                         if (index >= 0 && index < 20) {
@@ -2067,14 +2034,16 @@ export default function AddAlarmScreen() {
                           setStepsCount((index + 1) * 5);
                         }
                       }}
+                      scrollEventThrottle={16}
                       contentContainerStyle={{
                         paddingVertical: 50,
                       }}
                       style={styles.typingFlatList}
-                      renderItem={({ item }) => {
+                    >
+                      {Array.from({ length: 20 }, (_, i) => (i + 1) * 5).map((item) => {
                         const isSelected = item === stepsCount;
                         return (
-                          <View style={styles.typingPickerItem}>
+                          <View key={`steps-count-${item}`} style={styles.typingPickerItem}>
                             <Text style={[
                               styles.typingPickerText,
                               isSelected && styles.typingPickerTextSelected,
@@ -2084,8 +2053,8 @@ export default function AddAlarmScreen() {
                             </Text>
                           </View>
                         );
-                      }}
-                    />
+                      })}
+                    </ScrollView>
                     {/* Top indicator line */}
                     <View style={styles.typingPickerLineTop} />
                     {/* Bottom indicator line */}
@@ -2285,19 +2254,11 @@ export default function AddAlarmScreen() {
                 <View style={styles.typingPickerWrapper}>
                   {/* Number Picker Column */}
                   <View style={styles.typingPickerColumn}>
-                    <FlatList
-                      data={Array.from({ length: 20 }, (_, i) => (i + 1) * 5)}
-                      keyExtractor={(item) => `squat-count-${item}`}
+                    <ScrollView
                       showsVerticalScrollIndicator={false}
                       nestedScrollEnabled={true}
                       snapToInterval={50}
                       decelerationRate="fast"
-                      initialScrollIndex={Math.floor(squatCount / 5) - 1 >= 0 ? Math.floor(squatCount / 5) - 1 : 0}
-                      getItemLayout={(_, index) => ({
-                        length: 50,
-                        offset: 50 * index,
-                        index,
-                      })}
                       onScroll={(e) => {
                         const index = Math.round(e.nativeEvent.contentOffset.y / 50);
                         if (index >= 0 && index < 20) {
@@ -2319,14 +2280,16 @@ export default function AddAlarmScreen() {
                           setSquatCount((index + 1) * 5);
                         }
                       }}
+                      scrollEventThrottle={16}
                       contentContainerStyle={{
                         paddingVertical: 50,
                       }}
                       style={styles.typingFlatList}
-                      renderItem={({ item }) => {
+                    >
+                      {Array.from({ length: 20 }, (_, i) => (i + 1) * 5).map((item) => {
                         const isSelected = item === squatCount;
                         return (
-                          <View style={styles.typingPickerItem}>
+                          <View key={`squat-count-${item}`} style={styles.typingPickerItem}>
                             <Text style={[
                               styles.typingPickerText,
                               isSelected && styles.typingPickerTextSelected,
@@ -2336,8 +2299,8 @@ export default function AddAlarmScreen() {
                             </Text>
                           </View>
                         );
-                      }}
-                    />
+                      })}
+                    </ScrollView>
                     {/* Top indicator line */}
                     <View style={styles.typingPickerLineTop} />
                     {/* Bottom indicator line */}
@@ -2885,11 +2848,8 @@ export default function AddAlarmScreen() {
           <View style={styles.timePickerWrapper}>
             {/* Hour Picker */}
             <View style={styles.pickerColumn}>
-              <FlatList
+              <ScrollView
                 ref={hourListRef}
-                data={hours}
-                renderItem={renderHourItem}
-                keyExtractor={(item) => `hour-${item}`}
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
                 snapToInterval={ITEM_HEIGHT}
@@ -2897,26 +2857,25 @@ export default function AddAlarmScreen() {
                 onScroll={handleHourScroll}
                 onMomentumScrollEnd={snapToHour}
                 onScrollEndDrag={snapToHour}
-                getItemLayout={(_, index) => ({
-                  length: ITEM_HEIGHT,
-                  offset: ITEM_HEIGHT * index,
-                  index,
-                })}
+                scrollEventThrottle={16}
                 contentContainerStyle={{
                   paddingVertical: ITEM_HEIGHT,
                 }}
-              />
+              >
+                {hours.map((item) => (
+                  <React.Fragment key={`hour-${item}`}>
+                    {renderHourItem({ item })}
+                  </React.Fragment>
+                ))}
+              </ScrollView>
             </View>
 
             <Text style={styles.timeSeparatorMain}>:</Text>
 
             {/* Minute Picker */}
             <View style={styles.pickerColumn}>
-              <FlatList
+              <ScrollView
                 ref={minuteListRef}
-                data={minutes}
-                renderItem={renderMinuteItem}
-                keyExtractor={(item) => `minute-${item}`}
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
                 snapToInterval={ITEM_HEIGHT}
@@ -2924,15 +2883,17 @@ export default function AddAlarmScreen() {
                 onScroll={handleMinuteScroll}
                 onMomentumScrollEnd={snapToMinute}
                 onScrollEndDrag={snapToMinute}
-                getItemLayout={(_, index) => ({
-                  length: ITEM_HEIGHT,
-                  offset: ITEM_HEIGHT * index,
-                  index,
-                })}
+                scrollEventThrottle={16}
                 contentContainerStyle={{
                   paddingVertical: ITEM_HEIGHT,
                 }}
-              />
+              >
+                {minutes.map((item) => (
+                  <React.Fragment key={`minute-${item}`}>
+                    {renderMinuteItem({ item })}
+                  </React.Fragment>
+                ))}
+              </ScrollView>
             </View>
           </View>
 

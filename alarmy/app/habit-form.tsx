@@ -238,13 +238,7 @@ const NumberPicker = React.memo(({
   unit?: string
 }) => {
   const [selectedValue, setSelectedValue] = useState(initialValue);
-  const flatListRef = useRef<FlatList>(null);
-
-  const getItemLayout = (_: any, index: number) => ({
-    length: itemHeight,
-    offset: itemHeight * index,
-    index,
-  });
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const onMomentumScrollEnd = (e: any) => {
     const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
@@ -255,38 +249,58 @@ const NumberPicker = React.memo(({
     }
   };
 
+  const onScrollEndDrag = (e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
+    if (index >= 0 && index < data.length) {
+      const val = data[index];
+      setSelectedValue(val);
+      onValueChange(val);
+    }
+  };
+
+  const onScroll = (e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
+    if (index >= 0 && index < data.length) {
+      const val = data[index];
+      if (val !== selectedValue) {
+        setSelectedValue(val);
+        onValueChange(val);
+      }
+    }
+  };
+
+  useEffect(() => {
+    // Initial scroll
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({
+        y: data.indexOf(initialValue) * itemHeight,
+        animated: false
+      });
+    }, 100);
+  }, []);
+
   return (
     <View style={styles.typingPickerWrapper}>
       <View style={[styles.typingPickerColumn, { height: itemHeight * 3 }]}>
-        <FlatList
-          ref={flatListRef}
-          data={data}
-          keyExtractor={(item) => `picker-${item}`}
+        <ScrollView
+          ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled={true}
           snapToInterval={itemHeight}
           decelerationRate="fast"
-          initialScrollIndex={data.indexOf(initialValue) >= 0 ? data.indexOf(initialValue) : 0}
-          getItemLayout={getItemLayout}
           onMomentumScrollEnd={onMomentumScrollEnd}
-          onScrollEndDrag={onMomentumScrollEnd}
-          onScroll={(e) => {
-            const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
-            if (index >= 0 && index < data.length) {
-              const val = data[index];
-              if (val !== selectedValue) setSelectedValue(val);
-            }
-          }}
+          onScrollEndDrag={onScrollEndDrag}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           contentContainerStyle={{
             paddingVertical: itemHeight,
           }}
-          removeClippedSubviews={true}
-          scrollEventThrottle={16}
           style={styles.typingFlatList}
-          renderItem={({ item }) => {
+        >
+          {data.map((item) => {
             const isSelected = item === selectedValue;
             return (
-              <View style={[styles.typingPickerItem, { height: itemHeight }]}>
+              <View key={`picker-${item}`} style={[styles.typingPickerItem, { height: itemHeight }]}>
                 <Text style={[
                   styles.typingPickerText,
                   isSelected && styles.typingPickerTextSelected,
@@ -296,8 +310,8 @@ const NumberPicker = React.memo(({
                 </Text>
               </View>
             );
-          }}
-        />
+          })}
+        </ScrollView>
         <View style={[styles.typingPickerLineTop, { top: itemHeight }]} />
         <View style={[styles.typingPickerLineBottom, { top: itemHeight * 2 }]} />
       </View>
@@ -637,8 +651,8 @@ export default function HabitFormScreen() {
 
 
   // Refs for FlatList and emoji input
-  const hourListRef = useRef<FlatList>(null);
-  const minuteListRef = useRef<FlatList>(null);
+  const hourListRef = useRef<ScrollView>(null);
+  const minuteListRef = useRef<ScrollView>(null);
   const emojiInputRef = useRef<TextInput>(null);
 
   // Update current time every second for accurate time diff
@@ -685,12 +699,12 @@ export default function HabitFormScreen() {
   // Scroll to initial position on mount
   useEffect(() => {
     setTimeout(() => {
-      hourListRef.current?.scrollToOffset({
-        offset: selectedHour * ITEM_HEIGHT,
+      hourListRef.current?.scrollTo({
+        y: selectedHour * ITEM_HEIGHT,
         animated: false,
       });
-      minuteListRef.current?.scrollToOffset({
-        offset: selectedMinute * ITEM_HEIGHT,
+      minuteListRef.current?.scrollTo({
+        y: selectedMinute * ITEM_HEIGHT,
         animated: false,
       });
     }, 100);
@@ -713,8 +727,8 @@ export default function HabitFormScreen() {
   };
 
   const snapToHour = () => {
-    hourListRef.current?.scrollToOffset({
-      offset: selectedHour * ITEM_HEIGHT,
+    hourListRef.current?.scrollTo({
+      y: selectedHour * ITEM_HEIGHT,
       animated: true,
     });
   };
@@ -734,8 +748,8 @@ export default function HabitFormScreen() {
   const isEveryday = selectedDays.length === 7;
 
   const snapToMinute = () => {
-    minuteListRef.current?.scrollToOffset({
-      offset: selectedMinute * ITEM_HEIGHT,
+    minuteListRef.current?.scrollTo({
+      y: selectedMinute * ITEM_HEIGHT,
       animated: true,
     });
   };
@@ -2600,11 +2614,8 @@ export default function HabitFormScreen() {
           <View style={styles.timePickerWrapper}>
             {/* Hour Picker */}
             <View style={styles.pickerColumn}>
-              <FlatList
+              <ScrollView
                 ref={hourListRef}
-                data={hours}
-                renderItem={renderHourItem}
-                keyExtractor={(item) => `hour-${item}`}
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
                 snapToInterval={ITEM_HEIGHT}
@@ -2612,26 +2623,25 @@ export default function HabitFormScreen() {
                 onScroll={handleHourScroll}
                 onMomentumScrollEnd={snapToHour}
                 onScrollEndDrag={snapToHour}
-                getItemLayout={(_, index) => ({
-                  length: ITEM_HEIGHT,
-                  offset: ITEM_HEIGHT * index,
-                  index,
-                })}
+                scrollEventThrottle={16}
                 contentContainerStyle={{
                   paddingVertical: ITEM_HEIGHT,
                 }}
-              />
+              >
+                {hours.map((item) => (
+                  <React.Fragment key={`hour-${item}`}>
+                    {renderHourItem({ item })}
+                  </React.Fragment>
+                ))}
+              </ScrollView>
             </View>
 
             <Text style={styles.timeSeparatorMain}>:</Text>
 
             {/* Minute Picker */}
             <View style={styles.pickerColumn}>
-              <FlatList
+              <ScrollView
                 ref={minuteListRef}
-                data={minutes}
-                renderItem={renderMinuteItem}
-                keyExtractor={(item) => `minute-${item}`}
                 showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
                 snapToInterval={ITEM_HEIGHT}
@@ -2639,15 +2649,17 @@ export default function HabitFormScreen() {
                 onScroll={handleMinuteScroll}
                 onMomentumScrollEnd={snapToMinute}
                 onScrollEndDrag={snapToMinute}
-                getItemLayout={(_, index) => ({
-                  length: ITEM_HEIGHT,
-                  offset: ITEM_HEIGHT * index,
-                  index,
-                })}
+                scrollEventThrottle={16}
                 contentContainerStyle={{
                   paddingVertical: ITEM_HEIGHT,
                 }}
-              />
+              >
+                {minutes.map((item) => (
+                  <React.Fragment key={`minute-${item}`}>
+                    {renderMinuteItem({ item })}
+                  </React.Fragment>
+                ))}
+              </ScrollView>
             </View>
           </View>
 
