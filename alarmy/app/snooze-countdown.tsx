@@ -45,7 +45,36 @@ export default function SnoozeCountdownScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const [activeAlarm, setActiveAlarm] = useState<any>(null);
+
+  useEffect(() => {
+    const loadAlarm = async () => {
+      const { AlarmManager } = require('../utils/alarm-manager');
+      const alarms = await AlarmManager.loadAlarms();
+      const alarm = alarms.find((a: any) => a.id === alarmId);
+      if (alarm) {
+        setActiveAlarm(alarm);
+      }
+    };
+    loadAlarm();
+  }, [alarmId]);
+
   const handleCancel = () => {
+    if (activeAlarm && activeAlarm.tasks.length > 0) {
+      const firstTask = activeAlarm.tasks[0];
+      if (firstTask.type === 'math') {
+        router.replace({
+          pathname: '/math-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            difficulty: firstTask.settings?.difficulty?.toString() || '2',
+            rounds: firstTask.settings?.itemCount?.toString() || '3',
+          }
+        });
+        return;
+      }
+    }
     router.replace('/');
   };
 

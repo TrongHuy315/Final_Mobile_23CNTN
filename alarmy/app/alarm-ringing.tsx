@@ -83,9 +83,27 @@ export default function AlarmRingingScreen() {
   };
 
   const handleDismiss = () => {
-    // Logic for dismiss (stop sound)
     console.log("Dismiss pressed");
-    // Navigate home for now
+    
+    // Check if there are tasks to perform
+    if (activeAlarm && activeAlarm.tasks.length > 0) {
+      const firstTask = activeAlarm.tasks[0];
+      if (firstTask.type === 'math') {
+        router.replace({
+          pathname: '/math-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            difficulty: firstTask.settings?.difficulty?.toString() || '2',
+            rounds: firstTask.settings?.itemCount?.toString() || '3',
+          }
+        });
+        return;
+      }
+      // Handle other task types as they are implemented...
+    }
+
+    // No tasks, navigate home
     router.replace('/');
   };
   
