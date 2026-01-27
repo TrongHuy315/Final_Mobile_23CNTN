@@ -523,6 +523,8 @@ export default function WakeUpCheckScreen() {
   const [selectedOption, setSelectedOption] = useState('off');
   const [animationStep, setAnimationStep] = useState(0);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
+  const params = useLocalSearchParams();
+  const alarmId = params.id as string;
   
   // Animation values for check screen
   const buttonOpacity = useRef(new Animated.Value(0)).current;
@@ -623,9 +625,6 @@ export default function WakeUpCheckScreen() {
   }, []);
 
   const handleBack = async () => {
-    const params = useLocalSearchParams();
-    const alarmId = params.id as string;
-    
     // Auto-delete flash alarm when dismissed
     if (alarmId) {
       try {

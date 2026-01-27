@@ -59,26 +59,27 @@ export default function AlarmRingingScreen() {
   const handleSnooze = async () => {
     if (!activeAlarm || !activeAlarm.snoozeSettings.enabled) return;
 
-    // Logic for snooze: Create a new "flash" alarm delayed by interval
-    // Note: createFromDelay uses minutes
+    const currentSnoozeCount = params.snoozeCount 
+      ? parseInt(params.snoozeCount as string) 
+      : (activeAlarm.snoozeSettings.maxCount === 'unlimited' ? 999 : activeAlarm.snoozeSettings.maxCount);
+
+    if (currentSnoozeCount <= 0) {
+      console.log("No snooze remaining");
+      return;
+    }
+
     console.log("Snooze pressed for alarm:", activeAlarm.label);
     
-    // Create delay alarm
-    const delayMinutes = Number(activeAlarm.snoozeSettings.interval);
-    console.log(`Creating snooze alarm: Delaying by ${delayMinutes} minutes`);
-    
-    const newAlarmData = AlarmManager.createFromDelay(
-      delayMinutes,
-      activeAlarm.volume,
-      activeAlarm.vibration,
-      `${activeAlarm.label} (Báo lại)`
-    );
-
-    // Save it
-    await AlarmManager.addAlarm(newAlarmData);
-
-    // Navigate back to home
-    router.replace('/');
+    // Navigate to snooze countdown
+    router.replace({
+      pathname: '/snooze-countdown',
+      params: {
+        alarmId: activeAlarm.id,
+        alarmLabel: activeAlarm.label,
+        interval: activeAlarm.snoozeSettings.interval.toString(),
+        snoozeCount: (currentSnoozeCount).toString(),
+      }
+    });
   };
 
   const handleDismiss = () => {
@@ -90,9 +91,12 @@ export default function AlarmRingingScreen() {
   
   // Snooze info
   const isSnoozeEnabled = activeAlarm?.snoozeSettings.enabled ?? false;
-  const snoozeCountDisplay = activeAlarm?.snoozeSettings.maxCount === 'unlimited' 
-    ? '∞' 
-    : activeAlarm?.snoozeSettings.maxCount ?? 0;
+  
+  const currentSnoozeCount = params.snoozeCount 
+    ? parseInt(params.snoozeCount as string) 
+    : (activeAlarm?.snoozeSettings.maxCount === 'unlimited' ? '∞' : activeAlarm?.snoozeSettings.maxCount ?? 0);
+
+  const snoozeCountDisplay = currentSnoozeCount === '∞' ? '∞' : currentSnoozeCount;
 
   return (
     <View style={styles.container}>

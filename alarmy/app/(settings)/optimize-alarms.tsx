@@ -14,10 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Enable LayoutAnimation for Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+// UIManager.setLayoutAnimationEnabledExperimental is no longer needed in New Architecture
 
 interface ExpandableCardProps {
   title: string;

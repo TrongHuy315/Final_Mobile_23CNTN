@@ -24,11 +24,11 @@ export default function SnoozeSettingsScreen() {
   const [showMoreIntervals, setShowMoreIntervals] = useState(false);
   const [showMoreCounts, setShowMoreCounts] = useState(false);
 
-  const getIntervalLabel = (value: string) => {
+  const getIntervalLabel = (value: number) => {
     return `${value} phút`;
   };
 
-  const getCountLabel = (value: string) => {
+  const getCountLabel = (value: number | 'unlimited') => {
     if (value === 'unlimited') return 'Vô hạn';
     return `${value} lần`;
   };
@@ -78,39 +78,39 @@ export default function SnoozeSettingsScreen() {
           {/* Default options */}
           <TouchableOpacity 
             style={styles.radioRow}
-            onPress={() => setSnoozeInterval('1')}
+            onPress={() => setSnoozeInterval(1)}
           >
             <View style={[
               styles.radioButton,
-              snoozeInterval === '1' && styles.radioButtonSelected
+              snoozeInterval === 1 && styles.radioButtonSelected
             ]}>
-              {snoozeInterval === '1' && <View style={styles.radioButtonInner} />}
+              {snoozeInterval === 1 && <View style={styles.radioButtonInner} />}
             </View>
             <Text style={styles.radioText}>1 phút</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.radioRow}
-            onPress={() => setSnoozeInterval('5')}
+            onPress={() => setSnoozeInterval(5)}
           >
             <View style={[
               styles.radioButton,
-              snoozeInterval === '5' && styles.radioButtonSelected
+              snoozeInterval === 5 && styles.radioButtonSelected
             ]}>
-              {snoozeInterval === '5' && <View style={styles.radioButtonInner} />}
+              {snoozeInterval === 5 && <View style={styles.radioButtonInner} />}
             </View>
             <Text style={styles.radioText}>5 phút</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.radioRow}
-            onPress={() => setSnoozeInterval('10')}
+            onPress={() => setSnoozeInterval(10)}
           >
             <View style={[
               styles.radioButton,
-              snoozeInterval === '10' && styles.radioButtonSelected
+              snoozeInterval === 10 && styles.radioButtonSelected
             ]}>
-              {snoozeInterval === '10' && <View style={styles.radioButtonInner} />}
+              {snoozeInterval === 10 && <View style={styles.radioButtonInner} />}
             </View>
             <Text style={styles.radioText}>10 phút</Text>
           </TouchableOpacity>
@@ -120,52 +120,52 @@ export default function SnoozeSettingsScreen() {
             <>
               <TouchableOpacity 
                 style={styles.radioRow}
-                onPress={() => setSnoozeInterval('15')}
+                onPress={() => setSnoozeInterval(15)}
               >
                 <View style={[
                   styles.radioButton,
-                  snoozeInterval === '15' && styles.radioButtonSelected
+                  snoozeInterval === 15 && styles.radioButtonSelected
                 ]}>
-                  {snoozeInterval === '15' && <View style={styles.radioButtonInner} />}
+                  {snoozeInterval === 15 && <View style={styles.radioButtonInner} />}
                 </View>
                 <Text style={styles.radioText}>15 phút</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.radioRow}
-                onPress={() => setSnoozeInterval('20')}
+                onPress={() => setSnoozeInterval(20)}
               >
                 <View style={[
                   styles.radioButton,
-                  snoozeInterval === '20' && styles.radioButtonSelected
+                  snoozeInterval === 20 && styles.radioButtonSelected
                 ]}>
-                  {snoozeInterval === '20' && <View style={styles.radioButtonInner} />}
+                  {snoozeInterval === 20 && <View style={styles.radioButtonInner} />}
                 </View>
                 <Text style={styles.radioText}>20 phút</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.radioRow}
-                onPress={() => setSnoozeInterval('25')}
+                onPress={() => setSnoozeInterval(25)}
               >
                 <View style={[
                   styles.radioButton,
-                  snoozeInterval === '25' && styles.radioButtonSelected
+                  snoozeInterval === 25 && styles.radioButtonSelected
                 ]}>
-                  {snoozeInterval === '25' && <View style={styles.radioButtonInner} />}
+                  {snoozeInterval === 25 && <View style={styles.radioButtonInner} />}
                 </View>
                 <Text style={styles.radioText}>25 phút</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.radioRow}
-                onPress={() => setSnoozeInterval('30')}
+                onPress={() => setSnoozeInterval(30)}
               >
                 <View style={[
                   styles.radioButton,
-                  snoozeInterval === '30' && styles.radioButtonSelected
+                  snoozeInterval === 30 && styles.radioButtonSelected
                 ]}>
-                  {snoozeInterval === '30' && <View style={styles.radioButtonInner} />}
+                  {snoozeInterval === 30 && <View style={styles.radioButtonInner} />}
                 </View>
                 <Text style={styles.radioText}>30 phút</Text>
               </TouchableOpacity>
@@ -211,39 +211,39 @@ export default function SnoozeSettingsScreen() {
 
           <TouchableOpacity 
             style={styles.radioRow}
-            onPress={() => setMaxSnoozeCount('1')}
+            onPress={() => setMaxSnoozeCount(1)}
           >
             <View style={[
               styles.radioButton,
-              maxSnoozeCount === '1' && styles.radioButtonSelected
+              maxSnoozeCount === 1 && styles.radioButtonSelected
             ]}>
-              {maxSnoozeCount === '1' && <View style={styles.radioButtonInner} />}
+              {maxSnoozeCount === 1 && <View style={styles.radioButtonInner} />}
             </View>
             <Text style={styles.radioText}>1 lần</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.radioRow}
-            onPress={() => setMaxSnoozeCount('2')}
+            onPress={() => setMaxSnoozeCount(2)}
           >
             <View style={[
               styles.radioButton,
-              maxSnoozeCount === '2' && styles.radioButtonSelected
+              maxSnoozeCount === 2 && styles.radioButtonSelected
             ]}>
-              {maxSnoozeCount === '2' && <View style={styles.radioButtonInner} />}
+              {maxSnoozeCount === 2 && <View style={styles.radioButtonInner} />}
             </View>
             <Text style={styles.radioText}>2 lần</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.radioRow}
-            onPress={() => setMaxSnoozeCount('3')}
+            onPress={() => setMaxSnoozeCount(3)}
           >
             <View style={[
               styles.radioButton,
-              maxSnoozeCount === '3' && styles.radioButtonSelected
+              maxSnoozeCount === 3 && styles.radioButtonSelected
             ]}>
-              {maxSnoozeCount === '3' && <View style={styles.radioButtonInner} />}
+              {maxSnoozeCount === 3 && <View style={styles.radioButtonInner} />}
             </View>
             <Text style={styles.radioText}>3 lần</Text>
           </TouchableOpacity>
@@ -253,26 +253,26 @@ export default function SnoozeSettingsScreen() {
             <>
               <TouchableOpacity 
                 style={styles.radioRow}
-                onPress={() => setMaxSnoozeCount('5')}
+                onPress={() => setMaxSnoozeCount(5)}
               >
                 <View style={[
                   styles.radioButton,
-                  maxSnoozeCount === '5' && styles.radioButtonSelected
+                  maxSnoozeCount === 5 && styles.radioButtonSelected
                 ]}>
-                  {maxSnoozeCount === '5' && <View style={styles.radioButtonInner} />}
+                  {maxSnoozeCount === 5 && <View style={styles.radioButtonInner} />}
                 </View>
                 <Text style={styles.radioText}>5 lần</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.radioRow}
-                onPress={() => setMaxSnoozeCount('10')}
+                onPress={() => setMaxSnoozeCount(10)}
               >
                 <View style={[
                   styles.radioButton,
-                  maxSnoozeCount === '10' && styles.radioButtonSelected
+                  maxSnoozeCount === 10 && styles.radioButtonSelected
                 ]}>
-                  {maxSnoozeCount === '10' && <View style={styles.radioButtonInner} />}
+                  {maxSnoozeCount === 10 && <View style={styles.radioButtonInner} />}
                 </View>
                 <Text style={styles.radioText}>10 lần</Text>
               </TouchableOpacity>
