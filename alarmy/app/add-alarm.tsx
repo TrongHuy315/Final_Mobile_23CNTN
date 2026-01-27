@@ -51,7 +51,7 @@ const NumberPicker = React.memo(({
         onValueChange={onValueChange}
         itemHeight={itemHeight}
         visibleItems={3}
-        containerStyle={{ width: '100%', alignItems: 'center' }}
+        containerStyle={{ width: 100, alignItems: 'center' }}
       />
       {unit ? <Text style={styles.typingCountLabel}>{unit}</Text> : null}
     </View>
@@ -326,15 +326,15 @@ export default function AddAlarmScreen() {
   const [taskConfigs, setTaskConfigs] = useState({
     findHouseholdItemCount: 20,
     tapChallengeCount: 50,
-    typingCount: 99,
+    typingCount: 5,
     typingPhraseCount: 40,
     findColorsDifficulty: 4,
-    findColorsRoundCount: 99,
+    findColorsRoundCount: 5,
     mathDifficulty: 6,
-    mathRoundCount: 99,
-    shakeCount: 100,
-    stepsCount: 100,
-    squatCount: 20,
+    mathRoundCount: 5,
+    shakeCount: 5,
+    stepsCount: 5,
+    squatCount: 5,
   });
 
   // Task data states
@@ -1386,7 +1386,7 @@ export default function AddAlarmScreen() {
   // Render Typing Task Modal
   const renderTypingModal = () => {
     // Generate typing count array for picker (1-99)
-    const typingCountArray = Array.from({ length: 99 }, (_, i) => i + 1);
+    const typingCountArray = Array.from({ length: 10 }, (_, i) => i + 1);
     
     return (
       <Modal
@@ -1582,7 +1582,7 @@ export default function AddAlarmScreen() {
               {/* Round Count Picker Card */}
               <View style={styles.typingCountCard}>
                 <NumberPicker 
-                  data={Array.from({ length: 99 }, (_, i) => i + 1)}
+                  data={Array.from({ length: 10 }, (_, i) => i + 1)}
                   initialValue={findColorsRoundCount}
                   onValueChange={setFindColorsRoundCount}
                   unit="vòng"
@@ -1688,7 +1688,7 @@ export default function AddAlarmScreen() {
               {/* Round Count Picker Card */}
               <View style={styles.typingCountCard}>
                 <NumberPicker 
-                  data={Array.from({ length: 99 }, (_, i) => i + 1)}
+                  data={Array.from({ length: 10 }, (_, i) => i + 1)}
                   initialValue={mathRoundCount}
                   onValueChange={setMathRoundCount}
                   unit="vòng"

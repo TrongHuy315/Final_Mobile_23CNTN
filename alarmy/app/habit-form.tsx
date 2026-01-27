@@ -247,7 +247,7 @@ const NumberPicker = React.memo(({
         onValueChange={onValueChange}
         itemHeight={itemHeight}
         visibleItems={3}
-        containerStyle={{ width: '100%', alignItems: 'center' }}
+        containerStyle={{ width: 100, alignItems: 'center' }}
       />
       {unit ? <Text style={styles.typingCountLabel}>{unit}</Text> : null}
     </View>
@@ -255,7 +255,7 @@ const NumberPicker = React.memo(({
 });
 
 // Pre-computed arrays for pickers
-const COUNT_99 = Array.from({ length: 99 }, (_, i) => i + 1);
+const COUNT_99 = Array.from({ length: 10 }, (_, i) => i + 1);
 const SHAKE_COUNT_DATA = Array.from({ length: 20 }, (_, i) => (i + 1) * 5);
 
 const DAYS = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
@@ -1263,7 +1263,7 @@ export default function HabitFormScreen() {
   // Render Typing Task Modal
   const renderTypingModal = () => {
     // Generate typing count array for picker (1-99)
-    const typingCountArray = Array.from({ length: 99 }, (_, i) => i + 1);
+    const typingCountArray = Array.from({ length: 10 }, (_, i) => i + 1);
     
     return (
       <Modal

@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   View,
+  ScrollView,
+  Platform,
 } from 'react-native';
 
 interface WheelPickerProps {
@@ -25,39 +26,95 @@ const WheelPicker = React.memo(({
 }: WheelPickerProps) => {
   const [selectedValue, setSelectedValue] = useState(initialValue);
   const scrollViewRef = useRef<ScrollView>(null);
-  const isInitialScroll = useRef(true);
+  
+  // Track synchronization to avoid feedback loops
+  const reportedValueRef = useRef<number | null>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<any>(null);
+  const isMountedRef = useRef(false);
 
-  const onMomentumScrollEnd = (e: any) => {
-    const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
-    if (index >= 0 && index < data.length) {
-      const val = data[index];
+  const paddingTopBottom = useMemo(() => itemHeight * ((visibleItems - 1) / 2), [itemHeight, visibleItems]);
+
+  const updateValue = useCallback((val: number) => {
+    if (val !== reportedValueRef.current) {
+      reportedValueRef.current = val;
       setSelectedValue(val);
       onValueChange(val);
     }
+  }, [onValueChange]);
+
+  const handleScrollSettled = useCallback((offsetY: number) => {
+    const index = Math.round(offsetY / itemHeight);
+    if (index >= 0 && index < data.length) {
+      const val = data[index];
+      updateValue(val);
+      
+      const targetY = index * itemHeight;
+      const diff = Math.abs(offsetY - targetY);
+      
+      if (Platform.OS === 'web' || diff > 1) {
+        scrollViewRef.current?.scrollTo({
+          y: targetY,
+          animated: true,
+        });
+      }
+    }
+  }, [data, itemHeight, updateValue]);
+
+  // Sync from prop changes (external)
+  useEffect(() => {
+    // Scroll on mount or when external initialValue truly changes
+    const isFirstRender = !isMountedRef.current;
+    if (isFirstRender || (initialValue !== reportedValueRef.current && !isScrollingRef.current)) {
+      isMountedRef.current = true;
+      reportedValueRef.current = initialValue;
+      setSelectedValue(initialValue);
+      const index = data.indexOf(initialValue);
+      if (index !== -1) {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: index * itemHeight,
+            animated: !isFirstRender, // Instant on mount, animated on external prop change
+          });
+        }, 30);
+      }
+    }
+  }, [initialValue, data, itemHeight]);
+
+  const onMomentumScrollEnd = (e: any) => {
+    isScrollingRef.current = false;
+    handleScrollSettled(e.nativeEvent.contentOffset.y);
   };
 
   const onScrollEndDrag = (e: any) => {
-    const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
-    if (index >= 0 && index < data.length) {
-      const val = data[index];
-      setSelectedValue(val);
-      onValueChange(val);
+    // If momentum will continue, don't finalize yet (MomentumScrollEnd will do it)
+    if (Platform.OS !== 'web' && e.nativeEvent.velocity?.y !== 0) {
+      return;
     }
+    isScrollingRef.current = false;
+    handleScrollSettled(e.nativeEvent.contentOffset.y);
   };
 
-  useEffect(() => {
-    // Selection padding is roughly (visibleItems - 1) / 2
-    const scrollToIndex = data.indexOf(initialValue);
-    if (scrollToIndex !== -1) {
-       // Using small timeout to ensure layout is ready
-       setTimeout(() => {
-         scrollViewRef.current?.scrollTo({
-           y: scrollToIndex * itemHeight,
-           animated: false,
-         });
-       }, 50);
+  const onScroll = useCallback((e: any) => {
+    const y = e.nativeEvent.contentOffset.y;
+    const index = Math.round(y / itemHeight);
+    
+    // Update visual highlight during scroll
+    if (index >= 0 && index < data.length) {
+      const val = data[index];
+      if (val !== selectedValue) {
+        setSelectedValue(val);
+      }
     }
-  }, [initialValue, data, itemHeight]);
+
+    // Web-specific: momentum events might not fire, so we detect "settled" state
+    if (Platform.OS === 'web') {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        handleScrollSettled(y);
+      }, 100);
+    }
+  }, [data, itemHeight, selectedValue, handleScrollSettled]);
 
   return (
     <View style={[styles.container, { height: itemHeight * visibleItems }, containerStyle]}>
@@ -66,19 +123,15 @@ const WheelPicker = React.memo(({
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
         snapToInterval={itemHeight}
-        decelerationRate="fast"
+        decelerationRate={0.9}
+        scrollEventThrottle={16}
+        onScroll={onScroll}
         onMomentumScrollEnd={onMomentumScrollEnd}
         onScrollEndDrag={onScrollEndDrag}
-        onScroll={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.y / itemHeight);
-          if (index >= 0 && index < data.length) {
-            const val = data[index];
-            if (val !== selectedValue) setSelectedValue(val);
-          }
-        }}
-        scrollEventThrottle={16}
+        onScrollBeginDrag={() => { isScrollingRef.current = true; }}
+        onMomentumScrollBegin={() => { isScrollingRef.current = true; }}
         contentContainerStyle={{
-          paddingVertical: itemHeight * ((visibleItems - 1) / 2),
+          paddingVertical: paddingTopBottom,
         }}
       >
         {data.map((item) => {
@@ -96,8 +149,8 @@ const WheelPicker = React.memo(({
           );
         })}
       </ScrollView>
-      <View style={[styles.lineTop, { top: itemHeight * ((visibleItems - 1) / 2) }]} pointerEvents="none" />
-      <View style={[styles.lineBottom, { top: itemHeight * ((visibleItems + 1) / 2) }]} pointerEvents="none" />
+      <View style={[styles.lineTop, { top: paddingTopBottom }]} pointerEvents="none" />
+      <View style={[styles.lineBottom, { top: paddingTopBottom + itemHeight }]} pointerEvents="none" />
     </View>
   );
 });

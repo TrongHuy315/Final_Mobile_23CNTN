@@ -82,7 +82,7 @@ export default function AlarmRingingScreen() {
     });
   };
 
-  const handleDismiss = () => {
+  const handleDismiss = async () => {
     console.log("Dismiss pressed");
     
     // Check if there are tasks to perform
@@ -101,6 +101,12 @@ export default function AlarmRingingScreen() {
         return;
       }
       // Handle other task types as they are implemented...
+    }
+
+    // If it's a flash alarm, remove it after dismissal
+    if (activeAlarm && activeAlarm.type === 'flash') {
+      console.log("Removing flash alarm after dismissal:", activeAlarm.id);
+      await AlarmManager.removeAlarm(activeAlarm.id);
     }
 
     // No tasks, navigate home

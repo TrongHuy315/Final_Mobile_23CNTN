@@ -21,6 +21,11 @@ export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenP
   useEffect(() => {
     if (visible) {
       const now = new Date();
+      // Làm tròn lên phút tiếp theo
+      now.setMinutes(now.getMinutes() + 1);
+      now.setSeconds(0);
+      now.setMilliseconds(0);
+      
       const totalMinutes = now.getHours() * 60 + now.getMinutes() + time;
       setHour(Math.floor((totalMinutes / 60) % 24));
       setMinute(totalMinutes % 60);
