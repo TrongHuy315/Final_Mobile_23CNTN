@@ -73,6 +73,16 @@ export default function SnoozeCountdownScreen() {
           }
         });
         return;
+      } else if (firstTask.type === 'tap_challenge') {
+        router.replace({
+          pathname: './tap-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '50',
+          }
+        });
+        return;
       }
     }
     router.replace('/');
