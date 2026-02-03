@@ -99,8 +99,27 @@ export default function AlarmRingingScreen() {
           }
         });
         return;
+      } else if (firstTask.type === 'tap_challenge') {
+        router.replace({
+          pathname: './tap-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '50',
+          }
+        });
+        return;
+      } else if (firstTask.type === 'shake') {
+        router.replace({
+          pathname: './shake-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '5',
+          }
+        });
+        return;
       }
-      // Handle other task types as they are implemented...
     }
 
     // If it's a flash alarm, remove it after dismissal
