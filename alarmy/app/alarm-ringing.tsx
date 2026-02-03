@@ -109,6 +109,16 @@ export default function AlarmRingingScreen() {
           }
         });
         return;
+      } else if (firstTask.type === 'shake') {
+        router.replace({
+          pathname: './shake-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '5',
+          }
+        });
+        return;
       }
     }
 
