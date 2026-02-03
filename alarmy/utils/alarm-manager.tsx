@@ -31,8 +31,30 @@ export interface Alarm {
   createdAt: number;
 }
 
+export interface SleepRecord {
+  id: string;
+  date: string; // YYYY-MM-DD
+  sleepTime: number; // timestamp
+  wakeTime: number; // timestamp
+  duration: number; // minutes
+  quality: number; // 0-100
+  notes: string;
+  createdAt: number;
+}
+
+export interface WakeUpRecord {
+  id: string;
+  date: string; // YYYY-MM-DD
+  wakeUpTime: number; // timestamp
+  taskCompleted: boolean;
+  completionTime?: number; // timestamp
+  createdAt: number;
+}
+
 export class AlarmManager {
   private static STORAGE_KEY = "ALARMS_STORAGE";
+  private static SLEEP_RECORDS_KEY = "SLEEP_RECORDS_STORAGE";
+  private static WAKEUP_RECORDS_KEY = "WAKEUP_RECORDS_STORAGE";
 
   /* ================= LOAD / SAVE ================= */
 
@@ -55,6 +77,85 @@ export class AlarmManager {
     } catch (err) {
       console.error("Save alarms error:", err);
     }
+  }
+
+  /* ================= SLEEP RECORDS ================= */
+
+  static async loadSleepRecords(): Promise<SleepRecord[]> {
+    try {
+      const data = await AsyncStorage.getItem(this.SLEEP_RECORDS_KEY);
+      if (!data) return [];
+      return JSON.parse(data) as SleepRecord[];
+    } catch (err) {
+      console.error("Load sleep records error:", err);
+      return [];
+    }
+  }
+
+  static async saveSleepRecords(records: SleepRecord[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(this.SLEEP_RECORDS_KEY, JSON.stringify(records));
+    } catch (err) {
+      console.error("Save sleep records error:", err);
+    }
+  }
+
+  static async addSleepRecord(record: Omit<SleepRecord, "id" | "createdAt">): Promise<SleepRecord[]> {
+    const records = await this.loadSleepRecords();
+    const newRecord: SleepRecord = {
+      ...record,
+      id: Date.now().toString(),
+      createdAt: Date.now(),
+    };
+    const updated = [...records, newRecord];
+    await this.saveSleepRecords(updated);
+    return updated;
+  }
+
+  /* ================= WAKEUP RECORDS ================= */
+
+  static async loadWakeUpRecords(): Promise<WakeUpRecord[]> {
+    try {
+      const data = await AsyncStorage.getItem(this.WAKEUP_RECORDS_KEY);
+      if (!data) return [];
+      return JSON.parse(data) as WakeUpRecord[];
+    } catch (err) {
+      console.error("Load wakeup records error:", err);
+      return [];
+    }
+  }
+
+  static async saveWakeUpRecords(records: WakeUpRecord[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(this.WAKEUP_RECORDS_KEY, JSON.stringify(records));
+    } catch (err) {
+      console.error("Save wakeup records error:", err);
+    }
+  }
+
+  static async addWakeUpRecord(record: Omit<WakeUpRecord, "id" | "createdAt">): Promise<WakeUpRecord[]> {
+    const records = await this.loadWakeUpRecords();
+    const newRecord: WakeUpRecord = {
+      ...record,
+      id: Date.now().toString(),
+      createdAt: Date.now(),
+    };
+    const updated = [...records, newRecord];
+    await this.saveWakeUpRecords(updated);
+    return updated;
+  }
+
+  static async getTodayWakeUpRecord(): Promise<WakeUpRecord | null> {
+    const records = await this.loadWakeUpRecords();
+    const today = new Date().toISOString().split('T')[0];
+    return records.find(r => r.date === today) || null;
+  }
+
+  static async updateWakeUpRecord(id: string, updates: Partial<WakeUpRecord>): Promise<WakeUpRecord[]> {
+    const records = await this.loadWakeUpRecords();
+    const updated = records.map(r => r.id === id ? { ...r, ...updates } : r);
+    await this.saveWakeUpRecords(updated);
+    return updated;
   }
 
   /* ================= CRUD ================= */
@@ -111,6 +212,8 @@ export class AlarmManager {
 
   static async clearAll(): Promise<void> {
     await AsyncStorage.removeItem(this.STORAGE_KEY);
+    await AsyncStorage.removeItem(this.SLEEP_RECORDS_KEY);
+    await AsyncStorage.removeItem(this.WAKEUP_RECORDS_KEY);
   }
 
   /* ================= UTILITIES ================= */
