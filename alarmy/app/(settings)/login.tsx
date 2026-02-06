@@ -1,25 +1,70 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Alert,
+  TextInput,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthManager } from '@/utils/auth-manager';
 
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [useEmailAuth, setUseEmailAuth] = useState(false);
 
   const handleClose = () => {
     router.back();
   };
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Google Sign In
-    console.log('Google Sign In');
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await AuthManager.signInWithGoogle();
+      console.log('✅ Successfully signed in with Google');
+      // Navigate back to settings
+      router.push('/(settings)/alarm-settings');
+    } catch (error: any) {
+      console.error('❌ Error signing in with Google:', error);
+      setShowEmailInput(true);
+      Alert.alert(
+        'Google đăng nhập không khả dụng',
+        'Vui lòng sử dụng email để đăng nhập thay thế',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailSignIn = async () => {
+    if (!email || !email.includes('@')) {
+      Alert.alert('Lỗi', 'Vui lòng nhập email hợp lệ');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await AuthManager.signInWithEmail(email);
+      console.log('✅ Successfully signed in with email');
+      router.push('/(settings)/alarm-settings');
+    } catch (error: any) {
+      console.error('❌ Error signing in with email:', error);
+      Alert.alert(
+        'Đăng nhập thất bại',
+        error.message || 'Có lỗi xảy ra khi đăng nhập'
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,15 +120,60 @@ export default function LoginScreen() {
       <View style={styles.bottomSection}>
         {/* Google Sign In Button */}
         <TouchableOpacity
-          style={styles.googleButton}
+          style={[styles.googleButton, isLoading && styles.googleButtonDisabled]}
           activeOpacity={0.8}
+          disabled={isLoading}
           onPress={handleGoogleSignIn}
         >
-          <View style={styles.googleIconContainer}>
-            <Text style={styles.googleIcon}>G</Text>
-          </View>
-          <Text style={styles.googleButtonText}>Tiếp tục với Google</Text>
+          {isLoading ? (
+            <>
+              <ActivityIndicator size="small" color="#0f172a" style={{ marginRight: 12 }} />
+              <Text style={styles.googleButtonText}>Đang đăng nhập...</Text>
+            </>
+          ) : (
+            <>
+              <View style={styles.googleIconContainer}>
+                <Text style={styles.googleIcon}>G</Text>
+              </View>
+              <Text style={styles.googleButtonText}>Tiếp tục với Google</Text>
+            </>
+          )}
         </TouchableOpacity>
+
+        {/* Email Input (shown on fallback) */}
+        {showEmailInput && (
+          <View>
+            <Text style={styles.alternativeText}>hoặc</Text>
+            <TextInput
+              style={styles.emailInput}
+              placeholder="Nhập email của bạn"
+              placeholderTextColor="#64748b"
+              value={email}
+              onChangeText={setEmail}
+              editable={!isLoading}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={[styles.emailButton, isLoading && styles.emailButtonDisabled]}
+              activeOpacity={0.8}
+              disabled={isLoading}
+              onPress={handleEmailSignIn}
+            >
+              {isLoading ? (
+                <>
+                  <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 12 }} />
+                  <Text style={styles.emailButtonText}>Đang đăng nhập...</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="mail" size={18} color="#ffffff" />
+                  <Text style={styles.emailButtonText}>Đăng nhập bằng Email</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Terms and Privacy */}
         <View style={styles.termsContainer}>
@@ -249,6 +339,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 24,
   },
+  googleButtonDisabled: {
+    opacity: 0.7,
+  },
   googleIconContainer: {
     width: 24,
     height: 24,
@@ -265,6 +358,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#0f172a',
+  },
+
+  // Email Section
+  alternativeText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontWeight: '500',
+  },
+  emailInput: {
+    backgroundColor: '#1e293b',
+    borderColor: '#475569',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    color: '#ffffff',
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  emailButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#3b82f6',
+    borderRadius: 30,
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  emailButtonDisabled: {
+    opacity: 0.7,
+  },
+  emailButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginLeft: 10,
   },
 
   // Terms

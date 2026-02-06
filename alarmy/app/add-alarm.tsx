@@ -57,6 +57,7 @@ const NumberPicker = React.memo(({
     </View>
   );
 });
+NumberPicker.displayName = 'NumberPicker';
 
 // Suppress VirtualizedLists warning - we're using nestedScrollEnabled
 LogBox.ignoreLogs([
@@ -188,6 +189,7 @@ const GentleWakeModal = React.memo(({
     </Modal>
   );
 });
+GentleWakeModal.displayName = 'GentleWakeModal';
 
 // Modal styles
 const modalStyles = StyleSheet.create({
@@ -2935,7 +2937,7 @@ export default function AddAlarmScreen() {
           <TouchableOpacity style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <Text style={styles.settingText}>Cài đặt hình nền</Text>
             <View style={styles.wallpaperThumbnail}>
-              <Text style={styles.wallpaperText}>IT'S{'\n'}YOU VS YOU</Text>
+              <Text style={styles.wallpaperText}>IT&apos;S{'\n'}YOU VS YOU</Text>
             </View>
           </TouchableOpacity>
         </View>

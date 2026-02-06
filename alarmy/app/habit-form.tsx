@@ -158,6 +158,7 @@ const GentleWakeModal = React.memo(({
     </Modal>
   );
 });
+GentleWakeModal.displayName = 'GentleWakeModal';
 
 // Modal styles
 const modalStyles = StyleSheet.create({
@@ -253,6 +254,7 @@ const NumberPicker = React.memo(({
     </View>
   );
 });
+NumberPicker.displayName = 'NumberPicker';
 
 // Pre-computed arrays for pickers
 const COUNT_99 = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -2790,7 +2792,7 @@ export default function HabitFormScreen() {
           <TouchableOpacity style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
             <Text style={styles.settingText}>Cài đặt hình nền</Text>
             <View style={styles.wallpaperThumbnail}>
-              <Text style={styles.wallpaperText}>IT'S{'\n'}YOU VS YOU</Text>
+              <Text style={styles.wallpaperText}>IT&apos;S{'\n'}YOU VS YOU</Text>
             </View>
           </TouchableOpacity>
         </View>

@@ -1,5 +1,6 @@
 // AlarmManager.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotificationManager } from "./notification-manager";
 
 export type AlarmTask = {
   id: string;
@@ -71,9 +72,7 @@ export class AlarmManager {
 
   static async saveAlarms(alarms: Alarm[]): Promise<void> {
     try {
-      console.log('💾 AlarmManager.saveAlarms called with', alarms.length, 'alarms');
       await AsyncStorage.setItem(this.STORAGE_KEY, JSON.stringify(alarms));
-      console.log('✅ Alarms saved to AsyncStorage successfully');
     } catch (err) {
       console.error("Save alarms error:", err);
     }
@@ -171,9 +170,20 @@ export class AlarmManager {
       createdAt: Date.now(),
     };
 
-    console.log('➕ AlarmManager.addAlarm - Adding alarm:', newAlarm);
     const updated = [...alarms, newAlarm];
     await this.saveAlarms(updated);
+
+    // Schedule notification for this alarm if enabled
+    if (newAlarm.enabled) {
+      const triggerTime = this.getNextTriggerTime(newAlarm);
+      await NotificationManager.scheduleAlarmNotification(
+        triggerTime,
+        newAlarm.id,
+        `🔔 ${newAlarm.label}`,
+        `Báo thức lúc ${String(newAlarm.hour).padStart(2, '0')}:${String(newAlarm.minute).padStart(2, '0')}`
+      );
+    }
+
     return updated;
   }
 
@@ -181,6 +191,10 @@ export class AlarmManager {
     const alarms = await this.loadAlarms();
     const updated = alarms.filter(a => a.id !== id);
     await this.saveAlarms(updated);
+
+    // Cancel notification for this alarm
+    await NotificationManager.cancelAlarmNotification(id);
+
     return updated;
   }
 
@@ -188,7 +202,6 @@ export class AlarmManager {
     id: string,
     newData: Partial<Alarm>
   ): Promise<Alarm[]> {
-    console.log('✏️ AlarmManager.updateAlarm - Updating alarm with ID:', id);
     const alarms = await this.loadAlarms();
 
     const updated = alarms.map(alarm =>
@@ -196,6 +209,26 @@ export class AlarmManager {
     );
 
     await this.saveAlarms(updated);
+
+    // Update/reschedule notification
+    const updatedAlarm = updated.find(a => a.id === id);
+    if (updatedAlarm) {
+      if (updatedAlarm.enabled) {
+        // Cancel old notification and reschedule
+        await NotificationManager.cancelAlarmNotification(id);
+        const triggerTime = this.getNextTriggerTime(updatedAlarm);
+        await NotificationManager.scheduleAlarmNotification(
+          triggerTime,
+          updatedAlarm.id,
+          `🔔 ${updatedAlarm.label}`,
+          `Báo thức lúc ${String(updatedAlarm.hour).padStart(2, '0')}:${String(updatedAlarm.minute).padStart(2, '0')}`
+        );
+      } else {
+        // Cancel notification if disabled
+        await NotificationManager.cancelAlarmNotification(id);
+      }
+    }
+
     return updated;
   }
 
@@ -207,6 +240,25 @@ export class AlarmManager {
     );
 
     await this.saveAlarms(updated);
+
+    // Handle notification for toggled alarm
+    const toggledAlarm = updated.find(a => a.id === id);
+    if (toggledAlarm) {
+      if (toggledAlarm.enabled) {
+        // Re-enable: schedule notification
+        const triggerTime = this.getNextTriggerTime(toggledAlarm);
+        await NotificationManager.scheduleAlarmNotification(
+          triggerTime,
+          toggledAlarm.id,
+          `🔔 ${toggledAlarm.label}`,
+          `Báo thức lúc ${String(toggledAlarm.hour).padStart(2, '0')}:${String(toggledAlarm.minute).padStart(2, '0')}`
+        );
+      } else {
+        // Disable: cancel notification
+        await NotificationManager.cancelAlarmNotification(id);
+      }
+    }
+
     return updated;
   }
 

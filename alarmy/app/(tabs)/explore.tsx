@@ -10,6 +10,8 @@ import {
   ScrollView,
   Modal,
   TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -223,96 +225,98 @@ export default function SleepScreen() {
         animationType="slide"
         onRequestClose={() => setTrackingModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingTop: insets.top + 16 }]}>
-            {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Theo dõi giấc ngủ</Text>
-              <TouchableOpacity onPress={() => setTrackingModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-              {/* Sleep Time */}
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Giờ ngủ</Text>
-                <TextInput
-                  style={styles.timeInput}
-                  value={sleepTime}
-                  onChangeText={setSleepTime}
-                  placeholder="23:00"
-                  placeholderTextColor="#64748b"
-                />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { paddingTop: insets.top + 16 }]}>
+              {/* Header */}
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Theo dõi giấc ngủ</Text>
+                <TouchableOpacity onPress={() => setTrackingModalVisible(false)}>
+                  <Ionicons name="close" size={24} color="#ffffff" />
+                </TouchableOpacity>
               </View>
 
-              {/* Wake Time */}
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Giờ thức dậy</Text>
-                <TextInput
-                  style={styles.timeInput}
-                  value={wakeTime}
-                  onChangeText={setWakeTime}
-                  placeholder="07:00"
-                  placeholderTextColor="#64748b"
-                />
-              </View>
-
-              {/* Quality Slider */}
-              <View style={styles.formGroup}>
-                <View style={styles.qualityHeader}>
-                  <Text style={styles.formLabel}>Chất lượng giấc ngủ</Text>
-                  <Text style={styles.qualityValue}>{quality}%</Text>
+              <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                {/* Sleep Time */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Giờ ngủ</Text>
+                  <TextInput
+                    style={styles.timeInput}
+                    value={sleepTime}
+                    onChangeText={setSleepTime}
+                    placeholder="23:00"
+                    placeholderTextColor="#64748b"
+                  />
                 </View>
-                <View style={styles.sliderContainer}>
-                  {[0, 25, 50, 75, 100].map((value) => (
-                    <TouchableOpacity
-                      key={value}
-                      style={[
-                        styles.qualityButton,
-                        quality === value && styles.qualityButtonActive,
-                      ]}
-                      onPress={() => setQuality(value)}
-                    >
-                      <Text
+
+                {/* Wake Time */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Giờ thức dậy</Text>
+                  <TextInput
+                    style={styles.timeInput}
+                    value={wakeTime}
+                    onChangeText={setWakeTime}
+                    placeholder="07:00"
+                    placeholderTextColor="#64748b"
+                  />
+                </View>
+
+                {/* Quality Slider */}
+                <View style={styles.formGroup}>
+                  <View style={styles.qualityHeader}>
+                    <Text style={styles.formLabel}>Chất lượng giấc ngủ</Text>
+                    <Text style={styles.qualityValue}>{quality}%</Text>
+                  </View>
+                  <View style={styles.sliderContainer}>
+                    {[0, 25, 50, 75, 100].map((value) => (
+                      <TouchableOpacity
+                        key={value}
                         style={[
-                          styles.qualityButtonText,
-                          quality === value && styles.qualityButtonTextActive,
+                          styles.qualityButton,
+                          quality === value && styles.qualityButtonActive,
                         ]}
+                        onPress={() => setQuality(value)}
                       >
-                        {value}%
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          style={[
+                            styles.qualityButtonText,
+                            quality === value && styles.qualityButtonTextActive,
+                          ]}
+                        >
+                          {value}%
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
-              </View>
 
-              {/* Notes */}
-              <View style={styles.formGroup}>
-                <Text style={styles.formLabel}>Ghi chú (tùy chọn)</Text>
-                <TextInput
-                  style={[styles.notesInput]}
-                  value={notes}
-                  onChangeText={setNotes}
-                  placeholder="Thêm ghi chú về giấc ngủ của bạn..."
-                  placeholderTextColor="#64748b"
-                  multiline
-                  numberOfLines={4}
-                />
-              </View>
-            </ScrollView>
+                {/* Notes */}
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Ghi chú (tùy chọn)</Text>
+                  <TextInput
+                    style={[styles.notesInput]}
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Thêm ghi chú về giấc ngủ của bạn..."
+                    placeholderTextColor="#64748b"
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
+              </ScrollView>
 
-            {/* Save Button */}
-            <View style={[styles.modalFooter, { paddingBottom: insets.bottom + 12 }]}>
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleSaveSleepRecord}
-              >
-                <Text style={styles.saveButtonText}>Lưu</Text>
-              </TouchableOpacity>
+              {/* Save Button */}
+              <View style={[styles.modalFooter, { paddingBottom: insets.bottom + 12 }]}>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleSaveSleepRecord}
+                >
+                  <Text style={styles.saveButtonText}>Lưu</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaProvider>
   );

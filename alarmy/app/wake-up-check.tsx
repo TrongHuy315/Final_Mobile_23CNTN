@@ -29,7 +29,7 @@ const WAKE_CHECK_OPTIONS = [
 ];
 
 // Info Modal Component
-function InfoModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+const InfoModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
   const slideAnim = useRef(new Animated.Value(MODAL_HEIGHT)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -276,7 +276,7 @@ function InfoModal({ visible, onClose }: { visible: boolean; onClose: () => void
                             {countdownValue} <Text style={modalStyles.countdownUnit}>s</Text>
                           </Text>
                           <View style={modalStyles.awakeButton}>
-                            <Text style={modalStyles.awakeButtonText}>I'm awake!</Text>
+                            <Text style={modalStyles.awakeButtonText}>I&apos;m awake!</Text>
                           </View>
                         </Animated.View>
                       )}
@@ -311,7 +311,7 @@ function InfoModal({ visible, onClose }: { visible: boolean; onClose: () => void
       </View>
     </Modal>
   );
-}
+};
 
 const modalStyles = StyleSheet.create({
   container: {
@@ -709,7 +709,7 @@ export default function WakeUpCheckScreen() {
                 ]}
               >
                 <View style={styles.awakeButton}>
-                  <Text style={styles.awakeButtonText}>I'm awake!</Text>
+                  <Text style={styles.awakeButtonText}>I&apos;m awake!</Text>
                 </View>
                 <Animated.Text 
                   style={[

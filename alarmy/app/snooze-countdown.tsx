@@ -112,7 +112,7 @@ export default function SnoozeCountdownScreen() {
             <View style={styles.logoCircle}>
               <Ionicons name="notifications" size={32} color="#ffffff" />
             </View>
-            <Text style={styles.logoText}>IT'S</Text>
+            <Text style={styles.logoText}>IT&apos;S</Text>
             <Text style={styles.logoSubText}>YOUR TIME</Text>
           </View>
 

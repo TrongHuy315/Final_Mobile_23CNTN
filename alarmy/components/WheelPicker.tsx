@@ -155,6 +155,8 @@ const WheelPicker = React.memo(({
   );
 });
 
+WheelPicker.displayName = 'WheelPicker';
+
 const styles = StyleSheet.create({
   container: {
     width: 80,

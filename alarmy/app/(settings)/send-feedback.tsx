@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 

@@ -237,7 +237,7 @@ export default function OptimizeAlarmsScreen() {
             </View>
             
             <Text style={styles.instructionText}>
-              Đi đến [Cài đặt {'>'} Ứng dụng {'>'} Alarmy {'>'} Pin] và chọn "Không hạn chế".
+              Đi đến [Cài đặt {'>'} Ứng dụng {'>'} Alarmy {'>'} Pin] và chọn &quot;Không hạn chế&quot;.
             </Text>
             
             <Text style={styles.noteText}>

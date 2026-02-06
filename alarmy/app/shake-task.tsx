@@ -7,6 +7,7 @@ import {
   Dimensions,
   Animated,
   Easing,
+  Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,6 +33,7 @@ export default function ShakeTaskScreen() {
   const [taskState, setTaskState] = useState<TaskState>('playing');
   const [shakesRemaining, setShakesRemaining] = useState(targetShakes);
   const [timeLeft, setTimeLeft] = useState(maxSeconds);
+  const [showPreview, setShowPreview] = useState(false);
   
   // Animation refs
   const timerAnim = useRef(new Animated.Value(1)).current;
@@ -241,8 +243,11 @@ export default function ShakeTaskScreen() {
             <View style={styles.backButtonPlaceholder} />
           )}
           <View style={styles.headerCenter} />
-          <TouchableOpacity style={styles.muteButton}>
-            <Ionicons name="volume-mute-outline" size={24} color="#ffffff" />
+          <TouchableOpacity 
+            style={styles.muteButton}
+            onPress={() => setShowPreview(true)}
+          >
+            <Ionicons name="eye-outline" size={24} color="#3b82f6" />
           </TouchableOpacity>
         </View>
 
@@ -276,6 +281,55 @@ export default function ShakeTaskScreen() {
           )}
         </View>
       </SafeAreaView>
+
+      {/* Preview Modal */}
+      <Modal
+        visible={showPreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPreview(false)}
+      >
+        <View style={styles.previewOverlay}>
+          <View style={styles.previewContent}>
+            <View style={styles.previewHeader}>
+              <Text style={styles.previewTitle}>Xem trước</Text>
+              <TouchableOpacity onPress={() => setShowPreview(false)}>
+                <Ionicons name="close" size={28} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.previewBody}>
+              <Text style={styles.previewLabel}>Nhiệm vụ: Lắc điện thoại</Text>
+              <Text style={styles.previewDescription}>
+                Hãy lắc điện thoại mạnh mẽ {targetShakes} lần để hoàn thành.
+              </Text>
+              <Text style={styles.previewDescription}>
+                Bạn có {maxSeconds} giây mỗi lần lắc
+              </Text>
+              
+              <View style={styles.previewExample}>
+                <Text style={styles.previewExampleTitle}>Hướng dẫn:</Text>
+                <Text style={styles.previewExampleText}>
+                  1. Lắc điện thoại mạnh mẽ để phát hiện được động tác
+                </Text>
+                <Text style={styles.previewExampleText}>
+                  2. Mỗi lần lắc sẽ được ghi lại
+                </Text>
+                <Text style={styles.previewExampleText}>
+                  3. Hoàn thành nếu bạn đạt {targetShakes} lần lắc
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.previewStartButton}
+                onPress={() => setShowPreview(false)}
+              >
+                <Text style={styles.previewStartButtonText}>Bắt đầu</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -381,4 +435,73 @@ const styles = StyleSheet.create({
   backButtonPlaceholder: {
     width: 34, 
   },
-});
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  previewContent: {
+    backgroundColor: '#1e293b',
+    borderRadius: 20,
+    padding: 24,
+    maxHeight: '80%',
+    width: '100%',
+  },
+  previewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  previewTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  previewBody: {
+    marginBottom: 20,
+  },
+  previewLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3b82f6',
+    marginBottom: 8,
+  },
+  previewDescription: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  previewExample: {
+    backgroundColor: '#0f172a',
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 16,
+  },
+  previewExampleTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  previewExampleText: {
+    fontSize: 13,
+    color: '#94a3b8',
+    marginBottom: 6,
+    lineHeight: 18,
+  },
+  previewStartButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  previewStartButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },});

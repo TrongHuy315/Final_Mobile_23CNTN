@@ -10,6 +10,9 @@ import {
   View,
   Dimensions,
   FlatList,
+  Alert,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -40,6 +43,9 @@ export default function DayScreen() {
   const [todayRoutines, setTodayRoutines] = useState<RoutineTask[]>([]);
   const [todayDate, setTodayDate] = useState(new Date());
   const [wakeUpTime, setWakeUpTime] = useState<number | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newRoutineName, setNewRoutineName] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Load today's wake up record
   useFocusEffect(
@@ -73,8 +79,67 @@ export default function DayScreen() {
       r.id === id ? { ...r, completed: !r.completed, completedAt: !r.completed ? Date.now() : undefined } : r
     );
     setTodayRoutines(updated);
-    // Save to storage
     await AsyncStorage.setItem('TODAY_ROUTINES', JSON.stringify(updated));
+  };
+
+  const addRoutine = async () => {
+    if (!newRoutineName.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập tên thói quen');
+      return;
+    }
+
+    const newRoutine: RoutineTask = {
+      id: Date.now().toString(),
+      name: newRoutineName,
+      completed: false,
+    };
+
+    const updated = [...todayRoutines, newRoutine];
+    setTodayRoutines(updated);
+    await AsyncStorage.setItem('TODAY_ROUTINES', JSON.stringify(updated));
+    setNewRoutineName('');
+    setShowAddModal(false);
+  };
+
+  const deleteRoutine = (id: string) => {
+    Alert.alert(
+      'Xóa thói quen',
+      'Bạn có chắc chắn muốn xóa thói quen này?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          style: 'destructive',
+          onPress: async () => {
+            const updated = todayRoutines.filter(r => r.id !== id);
+            setTodayRoutines(updated);
+            await AsyncStorage.setItem('TODAY_ROUTINES', JSON.stringify(updated));
+          },
+        },
+      ]
+    );
+  };
+
+  const editRoutine = (id: string, name: string) => {
+    setEditingId(id);
+    setNewRoutineName(name);
+    setShowAddModal(true);
+  };
+
+  const updateRoutine = async () => {
+    if (!newRoutineName.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập tên thói quen');
+      return;
+    }
+
+    const updated = todayRoutines.map(r =>
+      r.id === editingId ? { ...r, name: newRoutineName } : r
+    );
+    setTodayRoutines(updated);
+    await AsyncStorage.setItem('TODAY_ROUTINES', JSON.stringify(updated));
+    setNewRoutineName('');
+    setEditingId(null);
+    setShowAddModal(false);
   };
 
   const completedCount = todayRoutines.filter(r => r.completed).length;
@@ -112,6 +177,7 @@ export default function DayScreen() {
         style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Wake Up Info Card */}
         {wakeUpTime && (
@@ -155,47 +221,64 @@ export default function DayScreen() {
           {todayRoutines.map((routine) => {
             const routineInfo = MORNING_ROUTINES.find(r => r.id === routine.id);
             return (
-              <TouchableOpacity
-                key={routine.id}
-                style={[
-                  styles.routineItem,
-                  routine.completed && styles.routineItemCompleted,
-                ]}
-                onPress={() => toggleRoutine(routine.id)}
-              >
-                <View style={styles.routineItemContent}>
-                  <View
-                    style={[
-                      styles.routineCheckbox,
-                      routine.completed && styles.routineCheckboxCompleted,
-                    ]}
-                  >
-                    {routine.completed && (
-                      <Ionicons name="checkmark" size={18} color="#ffffff" />
-                    )}
-                  </View>
-                  <View style={styles.routineInfo}>
-                    <Text
+              <View key={routine.id} style={styles.routineItemWrapper}>
+                <TouchableOpacity
+                  style={[
+                    styles.routineItem,
+                    routine.completed && styles.routineItemCompleted,
+                  ]}
+                  onPress={() => toggleRoutine(routine.id)}
+                >
+                  <View style={styles.routineItemContent}>
+                    <View
                       style={[
-                        styles.routineName,
-                        routine.completed && styles.routineNameCompleted,
+                        styles.routineCheckbox,
+                        routine.completed && styles.routineCheckboxCompleted,
                       ]}
                     >
-                      {routine.name}
-                    </Text>
-                    {routineInfo && (
-                      <Text style={styles.routineDuration}>
-                        ~{routineInfo.duration}
+                      {routine.completed && (
+                        <Ionicons name="checkmark" size={18} color="#ffffff" />
+                      )}
+                    </View>
+                    <View style={styles.routineInfo}>
+                      <Text
+                        style={[
+                          styles.routineName,
+                          routine.completed && styles.routineNameCompleted,
+                        ]}
+                      >
+                        {routine.name}
                       </Text>
-                    )}
+                      {routineInfo && (
+                        <Text style={styles.routineDuration}>
+                          ~{routineInfo.duration}
+                        </Text>
+                      )}
+                    </View>
                   </View>
+                  {routine.completed && (
+                    <Text style={styles.completedTime}>
+                      {routine.completedAt ? formatTime(routine.completedAt) : ''}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                {/* Edit and Delete buttons */}
+                <View style={styles.routineActions}>
+                  <TouchableOpacity
+                    onPress={() => editRoutine(routine.id, routine.name)}
+                    style={styles.actionButton}
+                  >
+                    <Ionicons name="pencil" size={16} color="#3b82f6" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => deleteRoutine(routine.id)}
+                    style={styles.actionButton}
+                  >
+                    <Ionicons name="trash" size={16} color="#ef4444" />
+                  </TouchableOpacity>
                 </View>
-                {routine.completed && (
-                  <Text style={styles.completedTime}>
-                    {routine.completedAt ? formatTime(routine.completedAt) : ''}
-                  </Text>
-                )}
-              </TouchableOpacity>
+              </View>
             );
           })}
         </View>
@@ -203,10 +286,14 @@ export default function DayScreen() {
         {/* Add More Routines */}
         <TouchableOpacity
           style={styles.addMoreButton}
-          onPress={() => router.push('/routine-selection')}
+          onPress={() => {
+            setEditingId(null);
+            setNewRoutineName('');
+            setShowAddModal(true);
+          }}
         >
           <Ionicons name="add-circle-outline" size={20} color="#3b82f6" />
-          <Text style={styles.addMoreButtonText}>Thêm thói quen khác</Text>
+          <Text style={styles.addMoreButtonText}>Thêm thói quen mới</Text>
         </TouchableOpacity>
 
         {/* Suggestions */}
@@ -247,6 +334,58 @@ export default function DayScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Add/Edit Modal */}
+      <Modal
+        visible={showAddModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setShowAddModal(false);
+          setEditingId(null);
+          setNewRoutineName('');
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAddModal(false);
+                  setEditingId(null);
+                  setNewRoutineName('');
+                }}
+              >
+                <Text style={styles.modalCloseText}>Hủy</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>
+                {editingId ? 'Chỉnh sửa thói quen' : 'Thêm thói quen'}
+              </Text>
+              <TouchableOpacity
+                onPress={editingId ? updateRoutine : addRoutine}
+              >
+                <Text style={styles.modalSaveText}>Lưu</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalFormContainer}>
+              <Text style={styles.modalLabel}>Tên thói quen</Text>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="Ví dụ: Uống nước, Massage mặt..."
+                placeholderTextColor="#64748b"
+                value={newRoutineName}
+                onChangeText={setNewRoutineName}
+                autoFocus
+                maxLength={50}
+              />
+              <Text style={styles.modalCharCount}>
+                {newRoutineName.length}/50
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaProvider>
   );
 }
@@ -353,7 +492,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 12,
   },
+  routineItemWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   routineItem: {
+    flex: 1,
     backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
@@ -407,6 +552,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#22c55e',
     fontWeight: '500',
+  },
+  routineActions: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#1e293b',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   addMoreButton: {
     flexDirection: 'row',
@@ -464,6 +621,66 @@ const styles = StyleSheet.create({
   suggestionDuration: {
     fontSize: 12,
     color: '#64748b',
+  },
+
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#0f172a',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalCloseText: {
+    fontSize: 16,
+    color: '#94a3b8',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  modalSaveText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3b82f6',
+  },
+  modalFormContainer: {
+    marginBottom: 16,
+  },
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  modalInput: {
+    backgroundColor: '#1e293b',
+    borderColor: '#475569',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    color: '#ffffff',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  modalCharCount: {
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'right',
   },
 });
 

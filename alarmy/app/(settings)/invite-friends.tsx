@@ -164,7 +164,7 @@ export default function InviteFriendsScreen() {
           <View style={styles.instructionsList}>
             <Text style={styles.instructionItem}>• Chia sẻ mã với bạn bè.</Text>
             <Text style={styles.instructionItem}>• Người bạn được mời của bạn gửi mã sau khi đăng ký.</Text>
-            <Text style={styles.instructionItem}>• Sau khi hoàn tất lời mời, vui lòng nhấn vào nút "Nhận gói Pro".</Text>
+            <Text style={styles.instructionItem}>• Sau khi hoàn tất lời mời, vui lòng nhấn vào nút &quot;Nhận gói Pro&quot;.</Text>
             <Text style={styles.instructionItem}>• Tận hưởng gói Pro của Alarmy miễn phí với bạn bè.</Text>
           </View>
         </View>

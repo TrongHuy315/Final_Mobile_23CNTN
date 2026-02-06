@@ -6,11 +6,14 @@ import {
   TouchableOpacity,
   Dimensions,
   Animated,
+  Modal,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { SoundManager } from '@/utils/sound-manager';
+import { TaskOrchestrator } from '@/utils/task-orchestrator';
 
 const { width } = Dimensions.get('window');
 
@@ -36,6 +39,8 @@ export default function MathTaskScreen() {
   const [timeLeft, setTimeLeft] = useState(1);
   const [timerExpired, setTimerExpired] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<'none' | 'correct' | 'incorrect'>('none');
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewRounds, setPreviewRounds] = useState(2);
 
   // Animation refs
   const timerAnim = React.useRef(new Animated.Value(1)).current;
@@ -141,10 +146,18 @@ export default function MathTaskScreen() {
 
     if (parseInt(userInput) === problem.answer) {
       setFeedbackStatus('correct');
-      // Success feedback animation or just delay
+      // Haptic feedback for success
+      SoundManager.playHaptic('success').catch(() => {});
+      
       setTimeout(() => {
         if (currentRound >= totalRounds) {
-          router.replace('/');
+          // All rounds completed - mark task as done
+          SoundManager.playHaptic('success').catch(() => {});
+          TaskOrchestrator.markTaskComplete('math_task');
+          router.replace({
+            pathname: '/alarm-ringing',
+            params: { alarmId, label: alarmLabel }
+          });
         } else {
           setCurrentRound(prev => prev + 1);
           setProblem(generateProblem(difficulty));
@@ -155,6 +168,9 @@ export default function MathTaskScreen() {
       }, 600);
     } else {
       setFeedbackStatus('incorrect');
+      // Haptic feedback for error
+      SoundManager.playHaptic('error').catch(() => {});
+      
       // Shake animation
       feedbackAnim.setValue(0);
       Animated.sequence([
@@ -213,8 +229,11 @@ export default function MathTaskScreen() {
             <Ionicons name="chevron-back" size={24} color="#ffffff" />
           </TouchableOpacity>
           <Text style={styles.progressText}>{currentRound} / {totalRounds}</Text>
-          <TouchableOpacity style={styles.muteButton}>
-            <Ionicons name="volume-mute-outline" size={24} color="#ffffff" />
+          <TouchableOpacity 
+            style={styles.previewButton}
+            onPress={() => setShowPreview(true)}
+          >
+            <Ionicons name="eye-outline" size={24} color="#3b82f6" />
           </TouchableOpacity>
         </View>
 
@@ -266,6 +285,56 @@ export default function MathTaskScreen() {
           </View>
         </View>
       </SafeAreaView>
+
+      {/* Preview Modal */}
+      <Modal
+        visible={showPreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPreview(false)}
+      >
+        <View style={styles.previewOverlay}>
+          <View style={styles.previewContent}>
+            <View style={styles.previewHeader}>
+              <Text style={styles.previewTitle}>Xem trước</Text>
+              <TouchableOpacity onPress={() => setShowPreview(false)}>
+                <Ionicons name="close" size={28} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.previewBody}>
+              <Text style={styles.previewLabel}>Nhiệm vụ: Giải toán</Text>
+              <Text style={styles.previewDescription}>
+                Hoàn thành {totalRounds} bài toán để dừng báo thức.
+              </Text>
+              <Text style={styles.previewDescription}>
+                Độ khó: {['Rất dễ', 'Dễ', 'Trung bình', 'Khó', 'Rất khó', 'Siêu khó', 'Cực kỳ khó'][difficulty]}
+              </Text>
+              
+              <View style={styles.previewExample}>
+                <Text style={styles.previewExampleTitle}>Ví dụ:</Text>
+                {[...Array(Math.min(previewRounds, 2))].map((_, i) => {
+                  const exampleProblem = generateProblem(difficulty);
+                  return (
+                    <View key={i} style={styles.previewExampleItem}>
+                      <Text style={styles.previewExampleText}>
+                        {exampleProblem.question} <Text style={styles.previewAnswer}>{exampleProblem.answer}</Text>
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+              <TouchableOpacity
+                style={styles.previewStartButton}
+                onPress={() => setShowPreview(false)}
+              >
+                <Text style={styles.previewStartButtonText}>Bắt đầu</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -386,5 +455,89 @@ const styles = StyleSheet.create({
   },
   actionKey: {
     backgroundColor: '#ef4444',
+  },
+  previewButton: {
+    padding: 8,
+  },
+
+  // Preview Modal Styles
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewContent: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    width: '85%',
+    maxHeight: '70%',
+    overflow: 'hidden',
+  },
+  previewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#334155',
+  },
+  previewTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  previewBody: {
+    padding: 16,
+  },
+  previewLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3b82f6',
+    marginBottom: 8,
+  },
+  previewDescription: {
+    fontSize: 14,
+    color: '#cbd5e1',
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  previewExample: {
+    backgroundColor: '#0f172a',
+    borderRadius: 12,
+    padding: 12,
+    marginVertical: 12,
+  },
+  previewExampleTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94a3b8',
+    marginBottom: 8,
+  },
+  previewExampleItem: {
+    marginBottom: 8,
+  },
+  previewExampleText: {
+    fontSize: 16,
+    color: '#cbd5e1',
+    fontFamily: 'monospace',
+  },
+  previewAnswer: {
+    color: '#22c55e',
+    fontWeight: '600',
+  },
+  previewStartButton: {
+    backgroundColor: '#3b82f6',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  previewStartButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
   },
 });

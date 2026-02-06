@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AlarmManager, Alarm } from '../utils/alarm-manager';
+import { SoundManager } from '../utils/sound-manager';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ export default function AlarmRingingScreen() {
   const params = useLocalSearchParams();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeAlarm, setActiveAlarm] = useState<Alarm | null>(null);
+  const [vibrationInterval, setVibrationInterval] = useState<NodeJS.Timeout | null>(null);
   
   // Alarm data from params
   const alarmLabel = params.label ? String(params.label) : "Báo thức";
@@ -42,18 +44,52 @@ export default function AlarmRingingScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  // Load active alarm
+  // Initialize sound system and load alarm
   useEffect(() => {
-    if (alarmId) {
-      const loadAlarm = async () => {
-        const alarms = await AlarmManager.loadAlarms();
-        const alarm = alarms.find(a => a.id === alarmId);
-        if (alarm) {
-          setActiveAlarm(alarm);
+    const initializeAlarm = async () => {
+      try {
+        // Initialize sound system
+        await SoundManager.initialize();
+
+        // Load active alarm
+        if (alarmId) {
+          const alarms = await AlarmManager.loadAlarms();
+          const alarm = alarms.find(a => a.id === alarmId);
+          if (alarm) {
+            setActiveAlarm(alarm);
+
+            // Play sound and vibration
+            const soundKey = alarm.gentleWake === 'off' ? 'ringing' : 'gentle';
+            await SoundManager.playAlarmSound(soundKey, alarm.volume / 100, true);
+
+            if (alarm.vibration) {
+              const vibId = await SoundManager.playAlarmVibration();
+              setVibrationInterval(vibId as any);
+            }
+
+            // Record wake-up event
+            const today = new Date().toISOString().split('T')[0];
+            await AlarmManager.addWakeUpRecord({
+              date: today,
+              wakeUpTime: Date.now(),
+              taskCompleted: false,
+            });
+          }
         }
-      };
-      loadAlarm();
-    }
+      } catch (error) {
+        console.error('Error initializing alarm:', error);
+      }
+    };
+
+    initializeAlarm();
+
+    // Cleanup on unmount
+    return () => {
+      SoundManager.stopAlarm().catch(() => {});
+      if (vibrationInterval) {
+        SoundManager.stopVibration(vibrationInterval);
+      }
+    };
   }, [alarmId]);
 
   const handleSnooze = async () => {
@@ -70,6 +106,12 @@ export default function AlarmRingingScreen() {
 
     console.log("Snooze pressed for alarm:", activeAlarm.label);
     
+    // Stop current sound and vibration
+    await SoundManager.stopAlarm();
+    if (vibrationInterval) {
+      SoundManager.stopVibration(vibrationInterval);
+    }
+    
     // Navigate to snooze countdown
     router.replace({
       pathname: '/snooze-countdown',
@@ -84,6 +126,22 @@ export default function AlarmRingingScreen() {
 
   const handleDismiss = async () => {
     console.log("Dismiss pressed");
+    
+    // Stop sound and vibration immediately
+    await SoundManager.stopAlarm();
+    if (vibrationInterval) {
+      SoundManager.stopVibration(vibrationInterval);
+    }
+
+    // Mark wake-up as completed
+    const today = new Date().toISOString().split('T')[0];
+    const wakeUpRecord = await AlarmManager.getTodayWakeUpRecord();
+    if (wakeUpRecord) {
+      await AlarmManager.updateWakeUpRecord(wakeUpRecord.id, {
+        taskCompleted: true,
+        completionTime: Date.now(),
+      });
+    }
     
     // Check if there are tasks to perform
     if (activeAlarm && activeAlarm.tasks.length > 0) {
@@ -116,6 +174,24 @@ export default function AlarmRingingScreen() {
             alarmId: activeAlarm.id,
             alarmLabel: activeAlarm.label,
             itemCount: firstTask.settings?.itemCount?.toString() || '5',
+          }
+        });
+        return;
+      } else if (firstTask.type === 'face_detection') {
+        router.replace({
+          pathname: './face-detection-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+          }
+        });
+        return;
+      } else if (firstTask.type === 'flash') {
+        router.replace({
+          pathname: './flash-alarm',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
           }
         });
         return;
@@ -165,7 +241,7 @@ export default function AlarmRingingScreen() {
 
         {/* Motivational Center */}
         <View style={styles.centerContainer}>
-          <Text style={styles.quoteText}>IT'S</Text>
+          <Text style={styles.quoteText}>IT&apos;S</Text>
           <Text style={styles.quoteText}>YOU VS YOU</Text>
           
           <Ionicons name="trophy-outline" size={40} color="rgba(255,255,255,0.3)" style={{marginTop: 20}} />
