@@ -18,6 +18,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { StatusBar } from 'expo-status-bar';
 import { AlarmManager } from '@/utils/alarm-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -40,6 +41,7 @@ interface RoutineTask {
 export default function DayScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [todayRoutines, setTodayRoutines] = useState<RoutineTask[]>([]);
   const [todayDate, setTodayDate] = useState(new Date());
   const [wakeUpTime, setWakeUpTime] = useState<number | null>(null);
@@ -164,13 +166,13 @@ export default function DayScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <StatusBar style="light" />
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Sáng</Text>
-        <Text style={styles.headerDate}>{getFormattedDate()}</Text>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Sáng</Text>
+        <Text style={[styles.headerDate, { color: colors.textSecondary }]}>{getFormattedDate()}</Text>
       </View>
 
       <ScrollView
@@ -181,16 +183,16 @@ export default function DayScreen() {
       >
         {/* Wake Up Info Card */}
         {wakeUpTime && (
-          <View style={styles.wakeUpCard}>
+          <View style={[styles.wakeUpCard, { backgroundColor: colors.surface }]}>
             <View style={styles.wakeUpCardHeader}>
               <Ionicons name="sunny" size={28} color="#fbbf24" />
               <View style={styles.wakeUpCardText}>
-                <Text style={styles.wakeUpCardTitle}>Thức dậy lúc</Text>
-                <Text style={styles.wakeUpCardTime}>{formatTime(wakeUpTime)}</Text>
+                <Text style={[styles.wakeUpCardTitle, { color: colors.textSecondary }]}>Thức dậy lúc</Text>
+                <Text style={[styles.wakeUpCardTime, { color: colors.text }]}>{formatTime(wakeUpTime)}</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.editButton}>
-              <Ionicons name="pencil" size={16} color="#3b82f6" />
+            <TouchableOpacity style={[styles.editButton, { backgroundColor: colors.background }]}>
+              <Ionicons name="pencil" size={16} color={colors.primary} />
             </TouchableOpacity>
           </View>
         )}
@@ -198,22 +200,22 @@ export default function DayScreen() {
         {/* Progress Section */}
         <View style={styles.progressSection}>
           <View style={styles.progressHeader}>
-            <Text style={styles.progressTitle}>Thói quen sáng</Text>
-            <Text style={styles.progressCount}>
+            <Text style={[styles.progressTitle, { color: colors.text }]}>Thói quen sáng</Text>
+            <Text style={[styles.progressCount, { color: colors.textSecondary }]}>
               {completedCount}/{totalCount}
             </Text>
           </View>
 
           {/* Progress Bar */}
-          <View style={styles.progressBarContainer}>
+          <View style={[styles.progressBarContainer, { backgroundColor: colors.surface }]}>
             <View
               style={[
                 styles.progressBar,
-                { width: `${progressPercent}%` },
+                { width: `${progressPercent}%`, backgroundColor: colors.primary },
               ]}
             />
           </View>
-          <Text style={styles.progressPercent}>{progressPercent}% hoàn thành</Text>
+          <Text style={[styles.progressPercent, { color: colors.textSecondary }]}>{progressPercent}% hoàn thành</Text>
         </View>
 
         {/* Routines List */}
@@ -225,7 +227,8 @@ export default function DayScreen() {
                 <TouchableOpacity
                   style={[
                     styles.routineItem,
-                    routine.completed && styles.routineItemCompleted,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    routine.completed && [styles.routineItemCompleted, { borderColor: '#22c55e' }],
                   ]}
                   onPress={() => toggleRoutine(routine.id)}
                 >
@@ -233,7 +236,8 @@ export default function DayScreen() {
                     <View
                       style={[
                         styles.routineCheckbox,
-                        routine.completed && styles.routineCheckboxCompleted,
+                        { borderColor: colors.textMuted },
+                        routine.completed && [styles.routineCheckboxCompleted, { backgroundColor: '#22c55e', borderColor: '#22c55e' }],
                       ]}
                     >
                       {routine.completed && (
@@ -244,20 +248,21 @@ export default function DayScreen() {
                       <Text
                         style={[
                           styles.routineName,
-                          routine.completed && styles.routineNameCompleted,
+                          { color: colors.text },
+                          routine.completed && [styles.routineNameCompleted, { color: colors.textMuted }],
                         ]}
                       >
                         {routine.name}
                       </Text>
                       {routineInfo && (
-                        <Text style={styles.routineDuration}>
+                        <Text style={[styles.routineDuration, { color: colors.textSecondary }]}>
                           ~{routineInfo.duration}
                         </Text>
                       )}
                     </View>
                   </View>
                   {routine.completed && (
-                    <Text style={styles.completedTime}>
+                    <Text style={[styles.completedTime, { color: '#22c55e' }]}>
                       {routine.completedAt ? formatTime(routine.completedAt) : ''}
                     </Text>
                   )}
@@ -267,13 +272,13 @@ export default function DayScreen() {
                 <View style={styles.routineActions}>
                   <TouchableOpacity
                     onPress={() => editRoutine(routine.id, routine.name)}
-                    style={styles.actionButton}
+                    style={[styles.actionButton, { backgroundColor: colors.surface }]}
                   >
-                    <Ionicons name="pencil" size={16} color="#3b82f6" />
+                    <Ionicons name="pencil" size={16} color={colors.primary} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => deleteRoutine(routine.id)}
-                    style={styles.actionButton}
+                    style={[styles.actionButton, { backgroundColor: colors.surface }]}
                   >
                     <Ionicons name="trash" size={16} color="#ef4444" />
                   </TouchableOpacity>
@@ -285,21 +290,21 @@ export default function DayScreen() {
 
         {/* Add More Routines */}
         <TouchableOpacity
-          style={styles.addMoreButton}
+          style={[styles.addMoreButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => {
             setEditingId(null);
             setNewRoutineName('');
             setShowAddModal(true);
           }}
         >
-          <Ionicons name="add-circle-outline" size={20} color="#3b82f6" />
-          <Text style={styles.addMoreButtonText}>Thêm thói quen mới</Text>
+          <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+          <Text style={[styles.addMoreButtonText, { color: colors.primary }]}>Thêm thói quen mới</Text>
         </TouchableOpacity>
 
         {/* Suggestions */}
         {todayRoutines.length < MORNING_ROUTINES.length && (
           <View style={styles.suggestionsSection}>
-            <Text style={styles.suggestionsTitle}>Gợi ý khác</Text>
+            <Text style={[styles.suggestionsTitle, { color: colors.text }]}>Gợi ý khác</Text>
             <FlatList
               data={MORNING_ROUTINES.filter(
                 r => !todayRoutines.find(tr => tr.id === r.id)
@@ -308,7 +313,7 @@ export default function DayScreen() {
               scrollEnabled={false}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.suggestionItem}
+                  style={[styles.suggestionItem, { backgroundColor: colors.surface }]}
                   onPress={() => {
                     const newRoutine: RoutineTask = {
                       id: item.id,
@@ -324,10 +329,10 @@ export default function DayScreen() {
                     {getRoutineIcon(item.icon)}
                   </View>
                   <View style={styles.suggestionInfo}>
-                    <Text style={styles.suggestionName}>{item.name}</Text>
-                    <Text style={styles.suggestionDuration}>{item.duration}</Text>
+                    <Text style={[styles.suggestionName, { color: colors.text }]}>{item.name}</Text>
+                    <Text style={[styles.suggestionDuration, { color: colors.textSecondary }]}>{item.duration}</Text>
                   </View>
-                  <Ionicons name="add" size={20} color="#64748b" />
+                  <Ionicons name="add" size={20} color={colors.textMuted} />
                 </TouchableOpacity>
               )}
             />
@@ -347,7 +352,7 @@ export default function DayScreen() {
         }}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
             <View style={styles.modalHeader}>
               <TouchableOpacity
                 onPress={() => {
@@ -356,30 +361,30 @@ export default function DayScreen() {
                   setNewRoutineName('');
                 }}
               >
-                <Text style={styles.modalCloseText}>Hủy</Text>
+                <Text style={[styles.modalCloseText, { color: colors.textSecondary }]}>Hủy</Text>
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>
                 {editingId ? 'Chỉnh sửa thói quen' : 'Thêm thói quen'}
               </Text>
               <TouchableOpacity
                 onPress={editingId ? updateRoutine : addRoutine}
               >
-                <Text style={styles.modalSaveText}>Lưu</Text>
+                <Text style={[styles.modalSaveText, { color: colors.primary }]}>Lưu</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.modalFormContainer}>
-              <Text style={styles.modalLabel}>Tên thói quen</Text>
+              <Text style={[styles.modalLabel, { color: colors.text }]}>Tên thói quen</Text>
               <TextInput
-                style={styles.modalInput}
+                style={[styles.modalInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 placeholder="Ví dụ: Uống nước, Massage mặt..."
-                placeholderTextColor="#64748b"
+                placeholderTextColor={colors.textMuted}
                 value={newRoutineName}
                 onChangeText={setNewRoutineName}
                 autoFocus
                 maxLength={50}
               />
-              <Text style={styles.modalCharCount}>
+              <Text style={[styles.modalCharCount, { color: colors.textMuted }]}>
                 {newRoutineName.length}/50
               </Text>
             </View>
@@ -393,30 +398,25 @@ export default function DayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
     marginBottom: 4,
   },
   headerDate: {
     fontSize: 14,
-    color: '#94a3b8',
   },
   content: {
     flex: 1,
     paddingHorizontal: 16,
   },
   wakeUpCard: {
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     padding: 16,
     marginTop: 16,
@@ -437,19 +437,16 @@ const styles = StyleSheet.create({
   },
   wakeUpCardTitle: {
     fontSize: 12,
-    color: '#94a3b8',
     marginBottom: 2,
   },
   wakeUpCardTime: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
   },
   editButton: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -465,28 +462,23 @@ const styles = StyleSheet.create({
   progressTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   progressCount: {
     fontSize: 14,
-    color: '#64748b',
     fontWeight: '500',
   },
   progressBarContainer: {
     height: 8,
-    backgroundColor: '#1e293b',
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#3b82f6',
     borderRadius: 4,
   },
   progressPercent: {
     fontSize: 12,
-    color: '#64748b',
   },
   routinesSection: {
     marginTop: 20,
@@ -499,17 +491,14 @@ const styles = StyleSheet.create({
   },
   routineItem: {
     flex: 1,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#334155',
   },
   routineItemCompleted: {
-    borderColor: '#22c55e',
     backgroundColor: 'rgba(34, 197, 94, 0.1)',
   },
   routineItemContent: {
@@ -523,13 +512,10 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#64748b',
     justifyContent: 'center',
     alignItems: 'center',
   },
   routineCheckboxCompleted: {
-    backgroundColor: '#22c55e',
-    borderColor: '#22c55e',
   },
   routineInfo: {
     flex: 1,
@@ -537,20 +523,16 @@ const styles = StyleSheet.create({
   routineName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#ffffff',
     marginBottom: 2,
   },
   routineNameCompleted: {
-    color: '#94a3b8',
     textDecorationLine: 'line-through',
   },
   routineDuration: {
     fontSize: 12,
-    color: '#64748b',
   },
   completedTime: {
     fontSize: 12,
-    color: '#22c55e',
     fontWeight: '500',
   },
   routineActions: {
@@ -561,7 +543,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#1e293b',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -570,18 +551,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     paddingVertical: 12,
     marginTop: 20,
     borderWidth: 1,
-    borderColor: '#334155',
     borderStyle: 'dashed',
   },
   addMoreButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3b82f6',
   },
   suggestionsSection: {
     marginTop: 24,
@@ -589,7 +567,6 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 12,
   },
   suggestionItem: {
@@ -598,7 +575,6 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     marginBottom: 8,
   },
@@ -615,12 +591,10 @@ const styles = StyleSheet.create({
   suggestionName: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#ffffff',
     marginBottom: 2,
   },
   suggestionDuration: {
     fontSize: 12,
-    color: '#64748b',
   },
 
   // Modal Styles
@@ -630,7 +604,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#0f172a',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 16,
@@ -645,17 +618,14 @@ const styles = StyleSheet.create({
   },
   modalCloseText: {
     fontSize: 16,
-    color: '#94a3b8',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   modalSaveText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#3b82f6',
   },
   modalFormContainer: {
     marginBottom: 16,
@@ -663,23 +633,18 @@ const styles = StyleSheet.create({
   modalLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 8,
   },
   modalInput: {
-    backgroundColor: '#1e293b',
-    borderColor: '#475569',
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: '#ffffff',
     fontSize: 16,
     marginBottom: 8,
   },
   modalCharCount: {
     fontSize: 12,
-    color: '#64748b',
     textAlign: 'right',
   },
 });

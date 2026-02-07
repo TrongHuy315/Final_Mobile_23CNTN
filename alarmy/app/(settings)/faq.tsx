@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
 
 interface FAQItem {
   id: string;
@@ -61,6 +62,7 @@ const FAQ_DATA: FAQItem[] = [
 
 export default function FAQScreen() {
   const router = useRouter();
+  const { colors, isDarkMode } = useTheme();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpand = (id: string) => {
@@ -68,13 +70,13 @@ export default function FAQScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color="#ffffff" />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Các câu hỏi thường gặp</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Các câu hỏi thường gặp</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -85,24 +87,24 @@ export default function FAQScreen() {
         contentContainerStyle={styles.listContainer}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.faqItem}
+            style={[styles.faqItem, { backgroundColor: colors.surface }]}
             onPress={() => toggleExpand(item.id)}
             activeOpacity={0.7}
           >
             <View style={styles.questionContainer}>
-              <Text style={styles.question} numberOfLines={expandedId === item.id ? undefined : 2}>
+              <Text style={[styles.question, { color: colors.text }]} numberOfLines={expandedId === item.id ? undefined : 2}>
                 {item.question}
               </Text>
               <Ionicons
                 name={expandedId === item.id ? 'chevron-up' : 'chevron-down'}
                 size={20}
-                color="#3b82f6"
+                color={colors.primary}
               />
             </View>
 
             {expandedId === item.id && (
-              <View style={styles.answerContainer}>
-                <Text style={styles.answer}>{item.answer}</Text>
+              <View style={[styles.answerContainer, { borderTopColor: colors.border }]}>
+                <Text style={[styles.answer, { color: colors.textSecondary }]}>{item.answer}</Text>
               </View>
             )}
           </TouchableOpacity>

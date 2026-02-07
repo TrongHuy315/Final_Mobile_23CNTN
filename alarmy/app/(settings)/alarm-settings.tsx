@@ -2,6 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
+  Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -9,29 +12,96 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SettingsManager } from '@/utils/settings-manager';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function AlarmSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   
   // State for toggles
   const [useSpeaker, setUseSpeaker] = useState(true);
   const [showNextAlarm, setShowNextAlarm] = useState(false);
   const [preventUninstall, setPreventUninstall] = useState(false);
 
+  React.useEffect(() => {
+    const loadSettings = async () => {
+      const settings = await SettingsManager.loadSettings();
+      setPreventUninstall(settings.preventUninstall);
+      setShowNextAlarm(settings.showNextAlarmNotification);
+      // Other settings can be loaded here if needed
+    };
+    loadSettings();
+  }, []);
+
+  const handleShowNextAlarmToggle = async (value: boolean) => {
+    setShowNextAlarm(value);
+    await SettingsManager.updateSetting('showNextAlarmNotification', value);
+    
+    if (value) {
+      // Logic to trigger the persistent notification could go here
+      // For now, we just persist the setting
+      console.log('Next alarm notification enabled');
+    } else {
+      // Logic to remove the persistent notification could go here
+      console.log('Next alarm notification disabled');
+    }
+  };
+
+  const handlePreventUninstall = async (value: boolean) => {
+    if (value) {
+      // Show confirmation alert
+      Alert.alert(
+        'Ngăn chặn gỡ bỏ ứng dụng',
+        'Tính năng này sẽ yêu cầu quyền Quản trị viên thiết bị để ngăn chặn việc gỡ bỏ ứng dụng trái phép. Bạn có muốn tiếp tục?',
+        [
+          { 
+            text: 'Hủy', 
+            style: 'cancel',
+            onPress: () => setPreventUninstall(false) 
+          },
+          { 
+            text: 'Đồng ý', 
+            onPress: async () => {
+              setPreventUninstall(true);
+              await SettingsManager.updateSetting('preventUninstall', true);
+              // Mock redirection to Device Admin settings
+              Alert.alert(
+                'Hướng dẫn',
+                'Vui lòng tìm mục [Quản trị viên thiết bị] trong cài đặt Bảo mật và kích hoạt Alarmy.',
+                [
+                  { 
+                    text: 'Đi đến cài đặt', 
+                    onPress: () => Linking.openSettings().catch(() => {
+                      Alert.alert('Lỗi', 'Không thể mở cài đặt. Vui lòng mở thủ công.');
+                    })
+                  }
+                ]
+              );
+            }
+          }
+        ]
+      );
+    } else {
+      setPreventUninstall(false);
+      await SettingsManager.updateSetting('preventUninstall', false);
+    }
+  };
+
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Báo thức</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Báo thức</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -41,10 +111,10 @@ export default function AlarmSettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Section: Âm lượng và âm thanh */}
-        <Text style={styles.sectionTitle}>Âm lượng và âm thanh</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Âm lượng và âm thanh</Text>
         
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sử dụng loa điện thoại</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Sử dụng loa điện thoại</Text>
           <Switch
             value={useSpeaker}
             onValueChange={setUseSpeaker}
@@ -53,35 +123,35 @@ export default function AlarmSettingsScreen() {
           />
         </View>
         
-        <Text style={styles.helperText}>Luôn reo ở loa ngoài</Text>
+        <Text style={[styles.helperText, { color: colors.textMuted }]}>Luôn reo ở loa ngoài</Text>
 
         {/* Section: Báo thức sắp tới */}
-        <Text style={styles.sectionTitle}>Báo thức sắp tới</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Báo thức sắp tới</Text>
         
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>
               Hiển thị thông báo báo thức tiếp theo trên ngăn kéo.
             </Text>
           </View>
           <Switch
             value={showNextAlarm}
-            onValueChange={setShowNextAlarm}
+            onValueChange={handleShowNextAlarmToggle}
             trackColor={{ false: '#4a5568', true: '#38b6ff' }}
             thumbColor={showNextAlarm ? '#ffffff' : '#cbd5e0'}
           />
         </View>
         
-        <Text style={styles.helperText}>
+        <Text style={[styles.helperText, { color: colors.textMuted }]}>
           Báo thức tiếp theo sẽ xuất hiện dưới dạng thông báo
         </Text>
 
         {/* Section: Ngăn gian lận báo bức */}
-        <Text style={styles.sectionTitle}>Ngăn gian lận báo bức</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Ngăn gian lận báo bức</Text>
         
         {/* Disable vibration before alarm row */}
         <TouchableOpacity 
-          style={styles.card}
+          style={[styles.card, { backgroundColor: colors.surface }]}
           activeOpacity={0.7}
           onPress={() => console.log('Disable before vibration')}
         >
@@ -90,21 +160,21 @@ export default function AlarmSettingsScreen() {
               <Text style={styles.medalIcon}>🏅</Text>
             </View>
             <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
                 Vô hiệu hoá báo thức trước khi rung
               </Text>
-              <Text style={styles.cardSubtitle}>Tắt</Text>
+              <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>Tắt</Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#718096" />
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* Prevent uninstall toggle */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Ngăn chặn gỡ bỏ ứng dụng</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Ngăn chặn gỡ bỏ ứng dụng</Text>
           <Switch
             value={preventUninstall}
-            onValueChange={setPreventUninstall}
+            onValueChange={handlePreventUninstall}
             trackColor={{ false: '#4a5568', true: '#38b6ff' }}
             thumbColor={preventUninstall ? '#ffffff' : '#cbd5e0'}
           />

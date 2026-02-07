@@ -2,63 +2,65 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 export const ProCard: React.FC = () => {
   const router = useRouter();
+  const { colors, isDarkMode } = useTheme();
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
       {/* Pro Upgrade Section */}
       <View style={styles.proSection}>
         <View style={styles.proLeft}>
           <View style={styles.proIconContainer}>
             <Ionicons name="diamond" size={24} color="#ffffff" />
           </View>
-          <Text style={styles.proText}>Pro</Text>
+          <Text style={[styles.proText, { color: colors.text }]}>Pro</Text>
         </View>
         
         <TouchableOpacity 
-          style={styles.upgradeButton}
+          style={[styles.upgradeButton, { backgroundColor: isDarkMode ? '#ffffff' : colors.primary }]}
           activeOpacity={0.8}
           onPress={() => router.push('/upgrade-pro')}
         >
-          <Text style={styles.upgradeText}>Upgrade</Text>
-          <Ionicons name="chevron-forward" size={16} color="#000000" />
+          <Text style={[styles.upgradeText, { color: isDarkMode ? '#000000' : '#ffffff' }]}>Upgrade</Text>
+          <Ionicons name="chevron-forward" size={16} color={isDarkMode ? '#000000' : '#ffffff'} />
         </TouchableOpacity>
       </View>
 
       {/* Prevent Source Off Section */}
       <TouchableOpacity 
-        style={styles.menuRow}
+        style={[styles.menuRow, { borderTopColor: colors.border }]}
         activeOpacity={0.7}
         onPress={() => router.push('/prevent-power-off')}
       >
         <View style={styles.menuLeft}>
           <View style={styles.menuIconContainer}>
-            <Ionicons name="shield-checkmark" size={20} color="#ffffff" />
+            <Ionicons name="shield-checkmark" size={20} color={colors.textSecondary} />
           </View>
-          <Text style={styles.menuText}>Ngăn tắt nguồn</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>Ngăn tắt nguồn</Text>
         </View>
         
         <View style={styles.menuRight}>
           <View style={styles.offBadge}>
-            <Text style={styles.offText}>OFF</Text>
+            <Text style={[styles.offText, { color: colors.textMuted }]}>OFF</Text>
           </View>
-          <Ionicons name="chevron-forward" size={18} color="#718096" />
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
         </View>
       </TouchableOpacity>
 
       {/* Events Section */}
       <TouchableOpacity 
-        style={[styles.menuRow, styles.lastRow]}
+        style={[styles.menuRow, styles.lastRow, { borderTopColor: colors.border }]}
         activeOpacity={0.7}
         onPress={() => router.push('/events')}
       >
         <View style={styles.menuLeft}>
           <View style={styles.menuIconContainer}>
-            <Ionicons name="gift" size={20} color="#ffffff" />
+            <Ionicons name="gift" size={20} color={colors.textSecondary} />
           </View>
-          <Text style={styles.menuText}>Sự kiện</Text>
+          <Text style={[styles.menuText, { color: colors.text }]}>Sự kiện</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -67,7 +69,6 @@ export const ProCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#2d3748',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     paddingTop: 4,
@@ -98,12 +99,10 @@ const styles = StyleSheet.create({
   proText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   upgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
   upgradeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#000000',
   },
   menuRow: {
     flexDirection: 'row',
@@ -120,7 +118,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderTopWidth: 1,
-    borderTopColor: '#374151',
   },
   lastRow: {
     borderBottomWidth: 0,
@@ -137,7 +134,6 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#ffffff',
   },
   menuRight: {
     flexDirection: 'row',
@@ -152,6 +148,5 @@ const styles = StyleSheet.create({
   offText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#a0aec0',
   },
 });

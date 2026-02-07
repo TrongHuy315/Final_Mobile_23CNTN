@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '@/context/ThemeContext';
 
 interface SettingsMenuItemProps {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -19,9 +20,11 @@ export const SettingsMenuItem: React.FC<SettingsMenuItemProps> = ({
   onPress,
   iconComponent,
 }) => {
+  const { colors } = useTheme();
+  
   return (
     <TouchableOpacity 
-      style={styles.menuItem} 
+      style={[styles.menuItem, { backgroundColor: colors.surface }]} 
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -30,11 +33,11 @@ export const SettingsMenuItem: React.FC<SettingsMenuItemProps> = ({
           iconComponent
         ) : icon ? (
           <View style={styles.iconContainer}>
-            <Ionicons name={icon} size={20} color={iconColor || '#ffffff'} />
+            <Ionicons name={icon} size={20} color={iconColor || colors.text} />
           </View>
         ) : null}
         
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
         
         {badge && (
           <View style={styles.badge}>
@@ -43,7 +46,7 @@ export const SettingsMenuItem: React.FC<SettingsMenuItemProps> = ({
         )}
       </View>
       
-      <Ionicons name="chevron-forward" size={20} color="#718096" />
+      <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
     </TouchableOpacity>
   );
 };
@@ -53,7 +56,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1a2332',
     paddingVertical: 18,
     paddingHorizontal: 20,
     marginBottom: 2,
@@ -71,7 +73,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#ffffff',
     flex: 1,
   },
   badge: {

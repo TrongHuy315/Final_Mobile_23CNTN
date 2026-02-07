@@ -11,6 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -40,38 +41,46 @@ interface StepItemProps {
   isLast?: boolean;
 }
 
-const StepItem = ({ stepNumber, icon, label, isLast = false }: StepItemProps) => (
-  <View style={styles.stepItemWrapper}>
-    <View style={styles.stepItemContainer}>
-      <Text style={styles.stepNumber}>Bước {stepNumber}</Text>
-      <View style={styles.stepIconContainer}>
-        {icon}
+const StepItem = ({ stepNumber, icon, label, isLast = false }: StepItemProps) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.stepItemWrapper}>
+      <View style={styles.stepItemContainer}>
+        <Text style={[styles.stepNumber, { color: colors.textMuted }]}>Bước {stepNumber}</Text>
+        <View style={[styles.stepIconContainer, { backgroundColor: colors.surfaceVariant, borderColor: colors.border }]}>
+          {icon}
+        </View>
+        <Text style={[styles.stepLabel, { color: colors.textSecondary }]}>{label}</Text>
       </View>
-      <Text style={styles.stepLabel}>{label}</Text>
+      {!isLast && (
+        <View style={styles.stepLineWrapper}>
+          <View style={[styles.stepLine, { backgroundColor: colors.border }]} />
+        </View>
+      )}
     </View>
-    {!isLast && <View style={styles.stepLineWrapper}><View style={styles.stepLine} /></View>}
-  </View>
-);
+  );
+};
 
 export default function InviteFriendsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
 
   const inviteCode = "ALARMY2026"; // invite code
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <StatusBar style="light" />
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mời bạn bè</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Mời bạn bè</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -85,10 +94,10 @@ export default function InviteFriendsScreen() {
           <Confetti />
           
           {/* Main Title */}
-          <Text style={styles.heroTitle}>
+          <Text style={[styles.heroTitle, { color: colors.text }]}>
             Mời bạn bè và{'\n'}Mở khóa gói Pro cho tất cả mọi người!
           </Text>
-          <Text style={styles.heroSubtitle}>
+          <Text style={[styles.heroSubtitle, { color: colors.text }]}>
             Mời bạn bè và{'\n'}Mở khóa gói Pro cho tất cả mọi người!
           </Text>
           
@@ -98,63 +107,66 @@ export default function InviteFriendsScreen() {
 
         {/* My Invite Code Section */}
         <View style={styles.inviteCodeSection}>
-          <Text style={styles.sectionTitle}>Mã mời của tôi</Text>
-          <View style={styles.codeBox}>
-            <Text style={styles.codeText}>{inviteCode}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Mã mời của tôi</Text>
+          <View style={[styles.codeBox, { backgroundColor: isDarkMode ? '#1e293b' : colors.surface, borderColor: colors.border, borderWidth: isDarkMode ? 0 : 1 }]}>
+            <Text style={[styles.codeText, { color: colors.text }]}>{inviteCode}</Text>
           </View>
-          <TouchableOpacity style={styles.shareButton} activeOpacity={0.8}>
-            <Text style={styles.shareButtonText}>Chia sẻ mã của tôi</Text>
+          <TouchableOpacity 
+            style={[styles.shareButton, { backgroundColor: isDarkMode ? '#ffffff' : colors.primary }]} 
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.shareButtonText, { color: isDarkMode ? '#0f172a' : '#ffffff' }]}>Chia sẻ mã của tôi</Text>
           </TouchableOpacity>
         </View>
 
         {/* My Friend Rewards Section */}
         <View style={styles.rewardsSection}>
-          <Text style={styles.sectionTitleDark}>Phần thưởng mời bạn bè của tôi</Text>
+          <Text style={[styles.sectionTitleDark, { color: colors.text }]}>Phần thưởng mời bạn bè của tôi</Text>
           
-          <View style={styles.giftCard}>
+          <View style={[styles.giftCard, { backgroundColor: isDarkMode ? '#1e293b' : colors.surface, borderColor: colors.border, borderWidth: isDarkMode ? 0 : 1 }]}>
             <Text style={styles.giftEmoji}>🎁</Text>
-            <Text style={styles.giftQuestion}>Bạn của bạn đã gửi mã chưa?</Text>
-            <TouchableOpacity style={styles.upgradeButton} activeOpacity={0.8}>
-              <Text style={styles.upgradeButtonText}>Nâng cấp lên gói Pro trong 7 ngày</Text>
+            <Text style={[styles.giftQuestion, { color: colors.textSecondary }]}>Bạn của bạn đã gửi mã chưa?</Text>
+            <TouchableOpacity style={[styles.upgradeButton, { backgroundColor: isDarkMode ? '#ffffff' : colors.primary }]} activeOpacity={0.8}>
+              <Text style={[styles.upgradeButtonText, { color: isDarkMode ? '#0f172a' : '#ffffff' }]}>Nâng cấp lên gói Pro trong 7 ngày</Text>
             </TouchableOpacity>
           </View>
 
           {/* Rewards Received */}
-          <View style={styles.rewardsReceivedCard}>
+          <View style={[styles.rewardsReceivedCard, { backgroundColor: isDarkMode ? '#1e293b' : colors.surface, borderColor: colors.border, borderWidth: isDarkMode ? 0 : 1 }]}>
             <View style={styles.rewardsReceivedHeader}>
-              <Text style={styles.rewardsReceivedTitle}>Phần thưởng đã nhận được cho đến nay</Text>
-              <Text style={styles.rewardsReceivedLabel}>Tổng cộng</Text>
+              <Text style={[styles.rewardsReceivedTitle, { color: colors.text }]}>Phần thưởng đã nhận được cho đến nay</Text>
+              <Text style={[styles.rewardsReceivedLabel, { color: colors.textMuted }]}>Tổng cộng</Text>
             </View>
             <View style={styles.rewardsStats}>
-              <Text style={styles.rewardsStatsValue}>0</Text>
-              <Text style={styles.rewardsStatsUnit}>ngày</Text>
+              <Text style={[styles.rewardsStatsValue, { color: colors.text }]}>0</Text>
+              <Text style={[styles.rewardsStatsUnit, { color: colors.textSecondary }]}>ngày</Text>
             </View>
           </View>
         </View>
 
         {/* How It Works Section */}
-        <View style={styles.howItWorksSection}>
-          <Text style={styles.sectionTitleDark}>Cách hoạt động</Text>
+        <View style={[styles.howItWorksSection, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitleDark, { color: colors.text }]}>Cách hoạt động</Text>
           
           <View style={styles.stepsContainer}>
             <StepItem
               stepNumber={1}
-              icon={<Ionicons name="copy-outline" size={25} color="#94a3b8" />}
+              icon={<Ionicons name="copy-outline" size={25} color={colors.textSecondary} />}
               label="sao chép mã"
             />
             <StepItem
               stepNumber={2}
-              icon={<MaterialCommunityIcons name="share-variant" size={25} color="#94a3b8" />}
+              icon={<MaterialCommunityIcons name="share-variant" size={25} color={colors.textSecondary} />}
               label="chia sẻ mã"
             />
             <StepItem
               stepNumber={3}
-              icon={<Ionicons name="people-outline" size={25} color="#94a3b8" />}
+              icon={<Ionicons name="people-outline" size={25} color={colors.textSecondary} />}
               label="gửi mã"
             />
             <StepItem
               stepNumber={4}
-              icon={<Ionicons name="star" size={25} color="#94a3b8" />}
+              icon={<Ionicons name="star" size={25} color={colors.textSecondary} />}
               label="nhận phần thưởng"
               isLast
             />
@@ -162,20 +174,20 @@ export default function InviteFriendsScreen() {
 
           {/* Instructions */}
           <View style={styles.instructionsList}>
-            <Text style={styles.instructionItem}>• Chia sẻ mã với bạn bè.</Text>
-            <Text style={styles.instructionItem}>• Người bạn được mời của bạn gửi mã sau khi đăng ký.</Text>
-            <Text style={styles.instructionItem}>• Sau khi hoàn tất lời mời, vui lòng nhấn vào nút &quot;Nhận gói Pro&quot;.</Text>
-            <Text style={styles.instructionItem}>• Tận hưởng gói Pro của Alarmy miễn phí với bạn bè.</Text>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>• Chia sẻ mã với bạn bè.</Text>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>• Người bạn được mời của bạn gửi mã sau khi đăng ký.</Text>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>• Sau khi hoàn tất lời mời, vui lòng nhấn vào nút &quot;Nhận gói Pro&quot;.</Text>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>• Tận hưởng gói Pro của Alarmy miễn phí với bạn bè.</Text>
           </View>
         </View>
 
         {/* Important Notice Section */}
-        <View style={styles.importantNoticeSection}>
-          <Text style={styles.importantNoticeTitle}>Thông báo quan trọng</Text>
+        <View style={[styles.importantNoticeSection, { backgroundColor: colors.background }]}>
+          <Text style={[styles.importantNoticeTitle, { color: colors.text }]}>Thông báo quan trọng</Text>
           <View style={styles.noticesList}>
-            <Text style={styles.noticeItem}>• Phần thưởng sẽ biến mất sau khi bạn xóa Alarmy. Tiếp tục cài đặt ứng dụng và tận hưởng trọn vẹn phần thưởng của bạn.</Text>
-            <Text style={styles.noticeItem}>• Bạn chỉ có thể nhận được phần thưởng sau khi người bạn mời gửi mã.</Text>
-            <Text style={styles.noticeItem}>• Bạn càng mời nhiều bạn bè, bạn càng nhận được nhiều phần thưởng.</Text>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>• Phần thưởng sẽ biến mất sau khi bạn xóa Alarmy. Tiếp tục cài đặt ứng dụng và tận hưởng trọn vẹn phần thưởng của bạn.</Text>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>• Bạn chỉ có thể nhận được phần thưởng sau khi người bạn mời gửi mã.</Text>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>• Bạn càng mời nhiều bạn bè, bạn càng nhận được nhiều phần thưởng.</Text>
           </View>
         </View>
       </ScrollView>
@@ -186,7 +198,6 @@ export default function InviteFriendsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -195,7 +206,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backButton: {
     width: 40,
@@ -206,7 +216,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   placeholder: {
     width: 40,
@@ -220,7 +229,6 @@ const styles = StyleSheet.create({
   
   // Hero Section
   heroSection: {
-    backgroundColor: '#2563eb',
     paddingVertical: 40,
     paddingHorizontal: 24,
     alignItems: 'center',
@@ -230,14 +238,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#ffffff',
     textAlign: 'center',
     lineHeight: 34,
     marginBottom: 12,
   },
   heroSubtitle: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 24,
@@ -282,11 +288,9 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#94a3b8',
     marginBottom: 12,
   },
   codeBox: {
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     paddingVertical: 20,
     paddingHorizontal: 20,
@@ -295,12 +299,10 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
     textAlign: 'center',
     letterSpacing: 2,
   },
   shareButton: {
-    backgroundColor: '#ffffff',
     borderRadius: 30,
     paddingVertical: 16,
     alignItems: 'center',
@@ -308,7 +310,6 @@ const styles = StyleSheet.create({
   shareButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0f172a',
   },
   
   // Rewards Section
@@ -319,11 +320,9 @@ const styles = StyleSheet.create({
   sectionTitleDark: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 16,
   },
   giftCard: {
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     paddingVertical: 24,
     paddingHorizontal: 20,
@@ -336,12 +335,10 @@ const styles = StyleSheet.create({
   },
   giftQuestion: {
     fontSize: 15,
-    color: '#94a3b8',
     marginBottom: 20,
     textAlign: 'center',
   },
   upgradeButton: {
-    backgroundColor: '#ffffff',
     borderRadius: 30,
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -351,12 +348,10 @@ const styles = StyleSheet.create({
   upgradeButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#0f172a',
   },
   
   // Rewards Received Card
   rewardsReceivedCard: {
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     padding: 20,
   },
@@ -369,12 +364,10 @@ const styles = StyleSheet.create({
   rewardsReceivedTitle: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#ffffff',
     flex: 1,
   },
   rewardsReceivedLabel: {
     fontSize: 13,
-    color: '#64748b',
     textAlign: 'right',
   },
   rewardsStats: {
@@ -385,17 +378,14 @@ const styles = StyleSheet.create({
   rewardsStatsValue: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#ffffff',
     marginRight: 4,
   },
   rewardsStatsUnit: {
     fontSize: 14,
-    color: '#94a3b8',
   },
   
   // How It Works Section
   howItWorksSection: {
-    backgroundColor: '#1e293b',
     marginTop: 24,
     paddingVertical: 24,
     paddingHorizontal: 24,
@@ -416,18 +406,15 @@ const styles = StyleSheet.create({
   },
   stepNumber: {
     fontSize: 11,
-    color: '#94a3b8',
     marginBottom: 8,
   },
   stepIconContainer: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#334155',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#475569',
   },
   stepLineWrapper: {
     justifyContent: 'center',
@@ -437,11 +424,9 @@ const styles = StyleSheet.create({
   stepLine: {
     width: 20,
     height: 2,
-    backgroundColor: '#475569',
   },
   stepLabel: {
     fontSize: 12,
-    color: '#94a3b8',
     marginTop: 8,
     textAlign: 'center',
   },
@@ -452,20 +437,17 @@ const styles = StyleSheet.create({
   },
   instructionItem: {
     fontSize: 14,
-    color: '#94a3b8',
     lineHeight: 22,
   },
   
   // Important Notice Section
   importantNoticeSection: {
-    backgroundColor: '#1e293b',
     paddingVertical: 24,
     paddingHorizontal: 24,
   },
   importantNoticeTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 16,
   },
   noticesList: {
@@ -473,7 +455,6 @@ const styles = StyleSheet.create({
   },
   noticeItem: {
     fontSize: 14,
-    color: '#94a3b8',
     lineHeight: 22,
   },
 });

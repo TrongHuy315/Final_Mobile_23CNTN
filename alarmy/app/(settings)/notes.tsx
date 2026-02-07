@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Note {
@@ -25,6 +26,7 @@ interface Note {
 
 export default function NotesScreen() {
   const router = useRouter();
+  const { colors, isDarkMode } = useTheme();
   const [notes, setNotes] = useState<Note[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
@@ -141,17 +143,17 @@ export default function NotesScreen() {
 
   if (isEditing) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={() => setIsEditing(false)}>
-            <Ionicons name="chevron-back" size={28} color="#ffffff" />
+            <Ionicons name="chevron-back" size={28} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>
             {editingNote ? 'Chỉnh sửa ghi chú' : 'Ghi chú mới'}
           </Text>
           <TouchableOpacity onPress={handleSaveNote}>
-            <Text style={styles.saveButton}>Lưu</Text>
+            <Text style={[styles.saveButton, { color: colors.primary }]}>Lưu</Text>
           </TouchableOpacity>
         </View>
 
@@ -159,16 +161,16 @@ export default function NotesScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.form}>
             <TextInput
-              style={styles.titleInput}
+              style={[styles.titleInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="Tiêu đề ghi chú"
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={title}
               onChangeText={setTitle}
             />
             <TextInput
-              style={styles.contentInput}
+              style={[styles.contentInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="Nội dung ghi chú..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={content}
               onChangeText={setContent}
               multiline
@@ -181,24 +183,24 @@ export default function NotesScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color="#ffffff" />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Bảng ghi chú</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Bảng ghi chú</Text>
         <TouchableOpacity onPress={handleAddNote}>
-          <Ionicons name="add" size={28} color="#3b82f6" />
+          <Ionicons name="add" size={28} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       {/* Notes List */}
       {notes.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="document-text-outline" size={48} color="#475569" />
-          <Text style={styles.emptyText}>Chưa có ghi chú nào</Text>
-          <Text style={styles.emptySubText}>Nhấn nút + để tạo ghi chú mới</Text>
+          <Ionicons name="document-text-outline" size={48} color={colors.textMuted} />
+          <Text style={[styles.emptyText, { color: colors.text }]}>Chưa có ghi chú nào</Text>
+          <Text style={[styles.emptySubText, { color: colors.textMuted }]}>Nhấn nút + để tạo ghi chú mới</Text>
         </View>
       ) : (
         <FlatList
@@ -207,17 +209,17 @@ export default function NotesScreen() {
           contentContainerStyle={styles.listContainer}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.noteCard}
+              style={[styles.noteCard, { backgroundColor: colors.surface }]}
               onPress={() => handleEditNote(item)}
             >
               <View style={styles.noteContent}>
-                <Text style={styles.noteTitle} numberOfLines={2}>
+                <Text style={[styles.noteTitle, { color: colors.text }]} numberOfLines={2}>
                   {item.title}
                 </Text>
-                <Text style={styles.notePreview} numberOfLines={2}>
+                <Text style={[styles.notePreview, { color: colors.textSecondary }]} numberOfLines={2}>
                   {item.content || 'Không có nội dung'}
                 </Text>
-                <Text style={styles.noteDate}>
+                <Text style={[styles.noteDate, { color: colors.textMuted }]}>
                   {formatDate(item.updatedAt)}
                 </Text>
               </View>

@@ -1,15 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 interface NewFeatureBannerProps {
   onPress?: () => void;
 }
 
 export const NewFeatureBanner: React.FC<NewFeatureBannerProps> = ({ onPress }) => {
+  const { colors } = useTheme();
+
   return (
     <TouchableOpacity 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.surface }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
@@ -19,17 +22,16 @@ export const NewFeatureBanner: React.FC<NewFeatureBannerProps> = ({ onPress }) =
         </View>
       </View>
       <View style={styles.content}>
-        <Text style={styles.subtitle}>Lại ngủ nữa à?</Text>
-        <Text style={styles.title}>Thử nhiệm vụ mới của chúng tôi</Text>
+        <Text style={[styles.subtitle, { color: colors.textMuted }]}>Lại ngủ nữa à?</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Thử nhiệm vụ mới của chúng tôi</Text>
       </View>
-      <Ionicons name="chevron-forward" size={24} color="#ffffff" />
+      <Ionicons name="chevron-forward" size={24} color={colors.textMuted} />
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#2d3748',
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
@@ -57,12 +59,10 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: '#a0aec0',
     marginBottom: 2,
   },
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
 });

@@ -17,9 +17,11 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { StatusBar } from 'expo-status-bar';
 import { AlarmManager, SleepRecord } from '@/utils/alarm-manager';
 import { router } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SleepScreen() {
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [sleepScore, setSleepScore] = useState(63);
   const [sleepRecords, setSleepRecords] = useState<SleepRecord[]>([]);
   const [trackingModalVisible, setTrackingModalVisible] = useState(false);
@@ -122,12 +124,12 @@ export default function SleepScreen() {
   const todayRecord = getTodayRecord();
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <StatusBar style="light" />
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Giấc ngủ</Text>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Giấc ngủ</Text>
       </View>
 
       <ScrollView
@@ -136,19 +138,19 @@ export default function SleepScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
       >
         {/* Sleep Score Card */}
-        <View style={styles.scoreCard}>
-          <Text style={styles.scoreCardTitle}>Tìm hiểu vấn đề về giấc ngủ của bạn</Text>
+        <View style={[styles.scoreCard, { backgroundColor: isDarkMode ? '#7a7a96' : '#e2e8f0' }]}>
+          <Text style={[styles.scoreCardTitle, { color: isDarkMode ? '#ffffff' : colors.text }]}>Tìm hiểu vấn đề về giấc ngủ của bạn</Text>
 
           <View style={{ marginTop: 30, alignItems: 'center' }}>
             <ArcGauge score={sleepScore} />
           </View>
 
-          <Text style={styles.scoreCardText}>
+          <Text style={[styles.scoreCardText, { color: isDarkMode ? '#ffffff' : colors.textSecondary }]}>
             Bạn có thể ngủ {formatDuration(avgSleepDuration)} kể từ bây giờ
           </Text>
 
           <TouchableOpacity
-            style={styles.sleepBtn}
+            style={[styles.sleepBtn, { backgroundColor: isDarkMode ? '#0909e6' : '#2563eb' }]}
             onPress={() => setTrackingModalVisible(true)}
           >
             <Ionicons name="add" size={20} color="#ffffff" />
@@ -159,18 +161,18 @@ export default function SleepScreen() {
         {/* Recent Sleep Records */}
         {sleepRecords.length > 0 && (
           <View style={styles.recordsSection}>
-            <Text style={styles.recordsTitle}>Ghi lại gần đây</Text>
+            <Text style={[styles.recordsTitle, { color: colors.text }]}>Ghi lại gần đây</Text>
             {sleepRecords.slice(0, 5).map((record) => (
-              <View key={record.id} style={styles.recordCard}>
+              <View key={record.id} style={[styles.recordCard, { backgroundColor: colors.surface }]}>
                 <View style={styles.recordCardLeft}>
-                  <View style={styles.recordDateBadge}>
-                    <Text style={styles.recordDateBadgeText}>{record.date}</Text>
+                  <View style={[styles.recordDateBadge, { backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }]}>
+                    <Text style={[styles.recordDateBadgeText, { color: colors.textSecondary }]}>{record.date}</Text>
                   </View>
                   <View style={styles.recordCardInfo}>
-                    <Text style={styles.recordCardDuration}>
+                    <Text style={[styles.recordCardDuration, { color: colors.text }]}>
                       {formatDuration(record.duration)}
                     </Text>
-                    <Text style={styles.recordCardQuality}>Chất lượng {record.quality}%</Text>
+                    <Text style={[styles.recordCardQuality, { color: colors.textMuted }]}>Chất lượng {record.quality}%</Text>
                   </View>
                 </View>
                 <View
@@ -190,32 +192,42 @@ export default function SleepScreen() {
 
         {/* Stats */}
         <View style={styles.statsSection}>
-          <Text style={styles.statsTitle}>Thống kê 7 ngày</Text>
+          <Text style={[styles.statsTitle, { color: colors.text }]}>Thống kê 7 ngày</Text>
           <View style={styles.statsGrid}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Trung bình</Text>
-              <Text style={styles.statValue}>
+            <View style={[styles.statItem, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Trung bình</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
                 {formatDuration(Math.round(sleepRecords.slice(-7).reduce((sum, r) => sum + r.duration, 0) / (sleepRecords.length > 0 ? sleepRecords.length : 1)))}
               </Text>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Chất lượng</Text>
-              <Text style={styles.statValue}>
+            <View style={[styles.statItem, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Chất lượng</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>
                 {Math.round(sleepRecords.slice(-7).reduce((sum, r) => sum + r.quality, 0) / (sleepRecords.length > 0 ? sleepRecords.length : 1))}%
               </Text>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>Tổng số ngày</Text>
-              <Text style={styles.statValue}>{sleepRecords.length}</Text>
+            <View style={[styles.statItem, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Tổng số ngày</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{sleepRecords.length}</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
       {/* Sleep Report Button */}
-      <TouchableOpacity style={[styles.reportBtn, { marginBottom: insets.bottom + 12, marginHorizontal: 16 }]} onPress={() => {router.push("/(tabs)/report")}}>
-        <Text style={styles.reportBtnText}>Báo cáo giấc ngủ</Text>
-        <Ionicons name="chevron-forward-outline" size={20} color="#ffffff" />
+      <TouchableOpacity 
+        style={[
+          styles.reportBtn, 
+          { 
+            backgroundColor: isDarkMode ? '#7a7a96' : '#e2e8f0', 
+            marginBottom: insets.bottom + 12, 
+            marginHorizontal: 16 
+          }
+        ]} 
+        onPress={() => {router.push("/(tabs)/report")}}
+      >
+        <Text style={[styles.reportBtnText, { color: isDarkMode ? '#ffffff' : colors.text }]}>Báo cáo giấc ngủ</Text>
+        <Ionicons name="chevron-forward-outline" size={20} color={isDarkMode ? '#ffffff' : colors.text} />
       </TouchableOpacity>
 
       {/* Tracking Modal */}
@@ -227,45 +239,45 @@ export default function SleepScreen() {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.modalOverlay}>
-            <View style={[styles.modalContent, { paddingTop: insets.top + 16 }]}>
+            <View style={[styles.modalContent, { backgroundColor: colors.background, paddingTop: insets.top + 16 }]}>
               {/* Header */}
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Theo dõi giấc ngủ</Text>
+              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Theo dõi giấc ngủ</Text>
                 <TouchableOpacity onPress={() => setTrackingModalVisible(false)}>
-                  <Ionicons name="close" size={24} color="#ffffff" />
+                  <Ionicons name="close" size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
 
               <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 {/* Sleep Time */}
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Giờ ngủ</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Giờ ngủ</Text>
                   <TextInput
-                    style={styles.timeInput}
+                    style={[styles.timeInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                     value={sleepTime}
                     onChangeText={setSleepTime}
                     placeholder="23:00"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={colors.textMuted}
                   />
                 </View>
 
                 {/* Wake Time */}
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Giờ thức dậy</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Giờ thức dậy</Text>
                   <TextInput
-                    style={styles.timeInput}
+                    style={[styles.timeInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                     value={wakeTime}
                     onChangeText={setWakeTime}
                     placeholder="07:00"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={colors.textMuted}
                   />
                 </View>
 
                 {/* Quality Slider */}
                 <View style={styles.formGroup}>
                   <View style={styles.qualityHeader}>
-                    <Text style={styles.formLabel}>Chất lượng giấc ngủ</Text>
-                    <Text style={styles.qualityValue}>{quality}%</Text>
+                    <Text style={[styles.formLabel, { color: colors.text }]}>Chất lượng giấc ngủ</Text>
+                    <Text style={[styles.qualityValue, { color: colors.primary }]}>{quality}%</Text>
                   </View>
                   <View style={styles.sliderContainer}>
                     {[0, 25, 50, 75, 100].map((value) => (
@@ -273,13 +285,15 @@ export default function SleepScreen() {
                         key={value}
                         style={[
                           styles.qualityButton,
-                          quality === value && styles.qualityButtonActive,
+                          { backgroundColor: colors.surface, borderColor: colors.border },
+                          quality === value && [styles.qualityButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
                         ]}
                         onPress={() => setQuality(value)}
                       >
                         <Text
                           style={[
                             styles.qualityButtonText,
+                            { color: colors.textSecondary },
                             quality === value && styles.qualityButtonTextActive,
                           ]}
                         >
@@ -292,13 +306,13 @@ export default function SleepScreen() {
 
                 {/* Notes */}
                 <View style={styles.formGroup}>
-                  <Text style={styles.formLabel}>Ghi chú (tùy chọn)</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Ghi chú (tùy chọn)</Text>
                   <TextInput
-                    style={[styles.notesInput]}
+                    style={[styles.notesInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                     value={notes}
                     onChangeText={setNotes}
                     placeholder="Thêm ghi chú về giấc ngủ của bạn..."
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={colors.textMuted}
                     multiline
                     numberOfLines={4}
                   />
@@ -306,9 +320,9 @@ export default function SleepScreen() {
               </ScrollView>
 
               {/* Save Button */}
-              <View style={[styles.modalFooter, { paddingBottom: insets.bottom + 12 }]}>
+              <View style={[styles.modalFooter, { borderTopColor: colors.border, paddingBottom: insets.bottom + 12 }]}>
                 <TouchableOpacity
-                  style={styles.saveButton}
+                  style={[styles.saveButton, { backgroundColor: colors.primary }]}
                   onPress={handleSaveSleepRecord}
                 >
                   <Text style={styles.saveButtonText}>Lưu</Text>
@@ -325,25 +339,21 @@ export default function SleepScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
   },
   content: {
     flex: 1,
     paddingHorizontal: 16,
   },
   scoreCard: {
-    backgroundColor: '#7a7a96',
     width: '100%',
     borderRadius: 20,
     alignItems: 'center',
@@ -366,7 +376,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   sleepBtn: {
-    backgroundColor: '#0909e6',
     width: '100%',
     height: 50,
     alignItems: 'center',
@@ -386,11 +395,9 @@ const styles = StyleSheet.create({
   recordsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 12,
   },
   recordCard: {
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -405,13 +412,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   recordDateBadge: {
-    backgroundColor: '#334155',
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 6,
   },
   recordDateBadgeText: {
-    color: '#94a3b8',
     fontSize: 11,
     fontWeight: '500',
   },
@@ -421,12 +426,10 @@ const styles = StyleSheet.create({
   recordCardDuration: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 2,
   },
   recordCardQuality: {
     fontSize: 12,
-    color: '#64748b',
   },
   recordQualityBadge: {
     borderRadius: 8,
@@ -444,7 +447,6 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 12,
   },
   statsGrid: {
@@ -453,23 +455,19 @@ const styles = StyleSheet.create({
   },
   statItem: {
     flex: 1,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
   },
   statLabel: {
     fontSize: 12,
-    color: '#64748b',
     marginBottom: 6,
   },
   statValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
   },
   reportBtn: {
-    backgroundColor: '#7a7a96',
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -487,7 +485,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1e293b',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     flex: 0.9,
@@ -499,13 +496,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
     marginBottom: 16,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
   },
   modalBody: {
     flex: 1,
@@ -516,17 +511,13 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 8,
   },
   timeInput: {
-    backgroundColor: '#0f172a',
     borderRadius: 8,
     padding: 12,
-    color: '#ffffff',
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   qualityHeader: {
     flexDirection: 'row',
@@ -537,7 +528,6 @@ const styles = StyleSheet.create({
   qualityValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#3b82f6',
   },
   sliderContainer: {
     flexDirection: 'row',
@@ -548,17 +538,12 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 8,
     borderRadius: 6,
-    backgroundColor: '#0f172a',
     borderWidth: 1,
-    borderColor: '#334155',
     alignItems: 'center',
   },
   qualityButtonActive: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
   },
   qualityButtonText: {
-    color: '#94a3b8',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -566,22 +551,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   notesInput: {
-    backgroundColor: '#0f172a',
     borderRadius: 8,
     padding: 12,
-    color: '#ffffff',
     fontSize: 14,
     borderWidth: 1,
-    borderColor: '#334155',
     textAlignVertical: 'top',
   },
   modalFooter: {
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
   },
   saveButton: {
-    backgroundColor: '#3b82f6',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',

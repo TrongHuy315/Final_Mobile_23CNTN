@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AlarmItem {
   time: string;
@@ -27,6 +28,7 @@ const EMOJIS = ['😴', '😔', '😣', '😠', '😡'];
 export default function UpgradeProScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   
   const [alarms, setAlarms] = useState<AlarmItem[]>(INITIAL_ALARMS);
   const [emojiIndex, setEmojiIndex] = useState(0);
@@ -137,13 +139,13 @@ export default function UpgradeProScreen() {
   );
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: isDarkMode ? '#1e3a8a' : '#f8fafc' }]}>
       {/* Close Button */}
       <TouchableOpacity
         style={[styles.closeButton, { top: insets.top + 12 }]}
         onPress={handleClose}
       >
-        <Ionicons name="close" size={24} color="#ffffff" />
+        <Ionicons name="close" size={24} color={isDarkMode ? '#ffffff' : colors.text} />
       </TouchableOpacity>
 
       {/* Header */}
@@ -152,7 +154,7 @@ export default function UpgradeProScreen() {
           <Ionicons name="diamond" size={16} color="#ffffff" />
           <Text style={styles.proText}>PRO</Text>
         </View>
-        <Text style={styles.title}>Với Alarmy Pro,{'\n'}một báo thức là đủ</Text>
+        <Text style={[styles.title, { color: isDarkMode ? '#ffffff' : colors.text }]}>Với Alarmy Pro,{'\n'}một báo thức là đủ</Text>
       </View>
 
       {/* Animation Content */}
@@ -160,13 +162,14 @@ export default function UpgradeProScreen() {
         <Animated.View style={[styles.phoneContainer, { opacity: fadeAnim }]}>
           {!showFinalView ? (
             // Phone with multiple alarms toggling off
-            <View style={styles.phoneMockup}>
+            <View style={[styles.phoneMockup, { backgroundColor: isDarkMode ? '#1e293b' : colors.surface, borderColor: colors.border, borderWidth: isDarkMode ? 0 : 1 }]}>
               <View style={styles.alarmsContainer}>
                 {alarms.map((alarm, index) => (
                   <View key={index} style={styles.alarmRow}>
                     <Text style={[
                       styles.alarmTime,
-                      !alarm.isOn && styles.alarmTimeOff
+                      { color: isDarkMode ? '#ffffff' : colors.text },
+                      !alarm.isOn && [styles.alarmTimeOff, { color: colors.textMuted }]
                     ]}>
                       AM {alarm.time}
                     </Text>
@@ -178,7 +181,7 @@ export default function UpgradeProScreen() {
               {/* Emoji */}
               <Animated.View style={[
                 styles.emojiContainer,
-                { transform: [{ scale: scaleAnim }] }
+                { transform: [{ scale: scaleAnim }], backgroundColor: isDarkMode ? '#fef3c7' : '#fff7ed' }
               ]}>
                 <Text style={styles.emoji}>{EMOJIS[emojiIndex]}</Text>
               </Animated.View>
@@ -193,33 +196,33 @@ export default function UpgradeProScreen() {
               
               <View style={styles.phonesStack}>
                 {/* Background phones */}
-                <View style={[styles.bgPhone, styles.bgPhoneLeft]} />
-                <View style={[styles.bgPhone, styles.bgPhoneRight]} />
+                <View style={[styles.bgPhone, styles.bgPhoneLeft, { backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe' }]} />
+                <View style={[styles.bgPhone, styles.bgPhoneRight, { backgroundColor: isDarkMode ? '#1e40af' : '#dbeafe' }]} />
                 
                 {/* Main alarm card */}
-                <View style={styles.mainAlarmCard}>
+                <View style={[styles.mainAlarmCard, { backgroundColor: colors.surface }]}>
                   <View style={styles.mainAlarmContent}>
-                    <Text style={styles.mainAlarmTime}>AM 7:00</Text>
+                    <Text style={[styles.mainAlarmTime, { color: colors.text }]}>AM 7:00</Text>
                     <ToggleSwitch isOn={true} />
                   </View>
                   <View style={styles.missionRow}>
-                    <Text style={styles.missionLabel}>Mission</Text>
+                    <Text style={[styles.missionLabel, { color: colors.textMuted }]}>Mission</Text>
                     <View style={styles.missionIcons}>
-                      <Ionicons name="apps" size={14} color="#64748b" />
-                      <Ionicons name="camera" size={14} color="#64748b" />
-                      <Ionicons name="walk" size={14} color="#64748b" />
+                      <Ionicons name="apps" size={14} color={colors.textMuted} />
+                      <Ionicons name="camera" size={14} color={colors.textMuted} />
+                      <Ionicons name="walk" size={14} color={colors.textMuted} />
                     </View>
-                    <Ionicons name="ellipsis-vertical" size={16} color="#64748b" />
+                    <Ionicons name="ellipsis-vertical" size={16} color={colors.textMuted} />
                   </View>
                 </View>
               </View>
               
               {/* Background alarm times (faded) */}
               <View style={styles.fadedAlarms}>
-                <Text style={styles.fadedAlarmText}>AM 6:50</Text>
-                <Text style={styles.fadedAlarmText}>AM 7:10</Text>
-                <Text style={styles.fadedAlarmText}>AM 7:20</Text>
-                <Text style={styles.fadedAlarmText}>AM 7:30</Text>
+                <Text style={[styles.fadedAlarmText, { color: isDarkMode ? '#93c5fd' : '#cbd5e1' }]}>AM 6:50</Text>
+                <Text style={[styles.fadedAlarmText, { color: isDarkMode ? '#93c5fd' : '#cbd5e1' }]}>AM 7:10</Text>
+                <Text style={[styles.fadedAlarmText, { color: isDarkMode ? '#93c5fd' : '#cbd5e1' }]}>AM 7:20</Text>
+                <Text style={[styles.fadedAlarmText, { color: isDarkMode ? '#93c5fd' : '#cbd5e1' }]}>AM 7:30</Text>
               </View>
             </View>
           )}
@@ -236,7 +239,7 @@ export default function UpgradeProScreen() {
           <Text style={styles.ctaButtonText}>Bắt đầu tuần dùng thử miễn phí</Text>
         </TouchableOpacity>
         
-        <Text style={styles.disclaimerText}>
+        <Text style={[styles.disclaimerText, { color: isDarkMode ? '#93c5fd' : colors.textSecondary }]}>
           Không tính phí cho đến khi hết thời gian dùng thử
         </Text>
       </View>

@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AlarmManager } from '@/utils/alarm-manager';
+import { useTheme } from '@/context/ThemeContext';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.65;
@@ -30,6 +31,7 @@ const WAKE_CHECK_OPTIONS = [
 
 // Info Modal Component
 const InfoModal = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+  const { colors, isDarkMode } = useTheme();
   const slideAnim = useRef(new Animated.Value(MODAL_HEIGHT)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -215,6 +217,7 @@ const InfoModal = ({ visible, onClose }: { visible: boolean; onClose: () => void
           style={[
             modalStyles.sheet,
             {
+              backgroundColor: colors.surface,
               transform: [{ translateY: slideAnim }],
             },
           ]}
@@ -222,12 +225,12 @@ const InfoModal = ({ visible, onClose }: { visible: boolean; onClose: () => void
         >
           {/* Handle */}
           <View style={modalStyles.handleContainer}>
-            <View style={modalStyles.handle} />
+            <View style={[modalStyles.handle, { backgroundColor: colors.border }]} />
           </View>
 
           {/* Title */}
-          <Text style={modalStyles.title}>Kiểm tra thức dậy</Text>
-          <Text style={modalStyles.subtitle}>
+          <Text style={[modalStyles.title, { color: colors.text }]}>Kiểm tra thức dậy</Text>
+          <Text style={[modalStyles.subtitle, { color: colors.textSecondary }]}>
             Không có phản hồi? Đổ chuông lần nữa
           </Text>
 
@@ -296,7 +299,8 @@ const InfoModal = ({ visible, onClose }: { visible: boolean; onClose: () => void
                   key={index}
                   style={[
                     modalStyles.dot,
-                    modalStep === index && modalStyles.dotActive,
+                    { backgroundColor: colors.border },
+                    modalStep === index && [modalStyles.dotActive, { backgroundColor: colors.primary }],
                   ]}
                 />
               ))}
@@ -304,8 +308,11 @@ const InfoModal = ({ visible, onClose }: { visible: boolean; onClose: () => void
           </View>
 
           {/* Try it button */}
-          <TouchableOpacity style={modalStyles.tryButton} onPress={closeModal}>
-            <Text style={modalStyles.tryButtonText}>Dùng thử</Text>
+          <TouchableOpacity 
+            style={[modalStyles.tryButton, { backgroundColor: isDarkMode ? '#ffffff' : colors.primary }]} 
+            onPress={closeModal}
+          >
+            <Text style={[modalStyles.tryButtonText, { color: isDarkMode ? colors.primary : '#ffffff' }]}>Dùng thử</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -323,7 +330,6 @@ const modalStyles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   sheet: {
-    backgroundColor: '#1e293b',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
@@ -337,19 +343,16 @@ const modalStyles = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#64748b',
     borderRadius: 2,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#ffffff',
     textAlign: 'center',
     marginTop: 8,
   },
   subtitle: {
     fontSize: 15,
-    color: '#94a3b8',
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 24,
@@ -497,7 +500,6 @@ const modalStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#475569',
   },
   dotActive: {
     backgroundColor: '#3b82f6',
@@ -513,13 +515,13 @@ const modalStyles = StyleSheet.create({
   tryButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5c75b4ff',
   },
 });
 
 export default function WakeUpCheckScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [selectedOption, setSelectedOption] = useState('off');
   const [animationStep, setAnimationStep] = useState(0);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
@@ -647,15 +649,15 @@ export default function WakeUpCheckScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Kiểm tra thức dậy</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Kiểm tra thức dậy</Text>
         <TouchableOpacity style={styles.infoButton} onPress={handleInfoPress}>
-          <Ionicons name="information-circle-outline" size={24} color="#ffffff" />
+          <Ionicons name="information-circle-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -738,7 +740,7 @@ export default function WakeUpCheckScreen() {
         </View>
 
         {/* Options Section */}
-        <Text style={styles.optionsTitle}>
+        <Text style={[styles.optionsTitle, { color: colors.text }]}>
           Khi nào cần kiểm tra lại sau khi chuông tắt?
         </Text>
 
@@ -750,13 +752,14 @@ export default function WakeUpCheckScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               selectedOption === option.id && styles.radioButtonSelected
             ]}>
               {selectedOption === option.id && (
-                <View style={styles.radioButtonInner} />
+                <View style={[styles.radioButtonInner, { backgroundColor: colors.primary }]} />
               )}
             </View>
-            <Text style={styles.optionText}>{option.label}</Text>
+            <Text style={[styles.optionText, { color: colors.text }]}>{option.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -773,7 +776,6 @@ export default function WakeUpCheckScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -788,7 +790,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   infoButton: {
     padding: 4,
@@ -906,7 +907,6 @@ const styles = StyleSheet.create({
   optionsTitle: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#ffffff',
     marginBottom: 20,
     lineHeight: 26,
   },
@@ -921,7 +921,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#64748b',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -936,7 +935,6 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: '#ffffff',
   },
 });
 

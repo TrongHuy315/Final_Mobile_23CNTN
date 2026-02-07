@@ -26,6 +26,7 @@ import {
 import Slider from '@react-native-community/slider';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import WheelPicker from '../components/WheelPicker';
+import { useTheme } from '@/context/ThemeContext';
 import { AlarmManager, Alarm, AlarmTask as AlarmTaskType } from '../utils/alarm-manager';
 
 // Suppress VirtualizedLists warning - we're using nestedScrollEnabled
@@ -45,6 +46,8 @@ const GentleWakeModal = React.memo(({
   onClose: () => void;
   onSelect: (value: string) => void;
 }) => {
+  const { colors, isDarkMode } = useTheme();
+  
   const handleSelect = (value: string) => {
     onSelect(value);
     setTimeout(() => onClose(), 300);
@@ -60,15 +63,15 @@ const GentleWakeModal = React.memo(({
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={modalStyles.gentleWakeModalOverlay} />
       </TouchableWithoutFeedback>
-      <View style={modalStyles.gentleWakeModalContent}>
+      <View style={[modalStyles.gentleWakeModalContent, { backgroundColor: colors.surface }]}>
         <View style={modalStyles.gentleWakeModalHeader}>
-          <Text style={modalStyles.gentleWakeModalTitle}>Thức giấc nhẹ nhàng</Text>
+          <Text style={[modalStyles.gentleWakeModalTitle, { color: colors.text }]}>Thức giấc nhẹ nhàng</Text>
           <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color="#ffffff" />
+            <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
 
-        <Text style={modalStyles.gentleWakeDescription}>
+        <Text style={[modalStyles.gentleWakeDescription, { color: colors.textMuted }]}>
           Âm lượng tăng dần trong thời gian đã đặt
         </Text>
 
@@ -79,13 +82,15 @@ const GentleWakeModal = React.memo(({
           >
             <View style={[
               modalStyles.radioButton,
-              currentValue === 'off' && modalStyles.radioButtonSelected
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
+              currentValue === 'off' && [modalStyles.radioButtonSelected, { borderColor: colors.primary }]
             ]}>
-              {currentValue === 'off' && <View style={modalStyles.radioButtonInner} />}
+              {currentValue === 'off' && <View style={[modalStyles.radioButtonInner, { backgroundColor: colors.primary }]} />}
             </View>
             <Text style={[
               modalStyles.gentleWakeOptionText,
-              currentValue === 'off' && modalStyles.gentleWakeOffText
+              { color: colors.text },
+              currentValue === 'off' && [modalStyles.gentleWakeOffText, { color: colors.textMuted }]
             ]}>Tắt</Text>
           </TouchableOpacity>
 
@@ -95,11 +100,12 @@ const GentleWakeModal = React.memo(({
           >
             <View style={[
               modalStyles.radioButton,
-              currentValue === '15s' && modalStyles.radioButtonSelected
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
+              currentValue === '15s' && [modalStyles.radioButtonSelected, { borderColor: colors.primary }]
             ]}>
-              {currentValue === '15s' && <View style={modalStyles.radioButtonInner} />}
+              {currentValue === '15s' && <View style={[modalStyles.radioButtonInner, { backgroundColor: colors.primary }]} />}
             </View>
-            <Text style={modalStyles.gentleWakeOptionText}>15 giây</Text>
+            <Text style={[modalStyles.gentleWakeOptionText, { color: colors.text }]}>15 giây</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -108,11 +114,12 @@ const GentleWakeModal = React.memo(({
           >
             <View style={[
               modalStyles.radioButton,
-              currentValue === '30s' && modalStyles.radioButtonSelected
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
+              currentValue === '30s' && [modalStyles.radioButtonSelected, { borderColor: colors.primary }]
             ]}>
-              {currentValue === '30s' && <View style={modalStyles.radioButtonInner} />}
+              {currentValue === '30s' && <View style={[modalStyles.radioButtonInner, { backgroundColor: colors.primary }]} />}
             </View>
-            <Text style={modalStyles.gentleWakeOptionText}>30 giây</Text>
+            <Text style={[modalStyles.gentleWakeOptionText, { color: colors.text }]}>30 giây</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -121,11 +128,12 @@ const GentleWakeModal = React.memo(({
           >
             <View style={[
               modalStyles.radioButton,
-              currentValue === '60s' && modalStyles.radioButtonSelected
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
+              currentValue === '60s' && [modalStyles.radioButtonSelected, { borderColor: colors.primary }]
             ]}>
-              {currentValue === '60s' && <View style={modalStyles.radioButtonInner} />}
+              {currentValue === '60s' && <View style={[modalStyles.radioButtonInner, { backgroundColor: colors.primary }]} />}
             </View>
-            <Text style={modalStyles.gentleWakeOptionText}>60 giây</Text>
+            <Text style={[modalStyles.gentleWakeOptionText, { color: colors.text }]}>60 giây</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -134,11 +142,12 @@ const GentleWakeModal = React.memo(({
           >
             <View style={[
               modalStyles.radioButton,
-              currentValue === '5m' && modalStyles.radioButtonSelected
+              { borderColor: colors.border },
+              currentValue === '5m' && [modalStyles.radioButtonSelected, { borderColor: colors.primary }]
             ]}>
-              {currentValue === '5m' && <View style={modalStyles.radioButtonInner} />}
+              {currentValue === '5m' && <View style={[modalStyles.radioButtonInner, { backgroundColor: colors.primary }]} />}
             </View>
-            <Text style={modalStyles.gentleWakeOptionText}>5 phút</Text>
+            <Text style={[modalStyles.gentleWakeOptionText, { color: colors.text }]}>5 phút</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -147,11 +156,12 @@ const GentleWakeModal = React.memo(({
           >
             <View style={[
               modalStyles.radioButton,
-              currentValue === '10m' && modalStyles.radioButtonSelected
+              { borderColor: colors.border },
+              currentValue === '10m' && [modalStyles.radioButtonSelected, { borderColor: colors.primary }]
             ]}>
-              {currentValue === '10m' && <View style={modalStyles.radioButtonInner} />}
+              {currentValue === '10m' && <View style={[modalStyles.radioButtonInner, { backgroundColor: colors.primary }]} />}
             </View>
-            <Text style={modalStyles.gentleWakeOptionText}>10 phút</Text>
+            <Text style={[modalStyles.gentleWakeOptionText, { color: colors.text }]}>10 phút</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -240,6 +250,7 @@ const NumberPicker = React.memo(({
   itemHeight?: number,
   unit?: string
 }) => {
+  const { colors } = useTheme();
   return (
     <View style={styles.typingPickerWrapper}>
       <WheelPicker
@@ -250,7 +261,7 @@ const NumberPicker = React.memo(({
         visibleItems={3}
         containerStyle={{ width: 100, alignItems: 'center' }}
       />
-      {unit ? <Text style={styles.typingCountLabel}>{unit}</Text> : null}
+      {unit ? <Text style={[styles.typingCountLabel, { color: colors.textMuted }]}>{unit}</Text> : null}
     </View>
   );
 });
@@ -294,6 +305,7 @@ export default function HabitFormScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const alarmId = params.id as string | undefined;
   const defaultTime = getDefaultTime();
 
@@ -1061,31 +1073,31 @@ export default function HabitFormScreen() {
       onRequestClose={() => setShowFindHouseholdModal(false)}
     >
       <View style={styles.taskModalOverlay}>
-        <View style={styles.findHouseholdModalContent}>
+        <View style={[styles.findHouseholdModalContent, { backgroundColor: colors.surface }]}>
           {/* Header */}
           <View style={styles.findHouseholdHeader}>
             <TouchableOpacity onPress={() => {
               setShowFindHouseholdModal(false);
               setShowTaskModal(true);
             }}>
-              <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={styles.findHouseholdTitle}>Tìm đồ gia dụng</Text>
+            <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Tìm đồ gia dụng</Text>
             <TouchableOpacity onPress={() => setShowFindHouseholdModal(false)}>
-              <Ionicons name="close" size={24} color="#ffffff" />
+              <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Description */}
-          <Text style={styles.findHouseholdDescription}>
+          <Text style={[styles.findHouseholdDescription, { color: colors.textSecondary }]}>
             Tìm đồ vật trên màn hình để tắt báo thức
           </Text>
 
           {/* Preview Image Area */}
-          <View style={styles.findHouseholdPreview}>
+          <View style={[styles.findHouseholdPreview, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
             <View style={styles.previewImageContainer}>
               {/* Scanning Frame with corners */}
-              <View style={styles.scanFrame}>
+              <View style={[styles.scanFrame, { borderColor: isDarkMode ? '#334155' : '#cbd5e1' }]}>
                 {/* Cup Icon */}
                 <View style={styles.cupContainer}>
                   <MaterialCommunityIcons name="coffee" size={80} color="#f59e0b" />
@@ -1137,21 +1149,21 @@ export default function HabitFormScreen() {
               </View>
               
               {/* Camera needed badge */}
-              <View style={styles.cameraNeededBadge}>
+              <View style={[styles.cameraNeededBadge, { backgroundColor: 'rgba(0, 0, 0, 0.6)' }]}>
                 <Ionicons name="camera" size={14} color="#ffffff" />
-                <Text style={styles.cameraNeededText}>Camera needed</Text>
+                <Text style={[styles.cameraNeededText, { color: '#ffffff' }]}>Camera needed</Text>
               </View>
             </View>
           </View>
 
           {/* Hint Text */}
-          <Text style={styles.findHouseholdHint}>
+          <Text style={[styles.findHouseholdHint, { color: colors.textMuted }]}>
             Bạn không có đồ vật đó? Nhấn thử lại để nhận đồ vật mới!
           </Text>
 
           {/* Select Items Row */}
-          <TouchableOpacity style={styles.selectItemsRow}>
-            <Text style={styles.selectItemsLabel}>Chọn đồ vật</Text>
+          <TouchableOpacity style={[styles.selectItemsRow, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
+            <Text style={[styles.selectItemsLabel, { color: colors.text }]}>Chọn đồ vật</Text>
             <View style={styles.selectItemsRight}>
               <Text style={styles.selectItemsValue}>{findHouseholdItemCount} đồ vật</Text>
               <Ionicons name="chevron-forward" size={20} color="#0ea5e9" />
@@ -1160,14 +1172,14 @@ export default function HabitFormScreen() {
 
           {/* Bottom Buttons */}
           <View style={styles.findHouseholdButtons}>
-            <TouchableOpacity style={styles.previewButton}>
-              <Text style={styles.previewButtonText}>Xem trước</Text>
+            <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }]}>
+              <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.completeButton}
+              style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
               onPress={handleCompleteFindHousehold}
             >
-              <Text style={styles.completeButtonText}>Hoàn tất</Text>
+              <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1184,34 +1196,34 @@ export default function HabitFormScreen() {
       onRequestClose={() => setShowTapChallengeModal(false)}
     >
       <View style={styles.taskModalOverlay}>
-        <View style={styles.tapChallengeModalContent}>
+        <View style={[styles.tapChallengeModalContent, { backgroundColor: colors.surface }]}>
           {/* Header */}
           <View style={styles.findHouseholdHeader}>
             <TouchableOpacity onPress={() => {
               setShowTapChallengeModal(false);
               setShowTaskModal(true);
             }}>
-              <Ionicons name="chevron-back" size={24} color="#ffffff" />
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={styles.findHouseholdTitle}>Thử thách lượt nhấn</Text>
+            <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Thử thách lượt nhấn</Text>
             <TouchableOpacity onPress={() => setShowTapChallengeModal(false)}>
-              <Ionicons name="close" size={24} color="#ffffff" />
+              <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           {/* Preview Image Area */}
-          <View style={styles.tapChallengePreview}>
+          <View style={[styles.tapChallengePreview, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
             <View style={styles.tapPreviewContainer}>
               {/* Background sparkle effect */}
               <View style={styles.sparkleBackground}>
-                <MaterialCommunityIcons name="shimmer" size={120} color="rgba(255, 215, 0, 0.3)" />
+                <MaterialCommunityIcons name="shimmer" size={120} color={isDarkMode ? "rgba(255, 215, 0, 0.3)" : "rgba(245, 158, 11, 0.2)"} />
               </View>
               
               {/* Tap count display during animation */}
               {!tapCleared && (
                 <View style={styles.tapProgressContainer}>
-                  <Text style={styles.tapProgressNumber}>{tapAnimCount}</Text>
-                  <Text style={styles.tapProgressLabel}>/ 50</Text>
+                  <Text style={[styles.tapProgressNumber, { color: colors.text }]}>{tapAnimCount}</Text>
+                  <Text style={[styles.tapProgressLabel, { color: colors.textMuted }]}>/ 50</Text>
                 </View>
               )}
               
@@ -1220,7 +1232,7 @@ export default function HabitFormScreen() {
                 <Animated.Text 
                   style={[
                     styles.clearText,
-                    { transform: [{ scale: clearTextScale }] }
+                    { transform: [{ scale: clearTextScale }], color: colors.primary }
                   ]}
                 >
                   CLEAR!
@@ -1231,7 +1243,7 @@ export default function HabitFormScreen() {
               <Animated.View 
                 style={[
                   styles.tapButton,
-                  { transform: [{ scale: tapButtonScale }] }
+                  { transform: [{ scale: tapButtonScale }], backgroundColor: colors.primary }
                 ]}
               >
                 <Text style={styles.tapButtonText}>Tap!</Text>
@@ -1240,21 +1252,21 @@ export default function HabitFormScreen() {
           </View>
 
           {/* Tap Count Card */}
-          <View style={styles.tapCountCard}>
-            <Text style={styles.tapCountNumber}>{tapChallengeCount}</Text>
-            <Text style={styles.tapCountLabel}>lần</Text>
+          <View style={[styles.tapCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
+            <Text style={[styles.tapCountNumber, { color: colors.text }]}>{tapChallengeCount}</Text>
+            <Text style={[styles.tapCountLabel, { color: colors.textSecondary }]}>lần</Text>
           </View>
 
           {/* Bottom Buttons */}
           <View style={styles.findHouseholdButtons}>
-            <TouchableOpacity style={styles.previewButton}>
-              <Text style={styles.previewButtonText}>Xem trước</Text>
+            <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+              <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.completeButton}
+              style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
               onPress={handleCompleteTapChallenge}
             >
-              <Text style={styles.completeButtonText}>Hoàn tất</Text>
+              <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1275,34 +1287,34 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowTypingModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.typingModalContent}>
+          <View style={[styles.typingModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowTypingModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Gõ văn bản</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Gõ văn bản</Text>
               <TouchableOpacity onPress={() => setShowTypingModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             {/* Preview Area */}
-            <View style={styles.typingPreviewArea}>
+            <View style={[styles.typingPreviewArea, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
               {/* Example badge */}
-              <View style={styles.typingExampleBadge}>
+              <View style={[styles.typingExampleBadge, { backgroundColor: colors.primary }]}>
                 <Text style={styles.typingExampleText}>Ví dụ</Text>
               </View>
               
               {/* Example Text */}
-              <Text style={styles.typingExamplePhrase}>Choose hope</Text>
+              <Text style={[styles.typingExamplePhrase, { color: colors.text }]}>Choose hope</Text>
             </View>
 
             {/* Count Picker Card */}
-            <View style={styles.typingCountCard}>
+            <View style={[styles.typingCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
               <NumberPicker 
                 data={COUNT_99}
                 initialValue={typingCount}
@@ -1312,23 +1324,23 @@ export default function HabitFormScreen() {
             </View>
 
             {/* Choose Phrase Row */}
-            <TouchableOpacity style={styles.selectItemsRow}>
-              <Text style={styles.selectItemsLabel}>Chọn cụm từ</Text>
+            <TouchableOpacity style={[styles.selectItemsRow, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
+              <Text style={[styles.selectItemsLabel, { color: colors.text }]}>Chọn cụm từ</Text>
               <View style={styles.selectItemsRight}>
-                <Text style={styles.selectItemsValue}>{typingPhraseCount} cụm từ</Text>
+                <Text style={[styles.selectItemsValue, { color: colors.primary }]}>{typingPhraseCount} cụm từ</Text>
               </View>
             </TouchableOpacity>
 
             {/* Bottom Buttons */}
             <View style={styles.findHouseholdButtons}>
-              <TouchableOpacity style={styles.previewButton}>
-                <Text style={styles.previewButtonText}>Xem trước</Text>
+              <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={styles.completeButton}
+                style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                 onPress={handleCompleteTyping}
               >
-                <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1367,7 +1379,8 @@ export default function HabitFormScreen() {
               key={`${r}-${c}`}
               style={[
                 styles.colorGridCell,
-                isHighlighted(r, c) && styles.colorGridCellHighlighted,
+                { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#e2e8f0' },
+                isHighlighted(r, c) && [styles.colorGridCellHighlighted, { backgroundColor: colors.primary }],
               ]}
             />
           );
@@ -1389,18 +1402,18 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowFindColorsModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.findColorsModalContent}>
+          <View style={[styles.findColorsModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowFindColorsModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Tìm các ô màu</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Tìm các ô màu</Text>
               <TouchableOpacity onPress={() => setShowFindColorsModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -1409,9 +1422,9 @@ export default function HabitFormScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               {/* Preview Area */}
-              <View style={styles.findColorsPreviewArea}>
+              <View style={[styles.findColorsPreviewArea, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
                 {/* Example badge */}
-                <View style={styles.typingExampleBadge}>
+                <View style={[styles.typingExampleBadge, { backgroundColor: colors.primary }]}>
                   <Text style={styles.typingExampleText}>Ví dụ</Text>
                 </View>
                 
@@ -1422,8 +1435,8 @@ export default function HabitFormScreen() {
               </View>
 
               {/* Difficulty Card */}
-              <View style={styles.difficultyCard}>
-                <Text style={styles.difficultyTitle}>{getDifficultyLabel(findColorsDifficulty)}</Text>
+              <View style={[styles.difficultyCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f1f5f9' }]}>
+                <Text style={[styles.difficultyTitle, { color: colors.text }]}>{getDifficultyLabel(findColorsDifficulty)}</Text>
                 
                 {/* Slider */}
                 <View style={styles.difficultySliderContainer}>
@@ -1434,9 +1447,9 @@ export default function HabitFormScreen() {
                     step={1}
                     value={findColorsDifficulty}
                     onValueChange={setFindColorsDifficulty}
-                    minimumTrackTintColor="#3b82f6"
-                    maximumTrackTintColor="#475569"
-                    thumbTintColor="#ffffff"
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor={colors.border}
+                    thumbTintColor={isDarkMode ? '#ffffff' : colors.primary}
                   />
                   {/* Dots */}
                   <View style={styles.difficultyDots}>
@@ -1445,7 +1458,8 @@ export default function HabitFormScreen() {
                         key={i} 
                         style={[
                           styles.difficultyDot,
-                          i <= findColorsDifficulty && styles.difficultyDotActive,
+                          { backgroundColor: colors.border },
+                          i <= findColorsDifficulty && [styles.difficultyDotActive, { backgroundColor: colors.primary }],
                         ]} 
                       />
                     ))}
@@ -1453,13 +1467,13 @@ export default function HabitFormScreen() {
                 </View>
                 
                 <View style={styles.difficultyLabels}>
-                  <Text style={styles.difficultyLabelText}>Dễ</Text>
-                  <Text style={styles.difficultyLabelText}>Khó</Text>
+                  <Text style={[styles.difficultyLabelText, { color: colors.textSecondary }]}>Dễ</Text>
+                  <Text style={[styles.difficultyLabelText, { color: colors.textSecondary }]}>Khó</Text>
                 </View>
               </View>
 
               {/* Round Count Picker Card */}
-              <View style={styles.typingCountCard}>
+              <View style={[styles.typingCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
                 <NumberPicker 
                   data={COUNT_99}
                   initialValue={findColorsRoundCount}
@@ -1470,14 +1484,14 @@ export default function HabitFormScreen() {
 
               {/* Bottom Buttons */}
               <View style={styles.findHouseholdButtons}>
-                <TouchableOpacity style={styles.previewButton}>
-                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                  <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.completeButton}
+                  style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                   onPress={handleCompleteFindColors}
                 >
-                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                  <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -1497,18 +1511,18 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowMathModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.findColorsModalContent}>
+          <View style={[styles.findColorsModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowMathModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Giải toán</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Giải toán</Text>
               <TouchableOpacity onPress={() => setShowMathModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -1517,19 +1531,19 @@ export default function HabitFormScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               {/* Preview Area with Math Example */}
-              <View style={styles.mathPreviewArea}>
+              <View style={[styles.mathPreviewArea, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
                 {/* Example badge */}
-                <View style={styles.typingExampleBadge}>
+                <View style={[styles.typingExampleBadge, { backgroundColor: colors.primary }]}>
                   <Text style={styles.typingExampleText}>Ví dụ</Text>
                 </View>
                 
                 {/* Math Example */}
-                <Text style={styles.mathExample}>{getMathExample(mathDifficulty)}</Text>
+                <Text style={[styles.mathExample, { color: colors.text }]}>{getMathExample(mathDifficulty)}</Text>
               </View>
 
               {/* Difficulty Card */}
-              <View style={styles.difficultyCard}>
-                <Text style={styles.difficultyTitle}>{getMathDifficultyLabel(mathDifficulty)}</Text>
+              <View style={[styles.difficultyCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f1f5f9' }]}>
+                <Text style={[styles.difficultyTitle, { color: colors.text }]}>{getMathDifficultyLabel(mathDifficulty)}</Text>
                 
                 {/* Slider */}
                 <View style={styles.difficultySliderContainer}>
@@ -1540,9 +1554,9 @@ export default function HabitFormScreen() {
                     step={1}
                     value={mathDifficulty}
                     onValueChange={setMathDifficulty}
-                    minimumTrackTintColor="#3b82f6"
-                    maximumTrackTintColor="#475569"
-                    thumbTintColor="#ffffff"
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor={colors.border}
+                    thumbTintColor={isDarkMode ? '#ffffff' : colors.primary}
                   />
                   {/* Dots */}
                   <View style={styles.difficultyDots}>
@@ -1551,7 +1565,8 @@ export default function HabitFormScreen() {
                         key={i} 
                         style={[
                           styles.difficultyDot,
-                          i <= mathDifficulty && styles.difficultyDotActive,
+                          { backgroundColor: colors.border },
+                          i <= mathDifficulty && [styles.difficultyDotActive, { backgroundColor: colors.primary }],
                         ]} 
                       />
                     ))}
@@ -1559,13 +1574,13 @@ export default function HabitFormScreen() {
                 </View>
                 
                 <View style={styles.difficultyLabels}>
-                  <Text style={styles.difficultyLabelText}>Dễ</Text>
-                  <Text style={styles.difficultyLabelText}>Khó</Text>
+                  <Text style={[styles.difficultyLabelText, { color: colors.textSecondary }]}>Dễ</Text>
+                  <Text style={[styles.difficultyLabelText, { color: colors.textSecondary }]}>Khó</Text>
                 </View>
               </View>
 
               {/* Round Count Picker Card */}
-              <View style={styles.typingCountCard}>
+              <View style={[styles.typingCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
                 <NumberPicker 
                   data={COUNT_99}
                   initialValue={mathRoundCount}
@@ -1576,14 +1591,14 @@ export default function HabitFormScreen() {
 
               {/* Bottom Buttons */}
               <View style={styles.findHouseholdButtons}>
-                <TouchableOpacity style={styles.previewButton}>
-                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                  <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.completeButton}
+                  style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                   onPress={handleCompleteMath}
                 >
-                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                  <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -1603,18 +1618,18 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowShakeModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.findColorsModalContent}>
+          <View style={[styles.findColorsModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowShakeModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Lắc điện thoại</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Lắc điện thoại</Text>
               <TouchableOpacity onPress={() => setShowShakeModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -1623,7 +1638,7 @@ export default function HabitFormScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               {/* Preview Area with Shake Animation */}
-              <View style={styles.shakePreviewArea}>
+              <View style={[styles.shakePreviewArea, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
                 <Animated.View style={{
                   transform: [
                     { translateX: shakeAnimValue.interpolate({
@@ -1638,12 +1653,12 @@ export default function HabitFormScreen() {
                     }
                   ]
                 }}>
-                  <MaterialCommunityIcons name="cellphone" size={120} color="#ffffff" />
+                  <MaterialCommunityIcons name="cellphone" size={120} color={colors.primary} />
                 </Animated.View>
               </View>
 
               {/* Shake Count Picker Card */}
-              <View style={styles.typingCountCard}>
+              <View style={[styles.typingCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
                 <NumberPicker 
                   data={SHAKE_COUNT_DATA}
                   initialValue={shakeCount}
@@ -1654,14 +1669,14 @@ export default function HabitFormScreen() {
 
               {/* Bottom Buttons */}
               <View style={styles.findHouseholdButtons}>
-                <TouchableOpacity style={styles.previewButton}>
-                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                  <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.completeButton}
+                  style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                   onPress={handleCompleteShake}
                 >
-                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                  <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -1681,18 +1696,18 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowStepsModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.findColorsModalContent}>
+          <View style={[styles.findColorsModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowStepsModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Bước</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Bước</Text>
               <TouchableOpacity onPress={() => setShowStepsModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -1701,7 +1716,7 @@ export default function HabitFormScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               {/* Preview Area with Walking Animation */}
-              <View style={styles.shakePreviewArea}>
+              <View style={[styles.shakePreviewArea, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
                 {/* Moving Ground (Road) */}
                 <View style={{
                   position: 'absolute',
@@ -1709,7 +1724,7 @@ export default function HabitFormScreen() {
                   left: 0,
                   right: 0,
                   height: 60,
-                  backgroundColor: '#293547',
+                  backgroundColor: isDarkMode ? '#1e293b' : '#cbd5e1',
                   zIndex: 0,
                 }}>
                    {/* Moving Stripes */}
@@ -1730,7 +1745,7 @@ export default function HabitFormScreen() {
                          width: 20,
                          height: 4,
                          borderRadius: 2,
-                         backgroundColor: '#475569',
+                         backgroundColor: isDarkMode ? '#475569' : '#94a3b8',
                          marginRight: 30,
                        }} />
                      ))}
@@ -1762,7 +1777,7 @@ export default function HabitFormScreen() {
                         outputRange: [1, 1, 0, 0]
                       })
                     }}>
-                      <MaterialCommunityIcons name="walk" size={120} color="#ffffff" />
+                      <MaterialCommunityIcons name="walk" size={120} color={colors.primary} />
                     </Animated.View>
                     <Animated.View style={{
                       position: 'absolute',
@@ -1773,7 +1788,7 @@ export default function HabitFormScreen() {
                         outputRange: [0, 0, 1, 1]
                       })
                     }}>
-                      <MaterialCommunityIcons name="run" size={120} color="#ffffff" />
+                      <MaterialCommunityIcons name="run" size={120} color={colors.primary} />
                     </Animated.View>
                   </View>
                   
@@ -1790,13 +1805,13 @@ export default function HabitFormScreen() {
                       }
                     ]
                   }}>
-                    <MaterialCommunityIcons name="cellphone" size={30} color="#ffffff" />
+                    <MaterialCommunityIcons name="cellphone" size={30} color={isDarkMode ? "#ffffff" : "#475569"} />
                   </Animated.View>
                 </Animated.View>
               </View>
 
               {/* Steps Count Picker Card */}
-              <View style={styles.typingCountCard}>
+              <View style={[styles.typingCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
                 <NumberPicker 
                   data={SHAKE_COUNT_DATA}
                   initialValue={stepsCount}
@@ -1807,14 +1822,14 @@ export default function HabitFormScreen() {
 
               {/* Bottom Buttons */}
               <View style={styles.findHouseholdButtons}>
-                <TouchableOpacity style={styles.previewButton}>
-                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                  <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.completeButton}
+                  style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                   onPress={handleCompleteSteps}
                 >
-                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                  <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -1834,18 +1849,18 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowSquatModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.findColorsModalContent}>
+          <View style={[styles.findColorsModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowSquatModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Squat</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Squat</Text>
               <TouchableOpacity onPress={() => setShowSquatModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -1854,7 +1869,7 @@ export default function HabitFormScreen() {
               contentContainerStyle={{ paddingBottom: 20 }}
             >
               {/* Preview Area with Squat Animation */}
-              <View style={styles.shakePreviewArea}>
+              <View style={[styles.shakePreviewArea, { backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9' }]}>
                 <View style={styles.stickFigureOuterContainer}>
                   {/* The Hip is the main pivot and base for the whole figure */}
                   <Animated.View style={[
@@ -1887,10 +1902,10 @@ export default function HabitFormScreen() {
                       }
                     ]}>
                       {/* Visual Torso - anchored at the joint container (hip) */}
-                      <View style={[styles.torso, { bottom: 0 }]} />
+                      <View style={[styles.torso, { bottom: 0, backgroundColor: colors.primary }]} />
                       
                       {/* Head - relative to torso top */}
-                      <View style={[styles.head, { top: -81, position: 'absolute' }]} />
+                      <View style={[styles.head, { top: -81, position: 'absolute', backgroundColor: colors.primary }]} />
 
                       {/* ARMS - rotating from the shoulder area (top of torso) */}
                       <View style={{ position: 'absolute', top: -50, width: 0, height: 0, alignItems: 'center' }}>
@@ -1907,7 +1922,7 @@ export default function HabitFormScreen() {
                             }] 
                           }
                         ]}>
-                          <View style={styles.arm} />
+                          <View style={[styles.arm, { backgroundColor: colors.primary }]} />
                         </Animated.View>
                         
                         {/* Front Arm */}
@@ -1922,7 +1937,7 @@ export default function HabitFormScreen() {
                             }] 
                           }
                         ]}>
-                          <View style={styles.arm} />
+                          <View style={[styles.arm, { backgroundColor: colors.primary }]} />
                         </Animated.View>
                       </View>
                     </Animated.View>
@@ -1940,7 +1955,7 @@ export default function HabitFormScreen() {
                         }) }]
                       }
                     ]}>
-                      <View style={[styles.limb, styles.thigh]} />
+                      <View style={[styles.limb, styles.thigh, { backgroundColor: colors.primary }]} />
                       {/* Back Knee */}
                       <Animated.View style={[
                         styles.jointContainer,
@@ -1952,7 +1967,7 @@ export default function HabitFormScreen() {
                           }) }]
                         }
                       ]}>
-                        <View style={[styles.limb, styles.shin]} />
+                        <View style={[styles.limb, styles.shin, { backgroundColor: colors.primary }]} />
                       </Animated.View>
                     </Animated.View>
 
@@ -1966,7 +1981,7 @@ export default function HabitFormScreen() {
                         }) }]
                       }
                     ]}>
-                      <View style={[styles.limb, styles.thigh]} />
+                      <View style={[styles.limb, styles.thigh, { backgroundColor: colors.primary }]} />
                       {/* Front Knee */}
                       <Animated.View style={[
                         styles.jointContainer,
@@ -1978,18 +1993,18 @@ export default function HabitFormScreen() {
                           }) }]
                         }
                       ]}>
-                        <View style={[styles.limb, styles.shin]} />
+                        <View style={[styles.limb, styles.shin, { backgroundColor: colors.primary }]} />
                       </Animated.View>
                     </Animated.View>
                   </Animated.View>
                   
                   {/* Ground Line */}
-                  <View style={styles.squatGroundLine} />
+                  <View style={[styles.squatGroundLine, { backgroundColor: isDarkMode ? '#475569' : '#94a3b8' }]} />
                 </View>
               </View>
 
               {/* Squat Count Picker Card */}
-              <View style={styles.typingCountCard}>
+              <View style={[styles.typingCountCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' }]}>
                 <NumberPicker 
                   data={SHAKE_COUNT_DATA}
                   initialValue={squatCount}
@@ -2000,14 +2015,14 @@ export default function HabitFormScreen() {
 
               {/* Bottom Buttons */}
               <View style={styles.findHouseholdButtons}>
-                <TouchableOpacity style={styles.previewButton}>
-                  <Text style={styles.previewButtonText}>Xem trước</Text>
+                <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                  <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={styles.completeButton}
+                  style={[styles.completeButton, { backgroundColor: colors.primary, borderColor: colors.primary }]}
                   onPress={handleCompleteSquat}
                 >
-                  <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                  <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -2027,26 +2042,26 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowQRCodeModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.qrCodeModalContent}>
+          <View style={[styles.qrCodeModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowQRCodeModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Mã QR/Mã vạch</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Mã QR/Mã vạch</Text>
               <TouchableOpacity onPress={() => setShowQRCodeModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               {/* Add Button */}
-              <TouchableOpacity style={styles.qrAddButton} onPress={handleStartScan}>
+              <TouchableOpacity style={[styles.qrAddButton, { backgroundColor: colors.primary, borderColor: colors.primary }]} onPress={handleStartScan}>
                 <Ionicons name="add" size={24} color="#ffffff" />
-                <Text style={styles.qrAddButtonText}>Thêm</Text>
+                <Text style={[styles.qrAddButtonText, { color: '#ffffff' }]}>Thêm</Text>
               </TouchableOpacity>
 
               {/* QR Code List */}
@@ -2055,19 +2070,21 @@ export default function HabitFormScreen() {
                   key={item.id} 
                   style={[
                     styles.qrItem,
-                    selectedQRCodeId === item.id && styles.qrItemSelected
+                    { borderBottomColor: colors.border },
+                    selectedQRCodeId === item.id && [styles.qrItemSelected, { backgroundColor: colors.primary + '33', borderColor: colors.primary }]
                   ]}
                   onPress={() => setSelectedQRCodeId(item.id)}
                 >
                   <View style={styles.qrItemLeft}>
                     {selectedQRCodeId === item.id && (
                       <View style={styles.qrItemCheck}>
-                        <Ionicons name="checkmark-circle" size={24} color="#00f2ff" />
+                        <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
                       </View>
                     )}
                     <Text style={[
                       styles.qrItemText,
-                      selectedQRCodeId === item.id && styles.qrItemTextSelected
+                      { color: colors.text },
+                      selectedQRCodeId === item.id && [styles.qrItemTextSelected, { color: colors.primary, fontWeight: '700' }]
                     ]}>
                       {item.name}
                     </Text>
@@ -2075,7 +2092,7 @@ export default function HabitFormScreen() {
                   <TouchableOpacity 
                     onPress={() => setQrContextMenu({ visible: true, targetId: item.id })}
                   >
-                    <Ionicons name="ellipsis-vertical" size={20} color="#94a3b8" />
+                    <Ionicons name="ellipsis-vertical" size={20} color={colors.textMuted} />
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
@@ -2083,18 +2100,19 @@ export default function HabitFormScreen() {
 
             {/* Bottom Buttons */}
             <View style={styles.findHouseholdButtons}>
-              <TouchableOpacity style={styles.previewButton}>
-                <Text style={styles.previewButtonText}>Xem trước</Text>
+              <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[
                   styles.completeButton,
+                  { backgroundColor: colors.primary, borderColor: colors.primary },
                   !selectedQRCodeId && { opacity: 0.5 }
                 ]}
                 onPress={handleCompleteQRCodeTask}
                 disabled={!selectedQRCodeId}
               >
-                <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -2105,17 +2123,17 @@ export default function HabitFormScreen() {
           <Modal transparent visible={true} animationType="fade">
             <TouchableWithoutFeedback onPress={() => setQrContextMenu({ visible: false, targetId: null })}>
               <View style={styles.qrContextMenuOverlay}>
-                <View style={styles.qrContextMenu}>
+                <View style={[styles.qrContextMenu, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}>
                   <TouchableOpacity 
                     style={styles.qrContextItem}
                     onPress={() => handleDeleteQRCode(qrContextMenu.targetId!)}
                   >
-                    <Ionicons name="trash-outline" size={20} color="#ffffff" />
-                    <Text style={styles.qrContextText}>Xóa</Text>
+                    <Ionicons name="trash-outline" size={20} color="#ef4444" />
+                    <Text style={[styles.qrContextText, { color: "#ef4444" }]}>Xóa</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.qrContextItem}>
-                    <Ionicons name="create-outline" size={20} color="#ffffff" />
-                    <Text style={styles.qrContextText}>Đổi tên</Text>
+                  <TouchableOpacity style={[styles.qrContextItem, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                    <Ionicons name="create-outline" size={20} color={colors.text} />
+                    <Text style={[styles.qrContextText, { color: colors.text }]}>Đổi tên</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -2199,27 +2217,27 @@ export default function HabitFormScreen() {
         onRequestClose={() => setShowPhotoModal(false)}
       >
         <View style={styles.taskModalOverlay}>
-          <View style={styles.photoModalContent}>
+          <View style={[styles.photoModalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
             <View style={styles.findHouseholdHeader}>
               <TouchableOpacity onPress={() => {
                 setShowPhotoModal(false);
                 setShowTaskModal(true);
               }}>
-                <Ionicons name="chevron-back" size={24} color="#ffffff" />
+                <Ionicons name="chevron-back" size={24} color={colors.text} />
               </TouchableOpacity>
-              <Text style={styles.findHouseholdTitle}>Ảnh chụp</Text>
+              <Text style={[styles.findHouseholdTitle, { color: colors.text }]}>Ảnh chụp</Text>
               <TouchableOpacity onPress={() => setShowPhotoModal(false)}>
-                <Ionicons name="close" size={24} color="#ffffff" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
               <View style={styles.photoGrid}>
                 {/* Add Button Box */}
-                <TouchableOpacity style={styles.photoAddBox} onPress={handleStartPhotoCamera}>
-                  <Ionicons name="add" size={32} color="#ffffff" />
-                  <Text style={styles.photoAddText}>Thêm</Text>
+                <TouchableOpacity style={[styles.photoAddBox, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc', borderColor: colors.border }]} onPress={handleStartPhotoCamera}>
+                  <Ionicons name="add" size={32} color={colors.textMuted} />
+                  <Text style={[styles.photoAddText, { color: colors.textMuted }]}>Thêm</Text>
                 </TouchableOpacity>
 
                 {/* Photo List */}
@@ -2228,7 +2246,8 @@ export default function HabitFormScreen() {
                     key={item.id} 
                     style={[
                       styles.photoItemBox,
-                      selectedPhotoUri === item.uri && styles.photoItemBoxSelected
+                      { borderColor: colors.border, backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : '#f8fafc' },
+                      selectedPhotoUri === item.uri && [styles.photoItemBoxSelected, { borderColor: colors.primary }]
                     ]}
                     onPress={() => setSelectedPhotoUri(item.uri)}
                   >
@@ -2239,7 +2258,7 @@ export default function HabitFormScreen() {
                     />
                     {selectedPhotoUri === item.uri && (
                       <View style={styles.photoItemCheck}>
-                        <Ionicons name="checkmark-sharp" size={40} color="#00f2ff" />
+                        <Ionicons name="checkmark-sharp" size={40} color={colors.primary} />
                       </View>
                     )}
                     <TouchableOpacity 
@@ -2249,7 +2268,7 @@ export default function HabitFormScreen() {
                         if (selectedPhotoUri === item.uri) setSelectedPhotoUri(null);
                       }}
                     >
-                      <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.7)" />
+                      <Ionicons name="close-circle" size={20} color={isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)'} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 ))}
@@ -2258,18 +2277,19 @@ export default function HabitFormScreen() {
 
             {/* Bottom Buttons */}
             <View style={styles.findHouseholdButtons}>
-              <TouchableOpacity style={styles.previewButton}>
-                <Text style={styles.previewButtonText}>Xem trước</Text>
+              <TouchableOpacity style={[styles.previewButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.2)' : '#f1f5f9', borderWidth: 1, borderColor: isDarkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.05)' }]}>
+                <Text style={[styles.previewButtonText, { color: colors.text }]}>Xem trước</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[
                   styles.completeButton,
+                  { backgroundColor: colors.primary, borderColor: colors.primary },
                   !selectedPhotoUri && { opacity: 0.5 }
                 ]}
                 onPress={handleCompletePhotoTask}
                 disabled={!selectedPhotoUri}
               >
-                <Text style={styles.completeButtonText}>Hoàn tất</Text>
+                <Text style={[styles.completeButtonText, { color: '#ffffff' }]}>Hoàn tất</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -2345,69 +2365,69 @@ export default function HabitFormScreen() {
       onRequestClose={() => setShowTaskModal(false)}
     >
       <View style={styles.taskModalOverlay}>
-        <View style={styles.taskModalContent}>
+        <View style={[styles.taskModalContent, { backgroundColor: colors.surface }]}>
           {/* Header */}
-          <View style={styles.taskModalHeader}>
-            <Text style={styles.taskModalTitle}>Nhiệm vụ</Text>
+          <View style={[styles.taskModalHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.taskModalTitle, { color: colors.text }]}>Nhiệm vụ</Text>
             <TouchableOpacity onPress={() => setShowTaskModal(false)}>
-              <Ionicons name="close" size={24} color="#ffffff" />
+              <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Popular Tasks */}
-            <Text style={styles.taskCategoryTitle}>Nhiệm vụ phổ biến</Text>
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectFindHousehold}>
+            <Text style={[styles.taskCategoryTitle, { color: colors.textSecondary }]}>Nhiệm vụ phổ biến</Text>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectFindHousehold}>
               <View style={[styles.taskIcon, { backgroundColor: '#7d3a3a' }]}>
                 <Ionicons name="search" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Tìm đồ gia dụng</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Tìm đồ gia dụng</Text>
               <View style={styles.taskBadgeAI}>
                 <Text style={styles.taskBadgeText}>AI</Text>
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectTapChallenge}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectTapChallenge}>
               <View style={[styles.taskIcon, { backgroundColor: '#7d3a3a' }]}>
                 <Ionicons name="hand-left" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Thử thách lượt nhấn</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Thử thách lượt nhấn</Text>
             </TouchableOpacity>
 
             {/* Brain Tasks */}
-            <Text style={styles.taskCategoryTitle}>Đánh thức bộ não của bạn</Text>
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectFindColors}>
+            <Text style={[styles.taskCategoryTitle, { color: colors.textSecondary }]}>Đánh thức bộ não của bạn</Text>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectFindColors}>
               <View style={[styles.taskIcon, { backgroundColor: '#3a5a5f' }]}>
                 <Ionicons name="grid" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Tìm các ô màu</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Tìm các ô màu</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectTyping}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectTyping}>
               <View style={[styles.taskIcon, { backgroundColor: '#3a5a5f' }]}>
                 <Ionicons name="keypad" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Gõ văn bản</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Gõ văn bản</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectMath}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectMath}>
               <View style={[styles.taskIcon, { backgroundColor: '#3a5a5f' }]}>
                 <Ionicons name="calculator" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Giải toán</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Giải toán</Text>
               <View style={styles.taskBadgeBest}>
                 <Text style={styles.taskBadgeText}>BEST</Text>
               </View>
             </TouchableOpacity>
 
             {/* Body Tasks */}
-            <Text style={styles.taskCategoryTitle}>Đánh thức cơ thể của bạn</Text>
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectSteps}>
+            <Text style={[styles.taskCategoryTitle, { color: colors.textSecondary }]}>Đánh thức cơ thể của bạn</Text>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectSteps}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <MaterialCommunityIcons name="foot-print" size={24} color="#ffffff" />
               </View>
               <View style={styles.taskItemLeft}>
-                <Text style={styles.taskItemText}>Bước</Text>
+                <Text style={[styles.taskItemText, { color: colors.text }]}>Bước</Text>
                 <View style={styles.taskBadgePro}>
                   <Text style={styles.taskBadgeTextPro}>PRO</Text>
                 </View>
@@ -2417,33 +2437,33 @@ export default function HabitFormScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectQRCode}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectQRCode}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <Ionicons name="qr-code" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Mã QR/Mã vạch</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Mã QR/Mã vạch</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectShake}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectShake}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <MaterialCommunityIcons name="vibrate" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Lắc điện thoại</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Lắc điện thoại</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectPhoto}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectPhoto}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <Ionicons name="camera" size={24} color="#ffffff" />
               </View>
-              <Text style={styles.taskItemText}>Ảnh chụp</Text>
+              <Text style={[styles.taskItemText, { color: colors.text }]}>Ảnh chụp</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.taskItem} onPress={handleSelectSquat}>
+            <TouchableOpacity style={[styles.taskItem, { borderBottomWidth: 1, borderBottomColor: colors.border }]} onPress={handleSelectSquat}>
               <View style={[styles.taskIcon, { backgroundColor: '#4a3a6e' }]}>
                 <MaterialCommunityIcons name="arm-flex" size={24} color="#ffffff" />
               </View>
               <View style={styles.taskItemLeft}>
-                <Text style={styles.taskItemText}>Squat</Text>
+                <Text style={[styles.taskItemText, { color: colors.text }]}>Squat</Text>
                 <View style={styles.taskBadgePro}>
                   <Text style={styles.taskBadgeTextPro}>PRO</Text>
                 </View>
@@ -2456,7 +2476,7 @@ export default function HabitFormScreen() {
   );
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       <GentleWakeModal
         visible={showGentleWakeModal}
         currentValue={gentleWake}
@@ -2479,9 +2499,9 @@ export default function HabitFormScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color="#ffffff" />
+          <Ionicons name="close" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Báo thức thói quen</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Báo thức thói quen</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -2494,16 +2514,16 @@ export default function HabitFormScreen() {
       >
         {/* Habit Display */}
         <View style={styles.habitHeader}>
-          <View style={[styles.habitIconBox, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}>
+          <View style={[styles.habitIconBox, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)' }]}>
             <MaterialCommunityIcons 
               name={(params.icon as any) || 'star'} 
               size={32} 
               color={(params.iconColor as string) || '#a855f7'} 
             />
           </View>
-          <Text style={styles.habitName}>{alarmName}</Text>
+          <Text style={[styles.habitName, { color: colors.text }]}>{alarmName}</Text>
           <TouchableOpacity style={styles.editIcon} onPress={() => router.back()}>
-            <Ionicons name="pencil" size={20} color="#64748b" />
+            <Ionicons name="pencil" size={20} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
@@ -2515,7 +2535,7 @@ export default function HabitFormScreen() {
               initialValue={selectedHour}
               onValueChange={setSelectedHour}
             />
-            <Text style={styles.timeSeparatorMain}>:</Text>
+            <Text style={[styles.timeSeparatorMain, { color: colors.text }]}>:</Text>
             <WheelPicker 
               data={minutes}
               initialValue={selectedMinute}
@@ -2525,19 +2545,19 @@ export default function HabitFormScreen() {
         </View>
 
         {/* Time Until Alarm */}
-        <Text style={styles.timeUntilText}>{timeUntilAlarm}</Text>
+        <Text style={[styles.timeUntilText, { color: colors.textMuted }]}>{timeUntilAlarm}</Text>
 
         {/* Day Selection */}
         <View style={styles.daySelectionContainer}>
-          <Text style={styles.dayLabel}>{dayLabel}</Text>
+          <Text style={[styles.dayLabel, { color: colors.textSecondary }]}>{dayLabel}</Text>
           <TouchableOpacity 
             style={styles.checkboxContainer}
             onPress={toggleEveryday}
           >
-            <View style={[styles.checkbox, isEveryday && styles.checkboxChecked]}>
+            <View style={[styles.checkbox, { borderColor: isDarkMode ? colors.textMuted : colors.border }, isEveryday && styles.checkboxChecked]}>
               {isEveryday && <Ionicons name="checkmark" size={16} color="#ffffff" />}
             </View>
-            <Text style={styles.checkboxText}>Hằng ngày</Text>
+            <Text style={[styles.checkboxText, { color: colors.text }]}>Hằng ngày</Text>
           </TouchableOpacity>
         </View>
 
@@ -2547,13 +2567,15 @@ export default function HabitFormScreen() {
               key={day}
               style={[
                 styles.dayButton,
-                selectedDays.includes(day) && styles.dayButtonSelected,
+               { borderColor: isDarkMode ? colors.textMuted : colors.border },
+                selectedDays.includes(day) && [styles.dayButtonSelected, { backgroundColor: colors.primary + '33', borderColor: colors.primary }],
               ]}
               onPress={() => toggleDay(day)}
             >
               <Text style={[
                 styles.dayButtonText,
-                selectedDays.includes(day) && styles.dayButtonTextSelected,
+                { color: colors.textMuted },
+                selectedDays.includes(day) && [styles.dayButtonTextSelected, { color: colors.primary }],
               ]}>
                 {day}
               </Text>
@@ -2562,10 +2584,10 @@ export default function HabitFormScreen() {
         </View>
 
         {/* Alarm Tasks Section */}
-        <View style={styles.sectionCard}>
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Nhiệm vụ báo thức</Text>
-            <Text style={styles.sectionCount}>{getTaskCount()}/5</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Nhiệm vụ báo thức</Text>
+            <Text style={[styles.sectionCount, { color: colors.primary }]}>{getTaskCount()}/5</Text>
           </View>
           
           <View style={{ height: 92, marginBottom: 0 }}>
@@ -2580,7 +2602,7 @@ export default function HabitFormScreen() {
                   {task ? (
                     // Task is added - show task info
                     <TouchableOpacity
-                      style={[styles.taskButton, styles.taskButtonFilled]}
+                      style={[styles.taskButton, styles.taskButtonFilled, { backgroundColor: colors.background }]}
                       onPress={() => handleOpenTaskModal(index)}
                     >
                       <TouchableOpacity 
@@ -2592,25 +2614,26 @@ export default function HabitFormScreen() {
                       <View style={[styles.taskIconSmall, { backgroundColor: task.iconColor }]}>
                         {['shake', 'steps', 'squat'].includes(task.type) ? (
                           <MaterialCommunityIcons name={task.icon as any} size={18} color="#ffffff" />
-                        ) : (
+                         ) : (
                           <Ionicons name={task.icon as any} size={18} color="#ffffff" />
                         )}
                       </View>
-                      <Text style={styles.taskButtonLabel} numberOfLines={1}>{task.name}</Text>
+                      <Text style={[styles.taskButtonLabel, { color: colors.text }]} numberOfLines={1}>{task.name}</Text>
                     </TouchableOpacity>
                   ) : (
                     // Empty slot - show add button
                     <TouchableOpacity
                       style={[
                         styles.taskButton,
-                        index === 0 && getTaskCount() === 0 && styles.taskButtonFirst,
+                        { backgroundColor: colors.background, borderColor: colors.border },
+                        index === 0 && getTaskCount() === 0 && [styles.taskButtonFirst, { backgroundColor: colors.primary, borderColor: colors.primary }],
                       ]}
                       onPress={() => handleOpenTaskModal(index)}
                     >
                       <Ionicons 
                         name={index > 0 ? "lock-closed" : "add"} 
                         size={index > 0 ? 20 : 28} 
-                        color={index === 0 && getTaskCount() === 0 ? "#ffffff" : "#64748b"} 
+                        color={index === 0 && getTaskCount() === 0 ? "#ffffff" : colors.textMuted} 
                       />
                     </TouchableOpacity>
                   )}
@@ -2621,47 +2644,44 @@ export default function HabitFormScreen() {
 
           {/* Wake Up Check */}
           <TouchableOpacity 
-            style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}
+            style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border }]}
             onPress={() => router.push('/wake-up-check')}
           >
             <View style={styles.settingRowLeft}>
-              <Text style={styles.settingText}>Kiểm tra thức dậy</Text>
-              <Ionicons name="lock-closed" size={14} color="#64748b" style={styles.lockIcon} />
-              <View style={styles.hotBadge}>
-                <Text style={styles.hotBadgeText}>HOT</Text>
+              <Text style={[styles.settingText, { color: colors.text }]}>Kiểm tra thức dậy</Text>
+              <Ionicons name="lock-closed" size={14} color={colors.textMuted} style={styles.lockIcon} />
+              <View style={[styles.hotBadge, { backgroundColor: '#ef4444' }]}>
+                <Text style={[styles.hotBadgeText, { color: '#ffffff' }]}>HOT</Text>
               </View>
             </View>
             <View style={styles.settingRowRight}>
-              <Text style={styles.settingValue}>Tắt</Text>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              <Text style={[styles.settingValue, { color: colors.textMuted }]}>Tắt</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
-
-
-
         </View>
 
         {/* Alarm Sound Section */}
-        <Text style={styles.sectionLabel}>Âm thanh báo thức</Text>
-        <View style={styles.sectionCard}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Âm thanh báo thức</Text>
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
           <TouchableOpacity style={styles.soundRow}>
-            <View style={styles.playButton}>
+            <View style={[styles.playButton, { backgroundColor: colors.primary }]}>
               <Ionicons name="play" size={20} color="#ffffff" />
             </View>
-            <Text style={styles.soundName}>Giờ Nghỉ Cà Phê</Text>
-            <Ionicons name="chevron-forward" size={24} color="#64748b" />
+            <Text style={[styles.soundName, { color: colors.text }]}>Giờ Nghỉ Cà Phê</Text>
+            <Ionicons name="chevron-forward" size={24} color={colors.textMuted} />
           </TouchableOpacity>
 
           {/* Volume Slider */}
           <View style={styles.sliderContainer}>
-            <View style={styles.sliderTrack} />
+            <View style={[styles.sliderTrack, { backgroundColor: colors.border }]} />
           </View>
 
           <View style={styles.volumeRow}>
             <Ionicons 
               name={volume === 0 ? "volume-mute" : "volume-medium"} 
               size={24} 
-              color={volume === 0 ? "#64748b" : "#ffffff"} 
+              color={volume === 0 ? colors.textMuted : colors.text} 
             />
             <Slider
               style={styles.volumeSlider}
@@ -2669,9 +2689,9 @@ export default function HabitFormScreen() {
               maximumValue={1}
               value={volume}
               onValueChange={setVolume}
-              minimumTrackTintColor="#ffffff"
-              maximumTrackTintColor="#334155"
-              thumbTintColor="#ffffff"
+              minimumTrackTintColor={colors.primary}
+              maximumTrackTintColor={colors.border}
+              thumbTintColor={isDarkMode ? '#ffffff' : colors.primary}
             />
             <TouchableOpacity 
               style={styles.vibrationButton}
@@ -2680,24 +2700,25 @@ export default function HabitFormScreen() {
               <MaterialCommunityIcons 
                 name="vibrate" 
                 size={24} 
-                color={vibrationEnabled ? "#ffffff" : "#64748b"} 
+                color={vibrationEnabled ? colors.primary : colors.textMuted} 
               />
             </TouchableOpacity>
-            <View style={[styles.vibrationCheckbox, vibrationEnabled && styles.vibrationCheckboxChecked]}>
+            <View style={[styles.vibrationCheckbox, { borderColor: isDarkMode ? colors.textMuted : colors.border }, vibrationEnabled && [styles.vibrationCheckboxChecked, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
               {vibrationEnabled && <Ionicons name="checkmark" size={14} color="#ffffff" />}
             </View>
           </View>
 
           {/* Gentle Wake */}
           <TouchableOpacity 
-            style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155', marginTop: 8 }]}
+            style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border, marginTop: 8 }]}
             onPress={() => setShowGentleWakeModal(true)}
           >
-            <Text style={styles.settingText}>Thức giấc nhẹ nhàng</Text>
+            <Text style={[styles.settingText, { color: colors.text }]}>Thức giấc nhẹ nhàng</Text>
             <View style={styles.settingRowRight}>
               <Text style={[
                 styles.settingValue,
-                gentleWake === 'off' && { color: '#64748b' }
+                { color: colors.text },
+                gentleWake === 'off' && { color: colors.textMuted }
               ]}>
                 {gentleWake === 'off' ? 'Tắt' : 
                  gentleWake === '15s' ? '15 giây' :
@@ -2705,102 +2726,102 @@ export default function HabitFormScreen() {
                  gentleWake === '60s' ? '60 giây' :
                  gentleWake === '5m' ? '5 phút' : '10 phút'}
               </Text>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
 
           {/* Time Pressure */}
-          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border }]}>
             <View style={styles.settingRowLeft}>
-              <Text style={styles.settingText}>Áp lực thời gian</Text>
-              <TouchableOpacity style={styles.exampleButton}>
-                <Ionicons name="play" size={12} color="#9ca3af" />
-                <Text style={styles.exampleText}>Ví dụ</Text>
+              <Text style={[styles.settingText, { color: colors.text }]}>Áp lực thời gian</Text>
+              <TouchableOpacity style={[styles.exampleButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
+                <Ionicons name="play" size={12} color={colors.textMuted} />
+                <Text style={[styles.exampleText, { color: colors.textMuted }]}>Ví dụ</Text>
               </TouchableOpacity>
             </View>
             <Switch
               value={timePressure}
               onValueChange={setTimePressure}
-              trackColor={{ false: '#3e3e3e', true: '#22c55e' }}
+              trackColor={{ false: isDarkMode ? '#3e3e3e' : '#cbd5e1', true: colors.primary }}
               thumbColor="#ffffff"
             />
           </View>
 
           {/* Weather Reminder */}
-          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border }]}>
             <View style={styles.settingRowLeft}>
-              <Text style={styles.settingText}>Lời nhắc thời tiết</Text>
-              <TouchableOpacity style={styles.exampleButton}>
-                <Ionicons name="play" size={12} color="#9ca3af" />
-                <Text style={styles.exampleText}>Ví dụ</Text>
+              <Text style={[styles.settingText, { color: colors.text }]}>Lời nhắc thời tiết</Text>
+              <TouchableOpacity style={[styles.exampleButton, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}>
+                <Ionicons name="play" size={12} color={colors.textMuted} />
+                <Text style={[styles.exampleText, { color: colors.textMuted }]}>Ví dụ</Text>
               </TouchableOpacity>
             </View>
             <Switch
               value={weatherReminder}
               onValueChange={setWeatherReminder}
-              trackColor={{ false: '#3e3e3e', true: '#22c55e' }}
+              trackColor={{ false: isDarkMode ? '#3e3e3e' : '#cbd5e1', true: colors.primary }}
               thumbColor="#ffffff"
             />
           </View>
 
           {/* Label Reminder */}
-          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border }]}>
             <View style={styles.settingRowLeft}>
-              <Text style={styles.settingText}>Lời nhắc nhãn</Text>
-              <Ionicons name="lock-closed" size={14} color="#64748b" style={styles.lockIcon} />
+              <Text style={[styles.settingText, { color: colors.text }]}>Lời nhắc nhãn</Text>
+              <Ionicons name="lock-closed" size={14} color={colors.textMuted} style={styles.lockIcon} />
             </View>
             <Switch
               value={labelReminder}
               onValueChange={setLabelReminder}
-              trackColor={{ false: '#3e3e3e', true: '#22c55e' }}
+              trackColor={{ false: isDarkMode ? '#3e3e3e' : '#cbd5e1', true: colors.primary }}
               thumbColor="#ffffff"
             />
           </View>
 
           {/* Backup Sound */}
-          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
+          <View style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border }]}>
             <View style={styles.settingRowLeft}>
-              <Text style={styles.settingText}>Âm thanh dự phòng</Text>
-              <Ionicons name="lock-closed" size={14} color="#64748b" style={styles.lockIcon} />
+              <Text style={[styles.settingText, { color: colors.text }]}>Âm thanh dự phòng</Text>
+              <Ionicons name="lock-closed" size={14} color={colors.textMuted} style={styles.lockIcon} />
             </View>
             <Switch
               value={backupSound}
               onValueChange={setBackupSound}
-              trackColor={{ false: '#3e3e3e', true: '#22c55e' }}
+              trackColor={{ false: isDarkMode ? '#3e3e3e' : '#cbd5e1', true: colors.primary }}
               thumbColor="#ffffff"
             />
           </View>
         </View>
 
         {/* Custom Settings Section */}
-        <Text style={styles.sectionLabel}>Cài đặt tùy chỉnh</Text>
-        <View style={styles.sectionCard}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Cài đặt tùy chỉnh</Text>
+        <View style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
           <TouchableOpacity 
             style={styles.settingRow}
             onPress={() => router.push('/snooze-settings')}
           >
-            <Text style={styles.settingText}>Báo lại</Text>
+            <Text style={[styles.settingText, { color: colors.text }]}>Báo lại</Text>
             <View style={styles.settingRowRight}>
               <Text style={[
                 styles.settingValue,
-                snoozeEnabled ? { color: '#ffffff' } : { color: '#64748b' }
+                snoozeEnabled ? { color: colors.text } : { color: colors.textMuted }
               ]}>{getSnoozeDisplayText()}</Text>
-              <Ionicons name="chevron-forward" size={20} color="#64748b" />
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: '#334155' }]}>
-            <Text style={styles.settingText}>Cài đặt hình nền</Text>
-            <View style={styles.wallpaperThumbnail}>
-              <Text style={styles.wallpaperText}>IT&apos;S{'\n'}YOU VS YOU</Text>
+          <TouchableOpacity style={[styles.settingRow, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+            <Text style={[styles.settingText, { color: colors.text }]}>Cài đặt hình nền</Text>
+            <View style={[styles.wallpaperThumbnail, { backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }]}>
+              <Text style={[styles.wallpaperText, { color: colors.text }]}>IT&apos;S{'\n'}YOU VS YOU</Text>
             </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       {/* Save Button */}
-      <View style={[styles.saveButtonContainer, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+      <View style={[styles.saveButtonContainer, { paddingBottom: insets.bottom + 16, borderTopColor: colors.border }]}>
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: colors.primary }]} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Lưu</Text>
         </TouchableOpacity>
       </View>
@@ -2811,7 +2832,6 @@ export default function HabitFormScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -2826,7 +2846,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   placeholder: {
     width: 32,
@@ -2849,7 +2868,6 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   habitName: {
-    color: '#ffffff',
     fontSize: 22,
     fontWeight: '600',
     flex: 1,
@@ -2951,7 +2969,6 @@ const styles = StyleSheet.create({
   },
   checkboxText: {
     fontSize: 14,
-    color: '#ffffff',
   },
   daysContainer: {
     flexDirection: 'row',
@@ -2997,7 +3014,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   sectionCount: {
     fontSize: 14,
@@ -3040,7 +3056,6 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 15,
-    color: '#ffffff',
   },
   settingValue: {
     fontSize: 14,
@@ -3084,7 +3099,6 @@ const styles = StyleSheet.create({
   soundName: {
     flex: 1,
     fontSize: 16,
-    color: '#ffffff',
   },
   sliderContainer: {
     paddingVertical: 8,
@@ -3154,7 +3168,6 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 16,
     paddingTop: 16,
-    backgroundColor: '#0f172a',
   },
   saveButton: {
     backgroundColor: '#ef4444',
@@ -3200,15 +3213,13 @@ const styles = StyleSheet.create({
   timePickerTextSelected: {
     fontSize: 42,
     fontWeight: '600',
-    color: '#ffffff',
   },
   timePickerTextFaded: {
     color: '#475569',
   },
   timeSeparatorMain: {
     fontSize: 42,
-    fontWeight: '500',
-    color: '#ffffff',
+    fontWeight: '700',
     marginHorizontal: 16,
   },
   selectionIndicator: {
@@ -3217,7 +3228,6 @@ const styles = StyleSheet.create({
     left: 40,
     right: 40,
     height: ITEM_HEIGHT,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     zIndex: -1,
   },
@@ -3502,7 +3512,6 @@ const styles = StyleSheet.create({
   },
   previewButton: {
     flex: 1,
-    backgroundColor: '#334155',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
@@ -3514,12 +3523,10 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     flex: 1,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#64748b',
   },
   completeButtonText: {
     fontSize: 16,
@@ -3668,7 +3675,6 @@ const styles = StyleSheet.create({
   tapPreviewContainer: {
     width: '100%',
     height: 200,
-    backgroundColor: '#334155',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -3710,7 +3716,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    backgroundColor: '#334155',
     borderRadius: 12,
     paddingVertical: 24,
     paddingHorizontal: 48,
@@ -3720,11 +3725,9 @@ const styles = StyleSheet.create({
   tapCountNumber: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   tapCountLabel: {
     fontSize: 20,
-    color: '#94a3b8',
     fontWeight: '500',
   },
   // Tap progress animation styles
@@ -3736,11 +3739,9 @@ const styles = StyleSheet.create({
   tapProgressNumber: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#ffffff',
   },
   tapProgressLabel: {
     fontSize: 24,
-    color: '#94a3b8',
     fontWeight: '500',
     marginLeft: 4,
   },
@@ -3755,7 +3756,6 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   typingPreviewArea: {
-    backgroundColor: '#334155',
     borderRadius: 12,
     paddingVertical: 40,
     paddingHorizontal: 20,
@@ -3777,10 +3777,8 @@ const styles = StyleSheet.create({
   typingExamplePhrase: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#ffffff',
   },
   typingCountCard: {
-    backgroundColor: '#334155',
     borderRadius: 12,
     paddingVertical: 16,
     marginBottom: 16,
@@ -3865,7 +3863,6 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   findColorsPreviewArea: {
-    backgroundColor: '#334155',
     borderRadius: 12,
     paddingVertical: 20,
     paddingHorizontal: 20,
@@ -3890,7 +3887,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#f59e0b',
   },
   difficultyCard: {
-    backgroundColor: '#334155',
     borderRadius: 12,
     paddingVertical: 20,
     paddingHorizontal: 24,
@@ -3952,12 +3948,10 @@ const styles = StyleSheet.create({
   mathExample: {
     fontSize: 32,
     fontWeight: '600',
-    color: '#ffffff',
     marginTop: 16,
   },
   // Shake Modal styles
   shakePreviewArea: {
-    backgroundColor: '#334155',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -4001,7 +3995,6 @@ const styles = StyleSheet.create({
   limb: {
     position: 'absolute',
     width: 6,
-    backgroundColor: '#ffffff',
     borderRadius: 3,
   },
   thigh: {
@@ -4017,7 +4010,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 8,
     height: 55,
-    backgroundColor: '#ffffff',
     borderRadius: 4,
     alignItems: 'center',
   },
@@ -4027,12 +4019,10 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: '#ffffff',
   },
   arm: {
     width: 6,
     height: 35,
-    backgroundColor: '#ffffff',
     borderRadius: 3,
   },
   squatGroundLine: {
@@ -4054,7 +4044,6 @@ const styles = StyleSheet.create({
     height: '60%',
   },
   qrAddButton: {
-    backgroundColor: '#334155',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -4063,7 +4052,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#475569',
   },
   qrAddButtonText: {
     color: '#ffffff',
@@ -4072,7 +4060,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   qrItem: {
-    backgroundColor: '#1e293b',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -4081,11 +4068,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   qrItemSelected: {
-    borderColor: '#00f2ff',
-    backgroundColor: '#1e293b',
+    borderWidth: 1,
   },
   qrItemLeft: {
     flexDirection: 'row',
@@ -4096,12 +4081,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   qrItemText: {
-    color: '#94a3b8',
     fontSize: 16,
     fontWeight: '500',
   },
   qrItemTextSelected: {
-    color: '#ffffff',
+    fontWeight: '700',
   },
   qrContextMenuOverlay: {
     flex: 1,
@@ -4205,12 +4189,10 @@ const styles = StyleSheet.create({
   photoAddBox: {
     width: (Dimensions.get('window').width - 40 - 15) / 2,
     height: 180,
-    backgroundColor: '#334155',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#475569',
   },
   photoAddText: {
     color: '#ffffff',

@@ -4,12 +4,14 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '../context/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function SnoozeCountdownScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { colors, isDarkMode } = useTheme();
   
   const interval = params.interval ? parseInt(params.interval as string) : 5;
   const initialSnoozeCount = params.snoozeCount ? parseInt(params.snoozeCount as string) : 1;
@@ -151,28 +153,28 @@ export default function SnoozeCountdownScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" hidden={true} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} hidden={true} />
       
       {/* Background with darker theme */}
-      <View style={styles.background} />
+      <View style={[styles.background, { backgroundColor: colors.background }]} />
 
       <SafeAreaView style={styles.content}>
         <View style={styles.centerContainer}>
           {/* Bear icon/logo placeholder as shown in image */}
           <View style={styles.logoContainer}>
-            <View style={styles.logoCircle}>
-              <Ionicons name="notifications" size={32} color="#ffffff" />
+            <View style={[styles.logoCircle, { backgroundColor: colors.surface }]}>
+              <Ionicons name="notifications" size={32} color={colors.primary} />
             </View>
-            <Text style={styles.logoText}>IT&apos;S</Text>
-            <Text style={styles.logoSubText}>YOUR TIME</Text>
+            <Text style={[styles.logoText, { color: colors.text, opacity: 0.6 }]}>IT&apos;S</Text>
+            <Text style={[styles.logoSubText, { color: colors.text, opacity: 0.8 }]}>YOUR TIME</Text>
           </View>
 
           {/* Timer Display */}
-          <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
+          <Text style={[styles.timerText, { color: colors.text }]}>{formatTime(timeLeft)}</Text>
 
           {/* Snooze Count Info */}
-          <Text style={styles.snoozeInfoText}>
+          <Text style={[styles.snoozeInfoText, { color: colors.text }]}>
             Còn {initialSnoozeCount} lần hoãn
           </Text>
         </View>

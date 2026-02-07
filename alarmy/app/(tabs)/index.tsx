@@ -2,6 +2,7 @@ import { AlarmCard } from '@/components/alarm-card';
 import { FloatingActionButton } from '@/components/floating-action-button';
 import { NewFeatureBanner } from '@/components/new-feature-banner';
 import { Alarm, AlarmManager } from '@/utils/alarm-manager';
+import { useTheme } from '@/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
@@ -20,6 +21,7 @@ import FlashAlarmScreen from '../flash-alarm';
 export default function AlarmsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [menu, setMenu] = useState(false);
   const [quickAlarmVisible, setQuickAlarmVisible] = useState(false);
@@ -156,10 +158,10 @@ export default function AlarmsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>PRO Start</Text>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>PRO Start</Text>
         <TouchableOpacity onPress={() => router.push('/debug')}>
           <Ionicons name="bug" size={24} color="#ef4444" />
         </TouchableOpacity>
@@ -174,7 +176,7 @@ export default function AlarmsScreen() {
 
         {/* Thông báo thời gian */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{nextAlarmText}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.primary }]}>{nextAlarmText}</Text>
         </View>
 
         {/* Danh sách báo thức */}
@@ -195,8 +197,8 @@ export default function AlarmsScreen() {
           
           {alarms.length === 0 && (
             <View style={styles.emptyContainer}>
-              <Ionicons name="alarm-outline" size={60} color="#334155" />
-              <Text style={styles.emptyText}>Chưa có báo thức nào</Text>
+              <Ionicons name="alarm-outline" size={60} color={colors.textMuted} />
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>Chưa có báo thức nào</Text>
             </View>
           )}
         </View>
@@ -213,7 +215,7 @@ export default function AlarmsScreen() {
             activeOpacity={1} 
             onPress={() => setMenu(false)} 
           />
-          <View style={styles.menu}>
+          <View style={[styles.menu, { backgroundColor: colors.surface }]}>
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => {
@@ -221,7 +223,7 @@ export default function AlarmsScreen() {
                 router.push('../routine-selection');
               }}
             >
-              <Text style={styles.menuText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
                 Báo thức thói quen
               </Text>
             </TouchableOpacity>
@@ -233,7 +235,7 @@ export default function AlarmsScreen() {
                 setQuickAlarmVisible(true);
               }}
             >
-              <Text style={styles.menuText}>Báo thức nhanh</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>Báo thức nhanh</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -243,7 +245,7 @@ export default function AlarmsScreen() {
                 router.push('../add-alarm');
               }}
             >
-              <Text style={styles.menuText}>
+              <Text style={[styles.menuText, { color: colors.text }]}>
                 Báo thức
               </Text>
             </TouchableOpacity>
@@ -266,7 +268,6 @@ export default function AlarmsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -275,12 +276,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   content: {
     flex: 1,
@@ -296,7 +295,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#38b6ff', // Màu xanh nổi bật cho thời gian tiếp theo
     marginLeft: 4,
   },
   alarmsList: {
@@ -308,7 +306,6 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   emptyText: {
-    color: '#64748b',
     textAlign: 'center',
     marginTop: 12,
     fontSize: 16,
@@ -325,7 +322,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 90,
     right: 20,
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     paddingVertical: 8,
     width: 200,
@@ -336,7 +332,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   menuText: {
-    color: '#ffffff',
     fontSize: 15,
   },
   menuItem: {

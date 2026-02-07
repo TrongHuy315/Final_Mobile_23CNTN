@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -40,6 +42,7 @@ const SLIDES = [
 export default function PreventPowerOffInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -49,13 +52,14 @@ export default function PreventPowerOffInfoScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       {/* Close Button */}
       <TouchableOpacity
         style={[styles.closeButton, { top: insets.top + 16 }]}
         onPress={() => router.back()}
       >
-        <Ionicons name="close" size={28} color="#ffffff" />
+        <Ionicons name="close" size={28} color={colors.text} />
       </TouchableOpacity>
 
       {/* Carousel */}
@@ -71,14 +75,11 @@ export default function PreventPowerOffInfoScreen() {
         {SLIDES.map((slide, index) => (
           <View key={index} style={styles.slide}>
             <View style={styles.slideContent}>
-              {/* Title */}
-              {index === 0 }
-              
-              <Text style={styles.title}>{slide.title}</Text>
+              <Text style={[styles.title, { color: colors.text }]}>{slide.title}</Text>
               
               {/* Image */}
               <View style={styles.imageContainer}>
-                <View style={styles.imageBg}>
+                <View style={[styles.imageBg, { backgroundColor: isDarkMode ? '#b794f6' : '#d8b4fe' }]}>
                   <Image
                     source={slide.image}
                     style={styles.image}
@@ -88,7 +89,7 @@ export default function PreventPowerOffInfoScreen() {
               </View>
               
               {/* Subtitle */}
-              <Text style={styles.subtitle}>{slide.subtitle}</Text>
+              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{slide.subtitle}</Text>
             </View>
           </View>
         ))}
@@ -101,7 +102,8 @@ export default function PreventPowerOffInfoScreen() {
             key={index}
             style={[
               styles.dot,
-              currentSlide === index && styles.activeDot,
+              { backgroundColor: isDarkMode ? '#4a5568' : '#e2e8f0' },
+              currentSlide === index && [styles.activeDot, { backgroundColor: colors.primary }],
             ]}
           />
         ))}
@@ -113,7 +115,6 @@ export default function PreventPowerOffInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   closeButton: {
     position: 'absolute',
@@ -139,16 +140,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
   },
-  firstSlideHeader: {
-    fontSize: 15,
-    color: '#94a3b8',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 32,
@@ -162,7 +156,6 @@ const styles = StyleSheet.create({
   imageBg: {
     width: SCREEN_WIDTH * 0.85,
     height: SCREEN_WIDTH * 0.6,
-    backgroundColor: '#b794f6',
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -174,7 +167,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: '#94a3b8',
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 20,
@@ -192,10 +184,8 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#4a5568',
   },
   activeDot: {
-    backgroundColor: '#ffffff',
     width: 24,
   },
 });

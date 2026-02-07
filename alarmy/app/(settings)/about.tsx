@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AboutItem {
   title: string;
@@ -45,6 +46,7 @@ const LINKS = [
 
 export default function AboutScreen() {
   const router = useRouter();
+  const { colors, isDarkMode } = useTheme();
 
   const handleOpenLink = (url: string) => {
     Linking.openURL(url).catch((err) =>
@@ -53,13 +55,13 @@ export default function AboutScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color="#ffffff" />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thông tin về ứng dụng</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Thông tin về ứng dụng</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -67,23 +69,23 @@ export default function AboutScreen() {
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         {/* Logo Section */}
         <View style={styles.logoSection}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="time" size={64} color="#3b82f6" />
+          <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
+            <Ionicons name="time" size={64} color={colors.primary} />
           </View>
-          <Text style={styles.appName}>Alarmy</Text>
-          <Text style={styles.appTagline}>Đánh thức một cách thông minh</Text>
+          <Text style={[styles.appName, { color: colors.text }]}>Alarmy</Text>
+          <Text style={[styles.appTagline, { color: colors.textMuted }]}>Đánh thức một cách thông minh</Text>
         </View>
 
         {/* About Info */}
-        <View style={styles.infoSection}>
+        <View style={[styles.infoSection, { backgroundColor: colors.surface }]}>
           {ABOUT_ITEMS.map((item, index) => (
-            <View key={index} style={styles.infoItem}>
-              <View style={styles.infoIconContainer}>
-                <Ionicons name={item.icon as any} size={20} color="#3b82f6" />
+            <View key={index} style={[styles.infoItem, { borderBottomColor: colors.border }]}>
+              <View style={[styles.infoIconContainer, { backgroundColor: colors.background }]}>
+                <Ionicons name={item.icon as any} size={20} color={colors.primary} />
               </View>
               <View style={styles.infoContent}>
-                <Text style={styles.infoTitle}>{item.title}</Text>
-                <Text style={styles.infoValue}>{item.description}</Text>
+                <Text style={[styles.infoTitle, { color: colors.textMuted }]}>{item.title}</Text>
+                <Text style={[styles.infoValue, { color: colors.text }]}>{item.description}</Text>
               </View>
             </View>
           ))}
@@ -91,46 +93,46 @@ export default function AboutScreen() {
 
         {/* Description */}
         <View style={styles.descriptionSection}>
-          <Text style={styles.descriptionTitle}>Về Alarmy</Text>
-          <Text style={styles.descriptionText}>
+          <Text style={[styles.descriptionTitle, { color: colors.text }]}>Về Alarmy</Text>
+          <Text style={[styles.descriptionText, { color: colors.textSecondary }]}>
             Alarmy là một ứng dụng báo thức thông minh được thiết kế để giúp bạn thức dậy kịp thời và bắt đầu ngày mới một cách tốt nhất. Với các tính năng như:
           </Text>
-          <Text style={styles.featureItem}>• Nhiều loại thử thách để đảm bảo bạn thực sự thức dậy</Text>
-          <Text style={styles.featureItem}>• Quản lý giấc ngủ và phân tích dữ liệu ngủ</Text>
-          <Text style={styles.featureItem}>• Quy trình buổi sáng tùy chỉnh</Text>
-          <Text style={styles.featureItem}>• Đồng bộ hóa trên đám mây</Text>
-          <Text style={styles.featureItem}>• Giao diện đẹp và dễ sử dụng</Text>
+          <Text style={[styles.featureItem, { color: colors.textSecondary }]}>• Nhiều loại thử thách để đảm bảo bạn thực sự thức dậy</Text>
+          <Text style={[styles.featureItem, { color: colors.textSecondary }]}>• Quản lý giấc ngủ và phân tích dữ liệu ngủ</Text>
+          <Text style={[styles.featureItem, { color: colors.textSecondary }]}>• Quy trình buổi sáng tùy chỉnh</Text>
+          <Text style={[styles.featureItem, { color: colors.textSecondary }]}>• Đồng bộ hóa trên đám mây</Text>
+          <Text style={[styles.featureItem, { color: colors.textSecondary }]}>• Giao diện đẹp và dễ sử dụng</Text>
         </View>
 
         {/* Links Section */}
         <View style={styles.linksSection}>
-          <Text style={styles.linksTitle}>Liên kết hữu ích</Text>
+          <Text style={[styles.linksTitle, { color: colors.text }]}>Liên kết hữu ích</Text>
           {LINKS.map((link, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.linkItem}
+              style={[styles.linkItem, { backgroundColor: colors.surface }]}
               onPress={() => handleOpenLink(link.url)}
             >
-              <View style={styles.linkIconContainer}>
-                <Ionicons name={link.icon as any} size={18} color="#3b82f6" />
+              <View style={[styles.linkIconContainer, { backgroundColor: colors.background }]}>
+                <Ionicons name={link.icon as any} size={18} color={colors.primary} />
               </View>
-              <Text style={styles.linkText}>{link.title}</Text>
-              <Ionicons name="chevron-forward" size={18} color="#475569" />
+              <Text style={[styles.linkText, { color: colors.text }]}>{link.title}</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Credits Section */}
-        <View style={styles.creditsSection}>
-          <Text style={styles.creditsTitle}>Cảm ơn bạn</Text>
-          <Text style={styles.creditsText}>
+        <View style={[styles.creditsSection, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.creditsTitle, { color: colors.text }]}>Cảm ơn bạn</Text>
+          <Text style={[styles.creditsText, { color: colors.textSecondary }]}>
             Cảm ơn bạn đã sử dụng Alarmy. Nếu bạn thích ứng dụng này, vui lòng nhận 5 sao trên cửa hàng ứng dụng để giúp chúng tôi phát triển hơn.
           </Text>
         </View>
 
         {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
+        <View style={[styles.footer, { borderTopColor: colors.border }]}>
+          <Text style={[styles.footerText, { color: colors.textMuted }]}>
             © 2024 Alarmy. Tất cả quyền được bảo lưu.
           </Text>
         </View>

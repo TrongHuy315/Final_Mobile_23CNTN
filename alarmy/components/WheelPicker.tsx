@@ -6,6 +6,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 interface WheelPickerProps {
   data: number[];
@@ -24,6 +25,7 @@ const WheelPicker = React.memo(({
   visibleItems = 3,
   containerStyle,
 }: WheelPickerProps) => {
+  const { colors } = useTheme();
   const [selectedValue, setSelectedValue] = useState(initialValue);
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -140,8 +142,8 @@ const WheelPicker = React.memo(({
             <View key={`picker-${item}`} style={[styles.item, { height: itemHeight }]}>
               <Text style={[
                 styles.text,
-                isSelected && styles.textSelected,
-                !isSelected && styles.textFaded,
+                { color: isSelected ? colors.text : colors.textMuted },
+                !isSelected && { opacity: 0.5 }
               ]}>
                 {String(item).padStart(2, '0')}
               </Text>
@@ -149,8 +151,8 @@ const WheelPicker = React.memo(({
           );
         })}
       </ScrollView>
-      <View style={[styles.lineTop, { top: paddingTopBottom }]} pointerEvents="none" />
-      <View style={[styles.lineBottom, { top: paddingTopBottom + itemHeight }]} pointerEvents="none" />
+      <View style={[styles.lineTop, { top: paddingTopBottom, backgroundColor: colors.border, opacity: 0.6 }]} pointerEvents="none" />
+      <View style={[styles.lineBottom, { top: paddingTopBottom + itemHeight, backgroundColor: colors.border, opacity: 0.6 }]} pointerEvents="none" />
     </View>
   );
 });
@@ -169,28 +171,18 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 32,
     fontWeight: '600',
-    color: '#ffffff',
-  },
-  textSelected: {
-    color: '#ffffff',
-  },
-  textFaded: {
-    color: '#475569',
-    opacity: 0.5,
   },
   lineTop: {
     position: 'absolute',
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   lineBottom: {
     position: 'absolute',
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 

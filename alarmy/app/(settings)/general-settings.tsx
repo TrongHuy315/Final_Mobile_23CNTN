@@ -10,24 +10,26 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function GeneralSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [confirmExit, setConfirmExit] = useState(false);
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Chung</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Chung</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -38,40 +40,40 @@ export default function GeneralSettingsScreen() {
       >
         {/* Display Card */}
         <TouchableOpacity 
-          style={styles.card}
+          style={[styles.card, { backgroundColor: colors.surface }]}
           activeOpacity={0.7}
           onPress={() => router.push('/display-settings')}
         >
-          <Text style={styles.cardTitle}>Hiển thị</Text>
-          <Ionicons name="chevron-forward" size={20} color="#718096" />
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Hiển thị</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* Language Card */}
         <TouchableOpacity 
-          style={styles.card}
+          style={[styles.card, { backgroundColor: colors.surface }]}
           activeOpacity={0.7}
           onPress={() => router.push('/language-settings')}
         >
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Ngôn ngữ (Language)</Text>
-            <Text style={styles.cardSubtitle}>Sử dụng ngôn ngữ hệ thống</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Ngôn ngữ (Language)</Text>
+            <Text style={[styles.cardSubtitle, { color: colors.primary }]}>Sử dụng ngôn ngữ hệ thống</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#718096" />
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* Confirm Exit Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.cardLeft}>
             <View style={styles.iconContainer}>
               <Text style={styles.warningIcon}>⚠️</Text>
             </View>
-            <Text style={styles.cardTitle}>Xác nhận thoát</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Xác nhận thoát</Text>
           </View>
           <Switch
             value={confirmExit}
             onValueChange={setConfirmExit}
-            trackColor={{ false: '#4a5568', true: '#38b6ff' }}
-            thumbColor={confirmExit ? '#ffffff' : '#cbd5e0'}
+            trackColor={{ false: colors.surfaceVariant, true: colors.primary }}
+            thumbColor={confirmExit ? '#ffffff' : colors.textSecondary}
           />
         </View>
       </ScrollView>
@@ -82,7 +84,6 @@ export default function GeneralSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -91,7 +92,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backButton: {
     width: 40,
@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
     flex: 1,
     textAlign: 'center',
     marginRight: 40,
@@ -122,7 +121,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1e293b',
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -134,12 +132,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 0,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#38b6ff',
     marginTop: 4,
   },
   cardLeft: {

@@ -11,6 +11,9 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
+import { SettingsManager } from '@/utils/settings-manager';
+import { StatusBar } from 'expo-status-bar';
 
 const autoSilenceOptions = [
   { value: 'off', label: 'Tắt' },
@@ -34,11 +37,39 @@ const maxMuteLimitOptions = [
 export default function DismissAlarmTaskScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [muteWhileWorking, setMuteWhileWorking] = useState(true);
   const [autoSilence, setAutoSilence] = useState('off');
   const [showAutoSilenceModal, setShowAutoSilenceModal] = useState(false);
   const [maxMuteLimit, setMaxMuteLimit] = useState('3');
   const [showMaxMuteLimitModal, setShowMaxMuteLimitModal] = useState(false);
+
+  React.useEffect(() => {
+    const loadSettings = async () => {
+      const settings = await SettingsManager.loadSettings();
+      setMuteWhileWorking(settings.muteWhileWorking);
+      setAutoSilence(settings.autoSilence);
+      setMaxMuteLimit(settings.maxMuteLimit);
+    };
+    loadSettings();
+  }, []);
+
+  const handleMuteWhileWorkingChange = async (value: boolean) => {
+    setMuteWhileWorking(value);
+    await SettingsManager.updateSetting('muteWhileWorking', value);
+  };
+
+  const handleAutoSilenceChange = async (value: string) => {
+    setAutoSilence(value);
+    await SettingsManager.updateSetting('autoSilence', value);
+    setShowAutoSilenceModal(false);
+  };
+
+  const handleMaxMuteLimitChange = async (value: string) => {
+    setMaxMuteLimit(value);
+    await SettingsManager.updateSetting('maxMuteLimit', value);
+    setShowMaxMuteLimitModal(false);
+  };
 
   const getAutoSilenceLabel = () => {
     const option = autoSilenceOptions.find(opt => opt.value === autoSilence);
@@ -51,17 +82,17 @@ export default function DismissAlarmTaskScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Tắt Báo thức hoặc Nhiệm vụ</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>Tắt Báo thức hoặc Nhiệm vụ</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -71,54 +102,54 @@ export default function DismissAlarmTaskScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Alarm Section */}
-        <Text style={styles.sectionTitle}>Tắt báo thức</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Tắt báo thức</Text>
         
         <TouchableOpacity 
-          style={styles.card}
+          style={[styles.card, { backgroundColor: colors.surface }]}
           activeOpacity={0.7}
           onPress={() => setShowAutoSilenceModal(true)}
         >
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>Tự động im lặng</Text>
-            <Text style={[styles.cardSubtitle, autoSilence !== 'off' && { color: '#38b6ff' }]}>{getAutoSilenceLabel()}</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Tự động im lặng</Text>
+            <Text style={[styles.cardSubtitle, { color: autoSilence === 'off' ? colors.textSecondary : colors.primary }]}>{getAutoSilenceLabel()}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#718096" />
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
 
-        <Text style={styles.description}>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
           Tắt báo thức nếu bạn không trả lời trong một{'\n'}
           khoảng thời gian nhất định
         </Text>
 
         {/* Task Section */}
-        <Text style={styles.sectionTitle}>Tắt Nhiệm vụ</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Tắt Nhiệm vụ</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Tắt tiếng trong khi làm việc</Text>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Tắt tiếng trong khi làm việc</Text>
           <Switch
             value={muteWhileWorking}
-            onValueChange={setMuteWhileWorking}
-            trackColor={{ false: '#4a5568', true: '#38b6ff' }}
-            thumbColor={muteWhileWorking ? '#ffffff' : '#cbd5e0'}
+            onValueChange={handleMuteWhileWorkingChange}
+            trackColor={{ false: isDarkMode ? '#4a5568' : '#cbd5e1', true: colors.primary }}
+            thumbColor="#ffffff"
           />
         </View>
 
         <TouchableOpacity 
-          style={styles.card}
+          style={[styles.card, { backgroundColor: colors.surface }]}
           activeOpacity={0.7}
           onPress={() => setShowMaxMuteLimitModal(true)}
         >
           <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>
               Giới hạn tối đa để tắt tiếng trong{'\n'}
               khi làm nhiệm vụ
             </Text>
-            <Text style={[styles.limitNumber, maxMuteLimit === 'off' && { color: '#94a3b8' }]}>{getMaxMuteLimitLabel()}</Text>
+            <Text style={[styles.limitNumber, { color: maxMuteLimit === 'off' ? colors.textSecondary : colors.primary }]}>{getMaxMuteLimitLabel()}</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color="#718096" />
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
 
-        <Text style={styles.description}>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
           Nếu vượt quá giới hạn tối đa, không thể tắt tiếng âm{'\n'}
           thanh.
         </Text>
@@ -138,8 +169,8 @@ export default function DismissAlarmTaskScreen() {
         >
           <View style={styles.modalContainer}>
             <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Tự động im lặng</Text>
+              <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Tự động im lặng</Text>
                 
                 <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
                   {autoSilenceOptions.map((option, index) => (
@@ -147,23 +178,20 @@ export default function DismissAlarmTaskScreen() {
                       key={option.value}
                       style={[
                         styles.optionItem,
-                        index !== autoSilenceOptions.length - 1 && styles.optionItemBorder
+                        index !== autoSilenceOptions.length - 1 && [styles.optionItemBorder, { borderBottomColor: colors.border }]
                       ]}
-                      onPress={() => {
-                        setAutoSilence(option.value);
-                        setShowAutoSilenceModal(false);
-                      }}
+                      onPress={() => handleAutoSilenceChange(option.value)}
                     >
                       <View style={styles.radioButton}>
                         {autoSilence === option.value ? (
-                          <View style={styles.radioButtonSelected}>
-                            <View style={styles.radioButtonInner} />
+                          <View style={[styles.radioButtonSelected, { borderColor: colors.primary }]}>
+                            <View style={[styles.radioButtonInner, { backgroundColor: colors.primary }]} />
                           </View>
                         ) : (
-                          <View style={styles.radioButtonUnselected} />
+                          <View style={[styles.radioButtonUnselected, { borderColor: isDarkMode ? colors.textMuted : colors.textMuted }]} />
                         )}
                       </View>
-                      <Text style={styles.optionLabel}>{option.label}</Text>
+                      <Text style={[styles.optionLabel, { color: colors.text }]}>{option.label}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -187,8 +215,8 @@ export default function DismissAlarmTaskScreen() {
         >
           <View style={styles.modalContainer}>
             <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Giới hạn tối đa để tắt tiếng{"\n"}trong khi làm nhiệm vụ</Text>
+              <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Giới hạn tối đa để tắt tiếng{"\n"}trong khi làm nhiệm vụ</Text>
                 
                 <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
                   {maxMuteLimitOptions.map((option, index) => (
@@ -196,23 +224,20 @@ export default function DismissAlarmTaskScreen() {
                       key={option.value}
                       style={[
                         styles.optionItem,
-                        index !== maxMuteLimitOptions.length - 1 && styles.optionItemBorder
+                        index !== maxMuteLimitOptions.length - 1 && [styles.optionItemBorder, { borderBottomColor: colors.border }]
                       ]}
-                      onPress={() => {
-                        setMaxMuteLimit(option.value);
-                        setShowMaxMuteLimitModal(false);
-                      }}
+                      onPress={() => handleMaxMuteLimitChange(option.value)}
                     >
                       <View style={styles.radioButton}>
                         {maxMuteLimit === option.value ? (
-                          <View style={styles.radioButtonSelected}>
-                            <View style={styles.radioButtonInner} />
+                          <View style={[styles.radioButtonSelected, { borderColor: colors.primary }]}>
+                            <View style={[styles.radioButtonInner, { backgroundColor: colors.primary }]} />
                           </View>
                         ) : (
-                          <View style={styles.radioButtonUnselected} />
+                          <View style={[styles.radioButtonUnselected, { borderColor: isDarkMode ? colors.textMuted : colors.textMuted }]} />
                         )}
                       </View>
-                      <Text style={styles.optionLabel}>{option.label}</Text>
+                      <Text style={[styles.optionLabel, { color: colors.text }]}>{option.label}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -228,7 +253,6 @@ export default function DismissAlarmTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -237,7 +261,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backButton: {
     width: 40,
@@ -248,7 +271,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
     flex: 1,
     textAlign: 'center',
     marginRight: 40,
@@ -267,7 +289,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#94a3b8',
     marginBottom: 12,
     marginTop: 8,
   },
@@ -275,7 +296,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1e293b',
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -287,23 +307,19 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 4,
     lineHeight: 22,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#94a3b8',
   },
   limitNumber: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#38b6ff',
     marginTop: 4,
   },
   description: {
     fontSize: 13,
-    color: '#94a3b8',
     lineHeight: 18,
     marginBottom: 24,
   },
@@ -320,7 +336,6 @@ const styles = StyleSheet.create({
     maxHeight: '70%',
   },
   modalContent: {
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     paddingTop: 24,
     paddingBottom: 8,
@@ -328,7 +343,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 24,
@@ -344,7 +358,6 @@ const styles = StyleSheet.create({
   },
   optionItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
   },
   radioButton: {
     marginRight: 16,
@@ -354,7 +367,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#38b6ff',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -362,18 +374,15 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#38b6ff',
   },
   radioButtonUnselected: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#64748b',
   },
   optionLabel: {
     fontSize: 16,
-    color: '#ffffff',
     flex: 1,
   },
 });

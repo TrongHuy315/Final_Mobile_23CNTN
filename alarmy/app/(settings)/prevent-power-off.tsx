@@ -2,6 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
+  Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -10,29 +13,80 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
+import { SettingsManager } from '@/utils/settings-manager';
 
 export default function PreventPowerOffScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [preventPowerOff, setPreventPowerOff] = useState(false);
 
+  React.useEffect(() => {
+    const loadSettings = async () => {
+      const settings = await SettingsManager.loadSettings();
+      setPreventPowerOff(settings.preventPowerOff);
+    };
+    loadSettings();
+  }, []);
+
+  const handleToggle = async (value: boolean) => {
+    if (value) {
+      Alert.alert(
+        'Ngăn tắt nguồn',
+        'Tính năng này cần quyền Khả năng truy cập để phát hiện khi bạn cố gắng tắt nguồn điện thoại trong lúc báo thức đang reo. Tiếp tục?',
+        [
+          { text: 'Hủy', style: 'cancel', onPress: () => setPreventPowerOff(false) },
+          { 
+            text: 'Đồng ý', 
+            onPress: async () => {
+              setPreventPowerOff(true);
+              await SettingsManager.updateSetting('preventPowerOff', true);
+              Alert.alert(
+                'Hướng dẫn',
+                'Vui lòng tìm mục [Ứng dụng đã cài đặt] hoặc [Dịch vụ đã tải xuống] trong cài đặt Khả năng truy cập và bật Alarmy.',
+                [
+                  { text: 'Đi đến cài đặt', onPress: () => Linking.openSettings() }
+                ]
+              );
+            } 
+          }
+        ]
+      );
+    } else {
+      setPreventPowerOff(false);
+      await SettingsManager.updateSetting('preventPowerOff', false);
+    }
+  };
+
+  const openAccessibilitySettings = () => {
+    Alert.alert(
+      'Khả năng truy cập',
+      'Bạn sẽ được đưa đến cài đặt hệ thống. Vui lòng tìm Alarmy trong phần dịch vụ và bật nó lên.',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        { text: 'Đi đến cài đặt', onPress: () => Linking.openSettings() }
+      ]
+    );
+  };
+
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerCenter} />
         <TouchableOpacity 
           style={styles.infoButton}
           onPress={() => router.push('/prevent-power-off-info')}
         >
-          <Ionicons name="information-circle-outline" size={24} color="#ffffff" />
+          <Ionicons name="information-circle-outline" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -42,41 +96,41 @@ export default function PreventPowerOffScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Title */}
-        <Text style={styles.title}>Ngăn tắt nguồn</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Ngăn tắt nguồn</Text>
 
         {/* Success Counter */}
         <View style={styles.counterContainer}>
-          <Text style={styles.counterLabel}>Số lần chặn thành công</Text>
+          <Text style={[styles.counterLabel, { color: colors.text }]}>Số lần chặn thành công</Text>
           <Text style={styles.counterValue}>0 lần</Text>
         </View>
 
         {/* Prevent Power Off Toggle Card */}
-        <View style={styles.toggleCard}>
-          <Text style={styles.toggleTitle}>Ngăn tắt nguồn</Text>
+        <View style={[styles.toggleCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.toggleTitle, { color: colors.text }]}>Ngăn tắt nguồn</Text>
           <Switch
             value={preventPowerOff}
-            onValueChange={setPreventPowerOff}
-            trackColor={{ false: '#4a5568', true: '#38b6ff' }}
-            thumbColor={preventPowerOff ? '#ffffff' : '#cbd5e0'}
+            onValueChange={handleToggle}
+            trackColor={{ false: isDarkMode ? '#4a5568' : '#cbd5e1', true: colors.primary }}
+            thumbColor="#ffffff"
           />
         </View>
 
         {/* Permissions Section */}
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
           Cho phép cả hai quyền{'\n'}để kích hoạt
         </Text>
 
         {/* Permission Cards */}
         <View style={styles.permissionsContainer}>
           {/* Display Overlay Permission */}
-          <View style={styles.permissionCard}>
+          <View style={[styles.permissionCard, { backgroundColor: colors.surface }]}>
             <View style={styles.permissionLeft}>
               <View style={styles.checkmarkContainer}>
                 <Ionicons name="checkmark" size={20} color="#ffffff" />
               </View>
               <View style={styles.permissionContent}>
-                <Text style={styles.permissionTitle}>Hiển thị trên ứng dụng</Text>
-                <Text style={styles.permissionDescription}>
+                <Text style={[styles.permissionTitle, { color: colors.text }]}>Hiển thị trên ứng dụng</Text>
+                <Text style={[styles.permissionDescription, { color: colors.textSecondary }]}>
                   Cho phép Alarmy tiếp tục hiển thị màn
                   hình hủy, ngay cả khi đang hoãn bảo
                   thức!
@@ -87,23 +141,23 @@ export default function PreventPowerOffScreen() {
 
           {/* Accessibility Permission */}
           <TouchableOpacity 
-            style={styles.permissionCard}
+            style={[styles.permissionCard, { backgroundColor: colors.surface }]}
             activeOpacity={0.7}
-            onPress={() => console.log('Accessibility settings')}
+            onPress={openAccessibilitySettings}
           >
             <View style={styles.permissionLeft}>
-              <View style={styles.numberBadge}>
-                <Text style={styles.badgeNumber}>2</Text>
+              <View style={[styles.numberBadge, { backgroundColor: isDarkMode ? '#ffffff' : colors.primary }]}>
+                <Text style={[styles.badgeNumber, { color: isDarkMode ? '#0f172a' : '#ffffff' }]}>2</Text>
               </View>
               <View style={styles.permissionContent}>
-                <Text style={styles.permissionTitle}>Khả năng truy cập</Text>
-                <Text style={styles.permissionDescription}>
+                <Text style={[styles.permissionTitle, { color: colors.text }]}>Khả năng truy cập</Text>
+                <Text style={[styles.permissionDescription, { color: colors.textSecondary }]}>
                   Chúng tôi có thể phát hiện hành động{'\n'}
                   tắt nguồn của bạn
                 </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#718096" />
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -114,7 +168,6 @@ export default function PreventPowerOffScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -123,7 +176,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backButton: {
     width: 40,
@@ -151,7 +203,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#ffffff',
     marginBottom: 20,
   },
   counterContainer: {
@@ -162,7 +213,6 @@ const styles = StyleSheet.create({
   },
   counterLabel: {
     fontSize: 15,
-    color: '#ffffff',
     fontWeight: '500',
   },
   counterValue: {
@@ -174,7 +224,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#2d3748',
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -183,12 +232,10 @@ const styles = StyleSheet.create({
   toggleTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   sectionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 16,
     lineHeight: 22,
   },
@@ -199,7 +246,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#1e293b',
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -238,12 +284,10 @@ const styles = StyleSheet.create({
   permissionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 6,
   },
   permissionDescription: {
     fontSize: 13,
-    color: '#94a3b8',
     lineHeight: 18,
   },
 });

@@ -1,6 +1,7 @@
 import { AccountCard } from '@/components/account-card';
 import { ProCard } from '@/components/pro-card';
 import { SettingsMenuItem } from '@/components/settings-menu-item';
+import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -9,12 +10,13 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { colors } = useTheme();
   
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Cài đặt</Text>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Cài đặt</Text>
       </View>
 
       <ScrollView 
@@ -87,18 +89,15 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   content: {
     flex: 1,

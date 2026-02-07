@@ -118,15 +118,17 @@ export class SoundManager {
   static async playBeep(volume: number = 0.5) {
     try {
       const sound = new Audio.Sound();
-      await sound.loadAsync(ALARM_SOUNDS.bell.file);
+      const status = await sound.loadAsync(ALARM_SOUNDS.bell.file);
+      
+      if (status.isLoaded) {
+        await sound.setVolumeAsync(Math.max(0, Math.min(1, volume)));
+        await sound.playAsync();
 
-      await sound.setVolumeAsync(Math.max(0, Math.min(1, volume)));
-      await sound.playAsync();
-
-      // Clean up after playing
-      setTimeout(() => {
-        sound.unloadAsync().catch(() => {});
-      }, ALARM_SOUNDS.bell.duration);
+        // Clean up after playing
+        setTimeout(() => {
+          sound.unloadAsync().catch(() => {});
+        }, ALARM_SOUNDS.bell.duration);
+      }
     } catch (error) {
       console.error('Error playing beep:', error);
     }
@@ -138,8 +140,11 @@ export class SoundManager {
   static async stopAlarm() {
     try {
       if (this.sound) {
-        await this.sound.stopAsync();
-        await this.sound.unloadAsync();
+        const status = await this.sound.getStatusAsync();
+        if (status.isLoaded) {
+          await this.sound.stopAsync();
+          await this.sound.unloadAsync();
+        }
         this.sound = null;
       }
       this.isPlaying = false;

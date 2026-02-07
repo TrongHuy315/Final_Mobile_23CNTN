@@ -12,10 +12,13 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthManager } from '@/utils/auth-manager';
+import { useTheme } from '@/context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
 
 export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
@@ -68,16 +71,17 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <View style={styles.placeholder} />
-        <Text style={styles.headerTitle}>Đăng nhập</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Đăng nhập</Text>
         <TouchableOpacity
           style={styles.closeButton}
           onPress={handleClose}
         >
-          <Ionicons name="close" size={24} color="#ffffff" />
+          <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -86,32 +90,32 @@ export default function LoginScreen() {
         {/* Cloud Illustration */}
         <View style={styles.illustrationContainer}>
           {/* Decorative elements */}
-          <View style={[styles.decorativeDot, styles.dotTopLeft]} />
+          <View style={[styles.decorativeDot, styles.dotTopLeft, { backgroundColor: colors.textMuted }]} />
           <View style={[styles.decorativePlus, styles.plusTopLeft]}>
-            <Ionicons name="add" size={12} color="#64748b" />
+            <Ionicons name="add" size={12} color={colors.textMuted} />
           </View>
-          <View style={[styles.decorativeDot, styles.dotTopRight]} />
+          <View style={[styles.decorativeDot, styles.dotTopRight, { backgroundColor: colors.textMuted }]} />
           <View style={[styles.decorativePlus, styles.plusTopRight]}>
-            <Ionicons name="add" size={14} color="#64748b" />
+            <Ionicons name="add" size={14} color={colors.textMuted} />
           </View>
-          <View style={[styles.decorativeDot, styles.dotMiddleRight]} />
+          <View style={[styles.decorativeDot, styles.dotMiddleRight, { backgroundColor: colors.textMuted }]} />
 
           {/* Cloud with sync icon */}
           <View style={styles.cloudContainer}>
             <View style={styles.cloud}>
-              <View style={styles.cloudMain}>
+              <View style={[styles.cloudMain, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
                 <View style={styles.syncIconContainer}>
                   <Ionicons name="sync" size={36} color="#ffffff" />
                 </View>
               </View>
-              <View style={styles.cloudBubbleLeft} />
-              <View style={styles.cloudBubbleRight} />
+              <View style={[styles.cloudBubbleLeft, { backgroundColor: colors.primary }]} />
+              <View style={[styles.cloudBubbleRight, { backgroundColor: colors.primary }]} />
             </View>
           </View>
         </View>
 
         {/* Title Text */}
-        <Text style={styles.title}>
+        <Text style={[styles.title, { color: colors.text }]}>
           Giữ bản ghi an toàn bằng cách đăng nhập
         </Text>
       </View>
@@ -120,22 +124,22 @@ export default function LoginScreen() {
       <View style={styles.bottomSection}>
         {/* Google Sign In Button */}
         <TouchableOpacity
-          style={[styles.googleButton, isLoading && styles.googleButtonDisabled]}
+          style={[styles.googleButton, { backgroundColor: isDarkMode ? '#ffffff' : colors.surface, borderColor: colors.border, borderWidth: isDarkMode ? 0 : 1 }, isLoading && styles.googleButtonDisabled]}
           activeOpacity={0.8}
           disabled={isLoading}
           onPress={handleGoogleSignIn}
         >
           {isLoading ? (
             <>
-              <ActivityIndicator size="small" color="#0f172a" style={{ marginRight: 12 }} />
-              <Text style={styles.googleButtonText}>Đang đăng nhập...</Text>
+              <ActivityIndicator size="small" color={isDarkMode ? "#0f172a" : colors.primary} style={{ marginRight: 12 }} />
+              <Text style={[styles.googleButtonText, { color: isDarkMode ? "#0f172a" : colors.text }]}>Đang đăng nhập...</Text>
             </>
           ) : (
             <>
               <View style={styles.googleIconContainer}>
                 <Text style={styles.googleIcon}>G</Text>
               </View>
-              <Text style={styles.googleButtonText}>Tiếp tục với Google</Text>
+              <Text style={[styles.googleButtonText, { color: isDarkMode ? "#0f172a" : colors.text }]}>Tiếp tục với Google</Text>
             </>
           )}
         </TouchableOpacity>
@@ -143,11 +147,11 @@ export default function LoginScreen() {
         {/* Email Input (shown on fallback) */}
         {showEmailInput && (
           <View>
-            <Text style={styles.alternativeText}>hoặc</Text>
+            <Text style={[styles.alternativeText, { color: colors.textMuted }]}>hoặc</Text>
             <TextInput
-              style={styles.emailInput}
+              style={[styles.emailInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="Nhập email của bạn"
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               editable={!isLoading}
@@ -155,7 +159,7 @@ export default function LoginScreen() {
               autoCapitalize="none"
             />
             <TouchableOpacity
-              style={[styles.emailButton, isLoading && styles.emailButtonDisabled]}
+              style={[styles.emailButton, { backgroundColor: colors.primary }, isLoading && styles.emailButtonDisabled]}
               activeOpacity={0.8}
               disabled={isLoading}
               onPress={handleEmailSignIn}
@@ -177,11 +181,11 @@ export default function LoginScreen() {
 
         {/* Terms and Privacy */}
         <View style={styles.termsContainer}>
-          <Text style={styles.termsText}>
+          <Text style={[styles.termsText, { color: colors.textMuted }]}>
             Bằng cách tiếp tục, bạn đồng ý với{' '}
-            <Text style={styles.linkText}>Điều khoản & Điều kiện</Text>
+            <Text style={[styles.linkText, { color: colors.primary }]}>Điều khoản & Điều kiện</Text>
             {' '}và{'\n'}
-            <Text style={styles.linkText}>Chính sách quyền riêng tư</Text>
+            <Text style={[styles.linkText, { color: colors.primary }]}>Chính sách quyền riêng tư</Text>
             {' '}của chúng tôi.
           </Text>
         </View>
@@ -193,7 +197,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -202,12 +205,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   closeButton: {
     width: 40,
@@ -242,7 +243,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#64748b',
     position: 'absolute',
   },
   decorativePlus: {
@@ -281,11 +281,9 @@ const styles = StyleSheet.create({
   cloudMain: {
     width: 140,
     height: 90,
-    backgroundColor: '#3b82f6',
     borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#3b82f6',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -295,7 +293,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 50,
     height: 50,
-    backgroundColor: '#3b82f6',
     borderRadius: 25,
     left: -10,
     bottom: 10,
@@ -304,7 +301,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 60,
     height: 60,
-    backgroundColor: '#3b82f6',
     borderRadius: 30,
     right: -15,
     bottom: 5,
@@ -317,7 +313,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#ffffff',
     textAlign: 'center',
     lineHeight: 36,
   },
@@ -325,7 +320,7 @@ const styles = StyleSheet.create({
   // Bottom Section
   bottomSection: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
 
   // Google Button
@@ -333,7 +328,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
     borderRadius: 30,
     paddingVertical: 18,
     paddingHorizontal: 24,
@@ -357,25 +351,20 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0f172a',
   },
 
   // Email Section
   alternativeText: {
     fontSize: 14,
-    color: '#94a3b8',
     textAlign: 'center',
     marginBottom: 16,
     fontWeight: '500',
   },
   emailInput: {
-    backgroundColor: '#1e293b',
-    borderColor: '#475569',
     borderWidth: 1,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    color: '#ffffff',
     fontSize: 16,
     marginBottom: 12,
   },
@@ -383,7 +372,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#3b82f6',
     borderRadius: 30,
     paddingVertical: 18,
     paddingHorizontal: 24,
@@ -405,12 +393,10 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 12,
-    color: '#94a3b8',
     textAlign: 'center',
     lineHeight: 18,
   },
   linkText: {
-    color: '#60a5fa',
     textDecorationLine: 'underline',
   },
 });

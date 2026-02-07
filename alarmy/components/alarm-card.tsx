@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '@/context/ThemeContext';
 
 interface AlarmCardProps {
   id: string;
@@ -22,6 +23,15 @@ export const AlarmCard: React.FC<AlarmCardProps> = ({
   onLongPress,
   onPress,
 }) => {
+  const { colors, isDarkMode } = useTheme();
+  
+  // Dynamic colors based on theme and enabled state
+  const cardBg = enabled 
+    ? colors.surface 
+    : (isDarkMode ? '#0f172a' : colors.surfaceVariant);
+  const cardBorder = enabled ? colors.primary : colors.border;
+  const timeColor = enabled ? colors.text : colors.textMuted;
+  
   return (
     <TouchableOpacity 
       activeOpacity={0.7} 
@@ -30,20 +40,20 @@ export const AlarmCard: React.FC<AlarmCardProps> = ({
       style={[
         styles.card, 
         { 
-          backgroundColor: enabled ? '#1e293b' : '#0f172a', 
-          borderColor: enabled ? '#38b6ff' : '#1e293b',
+          backgroundColor: cardBg, 
+          borderColor: cardBorder,
           borderWidth: 1 
         }
       ]}
     >
       <View style={styles.content}>
         <View style={styles.timeSection}>
-          <Text style={[styles.time, { color: enabled ? '#ffffff' : '#64748b' }]}>
+          <Text style={[styles.time, { color: timeColor }]}>
             {time}
           </Text>
-          {label ? <Text style={styles.label}>{label}</Text> : null}
+          {label ? <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text> : null}
         </View>
-        <Text style={styles.days}>{days}</Text>
+        <Text style={[styles.days, { color: colors.textMuted }]}>{days}</Text>
       </View>
       
       {/* 
@@ -55,8 +65,8 @@ export const AlarmCard: React.FC<AlarmCardProps> = ({
         style={styles.toggle}
         value={enabled}
         onValueChange={() => onToggle(id)}
-        trackColor={{ false: '#334155', true: '#38b6ff' }}
-        thumbColor={enabled ? '#ffffff' : '#94a3b8'}
+        trackColor={{ false: colors.surfaceVariant, true: colors.primary }}
+        thumbColor={enabled ? '#ffffff' : colors.textSecondary}
       />
     </TouchableOpacity>
   );
@@ -91,13 +101,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#94a3b8',
     marginLeft: 12,
     fontWeight: '500',
   },
   days: {
     fontSize: 13,
-    color: '#64748b',
     marginTop: 2,
   },
   toggle: {

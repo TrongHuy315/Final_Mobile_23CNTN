@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '../context/ThemeContext';
 import { AlarmManager, Alarm } from '../utils/alarm-manager';
 import { SoundManager } from '../utils/sound-manager';
 
@@ -28,6 +29,7 @@ const getFormattedTime = (date: Date) => {
 export default function AlarmRingingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { colors, isDarkMode } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeAlarm, setActiveAlarm] = useState<Alarm | null>(null);
   const [vibrationInterval, setVibrationInterval] = useState<NodeJS.Timeout | null>(null);
@@ -270,33 +272,33 @@ export default function AlarmRingingScreen() {
   const snoozeCountDisplay = currentSnoozeCount === '∞' ? '∞' : currentSnoozeCount;
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" hidden={true} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} hidden={true} />
       
       {/* Background - Simple Dark Gradient-like solid color */}
-      <View style={styles.background} />
+      <View style={[styles.background, { backgroundColor: colors.background }]} />
 
       <SafeAreaView style={styles.content}>
         {/* Date Section */}
         <View style={styles.dateContainer}>
-          <Text style={styles.dateText}>
+          <Text style={[styles.dateText, { color: colors.text }]}>
             {getFormattedDate(currentTime)}
           </Text>
         </View>
 
         {/* Time Section */}
         <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>
+          <Text style={[styles.timeText, { color: colors.text }]}>
             {getFormattedTime(currentTime)}
           </Text>
         </View>
 
         {/* Motivational Center */}
         <View style={styles.centerContainer}>
-          <Text style={styles.quoteText}>IT&apos;S</Text>
-          <Text style={styles.quoteText}>YOU VS YOU</Text>
+          <Text style={[styles.quoteText, { color: colors.text }]}>IT&apos;S</Text>
+          <Text style={[styles.quoteText, { color: colors.text }]}>YOU VS YOU</Text>
           
-          <Ionicons name="trophy-outline" size={40} color="rgba(255,255,255,0.3)" style={{marginTop: 20}} />
+          <Ionicons name="trophy-outline" size={40} color={colors.textMuted} style={{marginTop: 20}} />
         </View>
 
         {/* Bottom Actions */}
@@ -304,13 +306,13 @@ export default function AlarmRingingScreen() {
           {/* Snooze Button - Only show if enabled */}
           {isSnoozeEnabled && (
             <TouchableOpacity 
-              style={styles.snoozeButton}
+              style={[styles.snoozeButton, { backgroundColor: isDarkMode ? '#ffffff' : colors.surface, borderColor: colors.border, borderWidth: isDarkMode ? 0 : 1 }]}
               onPress={handleSnooze}
             >
-              <View style={styles.snoozeBadge}>
-                <Text style={styles.snoozeBadgeText}>{snoozeCountDisplay}</Text>
+              <View style={[styles.snoozeBadge, { backgroundColor: isDarkMode ? '#000000' : colors.background }]}>
+                <Text style={[styles.snoozeBadgeText, { color: isDarkMode ? '#ffffff' : colors.text }]}>{snoozeCountDisplay}</Text>
               </View>
-              <Text style={styles.snoozeText}>Báo lại</Text>
+              <Text style={[styles.snoozeText, { color: isDarkMode ? '#000000' : colors.text }]}>Báo lại</Text>
             </TouchableOpacity>
           )}
 

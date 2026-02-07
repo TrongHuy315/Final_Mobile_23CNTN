@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { snoozeStore } from '../stores/snoozeStore';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SnoozeSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   
   // Initialize from store
   const initialSettings = snoozeStore.getSettings();
@@ -44,35 +46,35 @@ export default function SnoozeSettingsScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Báo lại</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Báo lại</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Snooze Toggle */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.toggleRow}>
-            <Text style={styles.toggleText}>Báo lại</Text>
+            <Text style={[styles.toggleText, { color: colors.text }]}>Báo lại</Text>
             <Switch
               value={snoozeEnabled}
               onValueChange={setSnoozeEnabled}
-              trackColor={{ false: '#334155', true: '#0ea5e9' }}
+              trackColor={{ false: isDarkMode ? '#334155' : '#cbd5e1', true: colors.primary }}
               thumbColor="#ffffff"
             />
           </View>
         </View>
 
         {/* Interval Section */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Khoảng nghỉ</Text>
-            <Text style={styles.sectionValue}>{getIntervalLabel(snoozeInterval)}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Khoảng nghỉ</Text>
+            <Text style={[styles.sectionValue, { color: colors.primary }]}>{getIntervalLabel(snoozeInterval)}</Text>
           </View>
 
           {/* Default options */}
@@ -82,11 +84,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               snoozeInterval === 1 && styles.radioButtonSelected
             ]}>
               {snoozeInterval === 1 && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>1 phút</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>1 phút</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -95,11 +98,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               snoozeInterval === 5 && styles.radioButtonSelected
             ]}>
               {snoozeInterval === 5 && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>5 phút</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>5 phút</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -108,11 +112,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               snoozeInterval === 10 && styles.radioButtonSelected
             ]}>
               {snoozeInterval === 10 && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>10 phút</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>10 phút</Text>
           </TouchableOpacity>
 
           {/* More options */}
@@ -124,11 +129,12 @@ export default function SnoozeSettingsScreen() {
               >
                 <View style={[
                   styles.radioButton,
+                  { borderColor: isDarkMode ? colors.textMuted : colors.border },
                   snoozeInterval === 15 && styles.radioButtonSelected
                 ]}>
                   {snoozeInterval === 15 && <View style={styles.radioButtonInner} />}
                 </View>
-                <Text style={styles.radioText}>15 phút</Text>
+                <Text style={[styles.radioText, { color: colors.text }]}>15 phút</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -137,11 +143,12 @@ export default function SnoozeSettingsScreen() {
               >
                 <View style={[
                   styles.radioButton,
+                  { borderColor: isDarkMode ? colors.textMuted : colors.border },
                   snoozeInterval === 20 && styles.radioButtonSelected
                 ]}>
                   {snoozeInterval === 20 && <View style={styles.radioButtonInner} />}
                 </View>
-                <Text style={styles.radioText}>20 phút</Text>
+                <Text style={[styles.radioText, { color: colors.text }]}>20 phút</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -150,11 +157,12 @@ export default function SnoozeSettingsScreen() {
               >
                 <View style={[
                   styles.radioButton,
+                  { borderColor: isDarkMode ? colors.textMuted : colors.border },
                   snoozeInterval === 25 && styles.radioButtonSelected
                 ]}>
                   {snoozeInterval === 25 && <View style={styles.radioButtonInner} />}
                 </View>
-                <Text style={styles.radioText}>25 phút</Text>
+                <Text style={[styles.radioText, { color: colors.text }]}>25 phút</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -163,11 +171,12 @@ export default function SnoozeSettingsScreen() {
               >
                 <View style={[
                   styles.radioButton,
+                  { borderColor: isDarkMode ? colors.textMuted : colors.border },
                   snoozeInterval === 30 && styles.radioButtonSelected
                 ]}>
                   {snoozeInterval === 30 && <View style={styles.radioButtonInner} />}
                 </View>
-                <Text style={styles.radioText}>30 phút</Text>
+                <Text style={[styles.radioText, { color: colors.text }]}>30 phút</Text>
               </TouchableOpacity>
             </>
           )}
@@ -177,22 +186,22 @@ export default function SnoozeSettingsScreen() {
             style={styles.toggleButton}
             onPress={() => setShowMoreIntervals(!showMoreIntervals)}
           >
-            <Text style={styles.toggleButtonText}>
+            <Text style={[styles.toggleButtonText, { color: colors.textMuted }]}>
               {showMoreIntervals ? 'Ẩn bớt' : 'Lựa chọn khác'}
             </Text>
             <Ionicons 
               name={showMoreIntervals ? "chevron-up" : "chevron-down"} 
               size={16} 
-              color="#64748b" 
+              color={colors.textMuted} 
             />
           </TouchableOpacity>
         </View>
 
         {/* Max Count Section */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Số lần hoãn báo thức tối đa</Text>
-            <Text style={styles.sectionValue}>{getCountLabel(maxSnoozeCount)}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Số lần hoãn báo thức tối đa</Text>
+            <Text style={[styles.sectionValue, { color: colors.primary }]}>{getCountLabel(maxSnoozeCount)}</Text>
           </View>
 
           {/* Default options */}
@@ -202,11 +211,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               maxSnoozeCount === 'unlimited' && styles.radioButtonSelected
             ]}>
               {maxSnoozeCount === 'unlimited' && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>Vô hạn</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>Vô hạn</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -215,11 +225,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               maxSnoozeCount === 1 && styles.radioButtonSelected
             ]}>
               {maxSnoozeCount === 1 && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>1 lần</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>1 lần</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -228,11 +239,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               maxSnoozeCount === 2 && styles.radioButtonSelected
             ]}>
               {maxSnoozeCount === 2 && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>2 lần</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>2 lần</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
@@ -241,11 +253,12 @@ export default function SnoozeSettingsScreen() {
           >
             <View style={[
               styles.radioButton,
+              { borderColor: isDarkMode ? colors.textMuted : colors.border },
               maxSnoozeCount === 3 && styles.radioButtonSelected
             ]}>
               {maxSnoozeCount === 3 && <View style={styles.radioButtonInner} />}
             </View>
-            <Text style={styles.radioText}>3 lần</Text>
+            <Text style={[styles.radioText, { color: colors.text }]}>3 lần</Text>
           </TouchableOpacity>
 
           {/* More options */}
@@ -257,11 +270,12 @@ export default function SnoozeSettingsScreen() {
               >
                 <View style={[
                   styles.radioButton,
+                  { borderColor: isDarkMode ? colors.textMuted : colors.border },
                   maxSnoozeCount === 5 && styles.radioButtonSelected
                 ]}>
                   {maxSnoozeCount === 5 && <View style={styles.radioButtonInner} />}
                 </View>
-                <Text style={styles.radioText}>5 lần</Text>
+                <Text style={[styles.radioText, { color: colors.text }]}>5 lần</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -270,11 +284,12 @@ export default function SnoozeSettingsScreen() {
               >
                 <View style={[
                   styles.radioButton,
+                  { borderColor: isDarkMode ? colors.textMuted : colors.border },
                   maxSnoozeCount === 10 && styles.radioButtonSelected
                 ]}>
                   {maxSnoozeCount === 10 && <View style={styles.radioButtonInner} />}
                 </View>
-                <Text style={styles.radioText}>10 lần</Text>
+                <Text style={[styles.radioText, { color: colors.text }]}>10 lần</Text>
               </TouchableOpacity>
             </>
           )}
@@ -284,13 +299,13 @@ export default function SnoozeSettingsScreen() {
             style={styles.toggleButton}
             onPress={() => setShowMoreCounts(!showMoreCounts)}
           >
-            <Text style={styles.toggleButtonText}>
+            <Text style={[styles.toggleButtonText, { color: colors.textMuted }]}>
               {showMoreCounts ? 'Ẩn bớt' : 'Lựa chọn khác'}
             </Text>
             <Ionicons 
               name={showMoreCounts ? "chevron-up" : "chevron-down"} 
               size={16} 
-              color="#64748b" 
+              color={colors.textMuted} 
             />
           </TouchableOpacity>
         </View>
@@ -302,7 +317,6 @@ export default function SnoozeSettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -317,7 +331,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
   },
   placeholder: {
     width: 32,
@@ -327,7 +340,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   card: {
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -340,7 +352,6 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -351,7 +362,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   sectionValue: {
     fontSize: 14,
@@ -369,7 +379,6 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#64748b',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -384,7 +393,6 @@ const styles = StyleSheet.create({
   },
   radioText: {
     fontSize: 16,
-    color: '#ffffff',
   },
   toggleButton: {
     flexDirection: 'row',

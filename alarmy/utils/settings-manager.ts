@@ -16,6 +16,12 @@ export interface AppSettings {
   sleepGoal: number; // in hours
   wakeUpReminderEnabled: boolean;
   wakeUpReminderTime: number; // minutes before alarm
+  preventUninstall: boolean;
+  preventPowerOff: boolean;
+  showNextAlarmNotification: boolean;
+  autoSilence: string;
+  muteWhileWorking: boolean;
+  maxMuteLimit: string;
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -34,6 +40,12 @@ const DEFAULT_SETTINGS: AppSettings = {
   sleepGoal: 8,
   wakeUpReminderEnabled: true,
   wakeUpReminderTime: 15,
+  preventUninstall: false,
+  preventPowerOff: false,
+  showNextAlarmNotification: false,
+  autoSilence: 'off',
+  muteWhileWorking: true,
+  maxMuteLimit: '3',
 };
 
 const SETTINGS_KEY = 'APP_SETTINGS';

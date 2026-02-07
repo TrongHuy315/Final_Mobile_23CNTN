@@ -13,6 +13,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
 
 const recommendations = [
   { id: '1', name: 'Thức dậy sớm', icon: 'bird', iconType: 'material-community', color: '#ffcc00' },
@@ -25,6 +26,7 @@ const recommendations = [
 export default function RoutineSelectionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const [goal, setGoal] = useState('');
 
   const handleSelectRecommendation = (item: any) => {
@@ -55,12 +57,12 @@ export default function RoutineSelectionScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-          <Ionicons name="close" size={28} color="#ffffff" />
+          <Ionicons name="close" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Báo thức thói quen</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Báo thức thói quen</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -68,12 +70,12 @@ export default function RoutineSelectionScreen() {
         <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
           {/* Goal Input */}
           <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <MaterialCommunityIcons name="star" size={24} color="#64748b" style={styles.inputIcon} />
+            <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <MaterialCommunityIcons name="star" size={24} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="Nhập mục tiêu thói quen của bạn"
-                placeholderTextColor="#64748b"
+                placeholderTextColor={colors.textMuted}
                 value={goal}
                 onChangeText={setGoal}
                 onSubmitEditing={handleSubmitCustomGoal}
@@ -81,25 +83,25 @@ export default function RoutineSelectionScreen() {
               />
               {goal.length > 0 && (
                 <TouchableOpacity onPress={() => setGoal('')}>
-                  <Ionicons name="close-circle" size={20} color="#64748b" />
+                  <Ionicons name="close-circle" size={20} color={colors.textMuted} />
                 </TouchableOpacity>
               )}
             </View>
           </View>
 
           {/* Recommendations Section */}
-          <Text style={styles.sectionTitle}>Được khuyến nghị</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Được khuyến nghị</Text>
           <View style={styles.grid}>
             {recommendations.map((item) => (
               <TouchableOpacity 
                 key={item.id} 
-                style={styles.gridItem}
+                style={[styles.gridItem, { backgroundColor: colors.surface }]}
                 onPress={() => handleSelectRecommendation(item)}
               >
                 <View style={styles.iconContainer}>
                   <MaterialCommunityIcons name={item.icon as any} size={28} color={item.color} />
                 </View>
-                <Text style={styles.itemText}>{item.name}</Text>
+                <Text style={[styles.itemText, { color: colors.text }]}>{item.name}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -112,7 +114,6 @@ export default function RoutineSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -120,13 +121,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     height: 100,
-    backgroundColor: '#0f172a',
   },
   closeButton: {
     padding: 8,
   },
   headerTitle: {
-    color: '#ffffff',
     fontSize: 18,
     fontWeight: '600',
   },
@@ -144,23 +143,19 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: '#334155',
   },
   inputIcon: {
     marginRight: 10,
   },
   input: {
     flex: 1,
-    color: '#ffffff',
     fontSize: 16,
   },
   sectionTitle: {
-    color: '#94a3b8',
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 16,
@@ -172,7 +167,6 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     width: (Dimensions.get('window').width - 32 - 12) / 2,
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -188,7 +182,6 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   itemText: {
-    color: '#ffffff',
     fontSize: 14,
     fontWeight: '500',
     flex: 1,

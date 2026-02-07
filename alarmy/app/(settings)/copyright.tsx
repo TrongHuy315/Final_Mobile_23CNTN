@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface CopyrightReport {
@@ -25,6 +26,7 @@ interface CopyrightReport {
 
 export default function CopyrightScreen() {
   const router = useRouter();
+  const { colors, isDarkMode } = useTheme();
   const [email, setEmail] = useState('');
   const [content, setContent] = useState('');
   const [reportType, setReportType] = useState('copyright');
@@ -84,13 +86,13 @@ export default function CopyrightScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={28} color="#ffffff" />
+          <Ionicons name="chevron-back" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Báo cáo vi phạm bản quyền</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Báo cáo vi phạm bản quyền</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -98,11 +100,11 @@ export default function CopyrightScreen() {
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
         {/* Info Section */}
         <View style={styles.infoSection}>
-          <View style={styles.iconBackground}>
+          <View style={[styles.iconBackground, { backgroundColor: isDarkMode ? '#fee2e2' : '#fecaca' }]}>
             <Ionicons name="shield" size={32} color="#ef4444" />
           </View>
-          <Text style={styles.infoTitle}>Báo cáo vi phạm bản quyền</Text>
-          <Text style={styles.infoText}>
+          <Text style={[styles.infoTitle, { color: colors.text }]}>Báo cáo vi phạm bản quyền</Text>
+          <Text style={[styles.infoText, { color: colors.textMuted }]}>
             Nếu bạn tin rằng nội dung trong ứng dụng này vi phạm bản quyền của bạn, vui lòng gửi báo cáo chi tiết.
           </Text>
         </View>
@@ -111,11 +113,11 @@ export default function CopyrightScreen() {
         <View style={styles.formSection}>
           {/* Email */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Email liên hệ *</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Email liên hệ *</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="example@email.com"
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               editable={!isSubmitting}
@@ -126,7 +128,7 @@ export default function CopyrightScreen() {
 
           {/* Type */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Loại báo cáo *</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Loại báo cáo *</Text>
             <View style={styles.typeContainer}>
               {[
                 { id: 'copyright', label: 'Vi phạm bản quyền' },
@@ -137,7 +139,8 @@ export default function CopyrightScreen() {
                   key={type.id}
                   style={[
                     styles.typeButton,
-                    reportType === type.id && styles.typeButtonActive,
+                    { borderColor: colors.border },
+                    reportType === type.id && [styles.typeButtonActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
                   ]}
                   onPress={() => setReportType(type.id)}
                   disabled={isSubmitting}
@@ -145,6 +148,7 @@ export default function CopyrightScreen() {
                   <Text
                     style={[
                       styles.typeButtonText,
+                      { color: colors.textMuted },
                       reportType === type.id && styles.typeButtonTextActive,
                     ]}
                   >
@@ -157,11 +161,11 @@ export default function CopyrightScreen() {
 
           {/* Content */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Chi tiết báo cáo *</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Chi tiết báo cáo *</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={[styles.input, styles.textArea, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
               placeholder="Mô tả chi tiết về vi phạm..."
-              placeholderTextColor="#64748b"
+              placeholderTextColor={colors.textMuted}
               value={content}
               onChangeText={setContent}
               editable={!isSubmitting}
@@ -185,7 +189,7 @@ export default function CopyrightScreen() {
           </TouchableOpacity>
 
           {/* Info Text */}
-          <Text style={styles.infoNote}>
+          <Text style={[styles.infoNote, { color: colors.textMuted }]}>
             Chúng tôi sẽ xem xét báo cáo của bạn trong vòng 24 giờ và liên hệ với bạn qua email nếu cần thêm thông tin.
           </Text>
         </View>

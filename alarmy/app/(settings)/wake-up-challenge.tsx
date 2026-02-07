@@ -12,6 +12,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +25,7 @@ const prizes = [
 
 // Animated Prize Carousel Component
 const PrizeCarousel = () => {
+  const { colors } = useTheme();
   const scrollX = useRef(new Animated.Value(0)).current;
   const ITEM_WIDTH = 100;
   const TOTAL_WIDTH = ITEM_WIDTH * prizes.length;
@@ -65,9 +67,9 @@ const PrizeCarousel = () => {
                 <Text style={styles.prizeEmoji}>{prize.emoji}</Text>
               )}
             </View>
-            <Text style={styles.prizeLabel}>{prize.label}</Text>
+            <Text style={[styles.prizeLabel, { color: colors.text }]}>{prize.label}</Text>
             {prize.subLabel ? (
-              <Text style={styles.prizeSubLabel}>{prize.subLabel}</Text>
+              <Text style={[styles.prizeSubLabel, { color: colors.textSecondary }]}>{prize.subLabel}</Text>
             ) : null}
           </View>
         ))}
@@ -85,18 +87,21 @@ interface StepItemProps {
   bgColor: string;
 }
 
-const StepItem = ({ stepNumber, icon, label, isLast = false, bgColor }: StepItemProps) => (
-  <View style={styles.stepItemWrapper}>
-    <View style={styles.stepItemContainer}>
-      <Text style={styles.stepNumber}>Bước {stepNumber}</Text>
-      <View style={[styles.stepIconContainer, { backgroundColor: bgColor }]}>
-        {icon}
+const StepItem = ({ stepNumber, icon, label, isLast = false, bgColor }: StepItemProps) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.stepItemWrapper}>
+      <View style={styles.stepItemContainer}>
+        <Text style={[styles.stepNumber, { color: colors.textMuted }]}>Bước {stepNumber}</Text>
+        <View style={[styles.stepIconContainer, { backgroundColor: bgColor }]}>
+          {icon}
+        </View>
+        <Text style={[styles.stepLabel, { color: colors.textSecondary }]}>{label}</Text>
       </View>
-      <Text style={styles.stepLabel}>{label}</Text>
+      {!isLast && <View style={styles.stepLineWrapper}><View style={[styles.stepLine, { backgroundColor: colors.border }]} /></View>}
     </View>
-    {!isLast && <View style={styles.stepLineWrapper}><View style={styles.stepLine} /></View>}
-  </View>
-);
+  );
+};
 
 // Progress dots component
 const ProgressDots = () => (
@@ -113,20 +118,21 @@ const ProgressDots = () => (
 export default function WakeUpChallengeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <StatusBar style="light" />
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Thử thách thức dậy</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Thử thách thức dậy</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -137,31 +143,38 @@ export default function WakeUpChallengeScreen() {
       >
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroTitle}>
+          <Text style={[styles.heroTitle, { color: colors.text }]}>
             Thức dậy mỗi ngày{'\n'}bằng đồng hồ báo thức{'\n'}và nhận quà
           </Text>
-          <Text style={styles.heroSubtitle}>
+          <Text style={[styles.heroSubtitle, { color: colors.textMuted }]}>
             Thói quen thức dậy trong 5 ngày{'\n'}chính là một phần thưởng!
           </Text>
           
           {/* Progress Dots */}
-          <ProgressDots />
+          <View style={[styles.progressContainer, { backgroundColor: colors.surface }]}>
+            {[1, 2, 3, 4].map((_, index) => (
+              <View key={index} style={[styles.progressDot, { backgroundColor: colors.textSecondary }]} />
+            ))}
+            <View style={styles.sunIcon}>
+              <Ionicons name="sunny-outline" size={24} color="#fbbf24" />
+            </View>
+          </View>
           
           {/* Gift Box */}
           <Text style={styles.giftEmoji}>🎁</Text>
         </View>
 
         {/* Prize Card Section */}
-        <View style={styles.prizeCardSection}>
-          <View style={styles.prizeCard}>
-            <Text style={styles.prizeCardTitle}>Phần thưởng ngẫu nhiên chiến thắng 100%</Text>
+        <View style={[styles.prizeCardSection, { backgroundColor: colors.surface }]}>
+          <View style={[styles.prizeCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.prizeCardTitle, { color: colors.text }]}>Phần thưởng ngẫu nhiên chiến thắng 100%</Text>
             <PrizeCarousel />
           </View>
         </View>
 
         {/* How It Works Section */}
-        <View style={styles.howItWorksSection}>
-          <Text style={styles.sectionTitle}>Cách hoạt động</Text>
+        <View style={[styles.howItWorksSection, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Cách hoạt động</Text>
           
           <View style={styles.stepsContainer}>
             <StepItem
@@ -193,38 +206,38 @@ export default function WakeUpChallengeScreen() {
 
           {/* Instructions */}
           <View style={styles.instructionsList}>
-            <Text style={styles.instructionItem}>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>
               • Bạn có thể tham gia thử thách bằng cách nhấn vào nút [Bắt đầu thử thách].
             </Text>
-            <Text style={styles.instructionItem}>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>
               • Bạn phải tắt báo thức ít nhất một lần mỗi ngày dựa trên ngày để duy trì hồ sơ thành công.
             </Text>
-            <Text style={styles.instructionItem}>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>
               • Sau khi hoàn thành thử thách, hãy nhấn vào nút quà tặng để nhận phần thưởng ngẫu nhiên.
             </Text>
-            <Text style={styles.instructionItem}>
+            <Text style={[styles.instructionItem, { color: colors.textSecondary }]}>
               • Khi phần thưởng hết hạn, bạn có thể thử lại.
             </Text>
           </View>
         </View>
 
         {/* Important Notice Section */}
-        <View style={styles.importantNoticeSection}>
-          <Text style={styles.importantNoticeTitle}>Thông báo quan trọng</Text>
+        <View style={[styles.importantNoticeSection, { backgroundColor: colors.background }]}>
+          <Text style={[styles.importantNoticeTitle, { color: colors.text }]}>Thông báo quan trọng</Text>
           <View style={styles.noticesList}>
-            <Text style={styles.noticeItem}>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>
               Bạn phải tắt báo thức trong vòng 24 giờ sau khi nhấn vào [Bắt đầu thử thách] để Ngày 1 được ghi lại.
             </Text>
-            <Text style={styles.noticeItem}>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>
               Thử thách chỉ coi hồ sơ báo thức bị tắt là thành công.
             </Text>
-            <Text style={styles.noticeItem}>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>
               Thử thách kết thúc nếu có một ngày báo thức không được sử dụng.
             </Text>
-            <Text style={styles.noticeItem}>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>
               Nếu bạn xóa ứng dụng, tất cả hồ sơ và quyền lợi sẽ biến mất, vì vậy hãy đừng xóa và hãy tận hưởng lợi ích cho đến cuối cùng.
             </Text>
-            <Text style={styles.noticeItem}>
+            <Text style={[styles.noticeItem, { color: colors.textSecondary }]}>
               Sự kiện này có thể kết thúc mà không cần thông báo trước.
             </Text>
           </View>
@@ -232,11 +245,11 @@ export default function WakeUpChallengeScreen() {
       </ScrollView>
 
       {/* Fixed Bottom Button */}
-      <View style={[styles.bottomButtonSection, { paddingBottom: insets.bottom + 12 }]}>
+      <View style={[styles.bottomButtonSection, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background, borderTopColor: colors.border }]}>
         <TouchableOpacity style={styles.startButton} activeOpacity={0.8}>
           <Text style={styles.startButtonText}>Bắt đầu thử thách</Text>
         </TouchableOpacity>
-        <Text style={styles.footerNote}>Kết quả này được tính dựa trên hồ sơ báo thức</Text>
+        <Text style={[styles.footerNote, { color: colors.textMuted }]}>Kết quả này được tính dựa trên hồ sơ báo thức</Text>
       </View>
     </SafeAreaProvider>
   );
@@ -245,7 +258,6 @@ export default function WakeUpChallengeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -254,7 +266,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backButton: {
     width: 40,
@@ -265,7 +276,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
   },
   placeholder: {
     width: 40,
@@ -286,14 +296,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
     textAlign: 'center',
     lineHeight: 38,
     marginBottom: 16,
   },
   heroSubtitle: {
     fontSize: 15,
-    color: '#94a3b8',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -311,7 +319,6 @@ const styles = StyleSheet.create({
     gap: 24,
     paddingVertical: 16,
     paddingHorizontal: 24,
-    backgroundColor: '#1e293b',
     borderRadius: 30,
   },
   progressDot: {
@@ -335,19 +342,16 @@ const styles = StyleSheet.create({
   prizeCardSection: {
     paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: '#1e293b',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
   },
   prizeCard: {
-    backgroundColor: '#1e293b',
     borderRadius: 16,
     paddingVertical: 16,
   },
   prizeCardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -397,12 +401,10 @@ const styles = StyleSheet.create({
   },
   prizeLabel: {
     fontSize: 12,
-    color: '#ffffff',
     textAlign: 'center',
   },
   prizeSubLabel: {
     fontSize: 11,
-    color: '#94a3b8',
     textAlign: 'center',
   },
   
@@ -410,12 +412,10 @@ const styles = StyleSheet.create({
   howItWorksSection: {
     paddingVertical: 24,
     paddingHorizontal: 24,
-    backgroundColor: '#1e293b',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 20,
   },
   stepsContainer: {
@@ -477,14 +477,12 @@ const styles = StyleSheet.create({
   
   // Important Notice Section - Dark Theme
   importantNoticeSection: {
-    backgroundColor: '#0f172a',
     paddingVertical: 24,
     paddingHorizontal: 24,
   },
   importantNoticeTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 16,
   },
   noticesList: {
@@ -492,7 +490,6 @@ const styles = StyleSheet.create({
   },
   noticeItem: {
     fontSize: 14,
-    color: '#94a3b8',
     lineHeight: 22,
   },
   
@@ -500,9 +497,7 @@ const styles = StyleSheet.create({
   bottomButtonSection: {
     paddingHorizontal: 24,
     paddingTop: 12,
-    backgroundColor: '#0f172a',
     borderTopWidth: 1,
-    borderTopColor: '#1e293b',
   },
   startButton: {
     backgroundColor: '#ef4444',

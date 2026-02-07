@@ -11,6 +11,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
 
 type FeedbackType = 'request' | 'bug' | 'suggestion' | 'compliment' | null;
 
@@ -24,6 +25,7 @@ const FEEDBACK_OPTIONS: { key: FeedbackType; label: string }[] = [
 export default function SendFeedbackScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedType, setSelectedType] = useState<FeedbackType>(null);
@@ -112,16 +114,16 @@ export default function SendFeedbackScreen() {
   // Success screen
   if (isSubmitted) {
     return (
-      <SafeAreaProvider style={styles.container}>
+      <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top }]}>
+        <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
           <View style={styles.placeholder} />
-          <Text style={styles.headerTitle}>Gửi phản hồi</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Gửi phản hồi</Text>
           <TouchableOpacity
             style={styles.closeButton}
             onPress={handleClose}
           >
-            <Ionicons name="close" size={24} color="#ffffff" />
+            <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -130,31 +132,31 @@ export default function SendFeedbackScreen() {
           <View style={styles.checkmarkContainer}>
             <Ionicons name="checkmark" size={80} color="#22c55e" />
           </View>
-          <Text style={styles.successTitle}>
+          <Text style={[styles.successTitle, { color: colors.text }]}>
             Tin nhắn vừa được gửi đi thành công.
           </Text>
-          <Text style={styles.successSubtitle}>Cảm ơn bạn.</Text>
+          <Text style={[styles.successSubtitle, { color: colors.text }]}>Cảm ơn bạn.</Text>
         </View>
       </SafeAreaProvider>
     );
   }
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={handleBack}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Gửi phản hồi</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Gửi phản hồi</Text>
         <TouchableOpacity
           style={styles.closeButton}
           onPress={handleClose}
         >
-          <Ionicons name="close" size={24} color="#ffffff" />
+          <Ionicons name="close" size={24} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -172,11 +174,11 @@ export default function SendFeedbackScreen() {
         {/* Step 1: Select Feedback Type */}
         {currentStep === 1 && (
           <View style={styles.stepContainer}>
-            <Text style={styles.question}>
+            <Text style={[styles.question, { color: colors.text }]}>
               Bạn sẽ cung cấp cho chúng tôi loại phản hồi nào?
             </Text>
 
-            <View style={styles.optionsCard}>
+            <View style={[styles.optionsCard, { backgroundColor: colors.surface }]}>
               {FEEDBACK_OPTIONS.map((option) => (
                 <TouchableOpacity
                   key={option.key}
@@ -188,7 +190,7 @@ export default function SendFeedbackScreen() {
                   }}
                 >
                   <RadioButton selected={selectedType === option.key} />
-                  <Text style={styles.optionLabel}>{option.label}</Text>
+                  <Text style={[styles.optionLabel, { color: colors.text }]}>{option.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -198,15 +200,15 @@ export default function SendFeedbackScreen() {
         {/* Step 2: Enter Message */}
         {currentStep === 2 && (
           <View style={styles.stepContainer}>
-            <Text style={styles.question}>
+            <Text style={[styles.question, { color: colors.text }]}>
               Hãy cho chúng tôi biết tình hình hoặc suy nghĩ của bạn.
             </Text>
 
-            <View style={styles.textInputCard}>
+            <View style={[styles.textInputCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, { color: colors.text }]}
                 placeholder="Hãy viết tin nhắn của bạn ở đây"
-                placeholderTextColor="#64748b"
+                placeholderTextColor={colors.textMuted}
                 value={message}
                 onChangeText={(text) => {
                   setMessage(text);
@@ -222,15 +224,15 @@ export default function SendFeedbackScreen() {
         {/* Step 3: Enter Email */}
         {currentStep === 3 && (
           <View style={styles.stepContainer}>
-            <Text style={styles.question}>
+            <Text style={[styles.question, { color: colors.text }]}>
               Hãy cho biết địa chỉ email của bạn để chúng tôi có thể gửi trả lời.
             </Text>
 
-            <View style={styles.emailInputCard}>
+            <View style={[styles.emailInputCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={styles.emailInput}
+                style={[styles.emailInput, { color: colors.text }]}
                 placeholder="Hãy điền địa chỉ email của bạn"
-                placeholderTextColor="#64748b"
+                placeholderTextColor={colors.textMuted}
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);
@@ -248,13 +250,13 @@ export default function SendFeedbackScreen() {
       {/* Hint Text - Shows above button when input is empty and no error */}
       {!showError && currentStep === 2 && !message.trim() && (
         <View style={styles.hintContainer}>
-          <Text style={styles.hintText}>Xin vui lòng nhập tin nhắn</Text>
+          <Text style={[styles.hintText, { color: colors.textMuted }]}>Xin vui lòng nhập tin nhắn</Text>
         </View>
       )}
       
       {!showError && currentStep === 3 && (!email.trim() || !isValidEmail(email.trim())) && (
         <View style={styles.hintContainer}>
-          <Text style={styles.hintText}>Hãy nhập một địa chỉ email hợp lệ</Text>
+          <Text style={[styles.hintText, { color: colors.textMuted }]}>Hãy nhập một địa chỉ email hợp lệ</Text>
         </View>
       )}
 

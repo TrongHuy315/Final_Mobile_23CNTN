@@ -1,12 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useTheme } from '@/context/ThemeContext';
 
 interface ArcGaugeProps {
   score: number; // 0 → 100
 }
 
 export const ArcGauge: React.FC<ArcGaugeProps> = ({ score }) => {
+    const { colors, isDarkMode } = useTheme();
     const size = 220;
     const strokeWidth = 18;
     const radius = (size - strokeWidth) / 2;
@@ -57,7 +59,7 @@ export const ArcGauge: React.FC<ArcGaugeProps> = ({ score }) => {
             {/* Background arc */}
             <Path
             d={describeArc(totalAngle)}
-            stroke="#1e293b"
+            stroke={isDarkMode ? "#1e293b" : "#e2e8f0"}
             strokeWidth={strokeWidth}
             fill="none"
             strokeLinecap="round"
@@ -75,9 +77,9 @@ export const ArcGauge: React.FC<ArcGaugeProps> = ({ score }) => {
 
         {/* Điểm ở tâm */}
         <View style={styles.centerText}>
-          <Text style={styles.subText}>Chất lượng giấc ngủ</Text>
+          <Text style={[styles.subText, { color: isDarkMode ? "#FFFFFF" : colors.textMuted }]}>Chất lượng giấc ngủ</Text>
           <Text style={[styles.score, { color }]}>{score}</Text>
-          {/* <Text style={styles.label}>POINTS</Text> */}
+          {/* <Text style={[styles.label, { color: colors.textSecondary }]}>POINTS</Text> */}
         </View>
         </View>
     );
@@ -95,8 +97,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   subText: {
-    color: "#FFFFFF",
-    fontWeight: 500,
+    fontWeight: '500',
     fontSize: 15
   },
   score: {
@@ -105,6 +106,5 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: '#94a3b8',
   },
 });

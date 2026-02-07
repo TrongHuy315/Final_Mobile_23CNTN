@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../../context/ThemeContext';
 
 const languages = [
   { code: 'system', name: 'Sử dụng ngôn ngữ hệ thống', hasDownload: false },
@@ -52,20 +53,21 @@ const languages = [
 export default function LanguageSettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('system');
 
   return (
-    <SafeAreaProvider style={styles.container}>
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ngôn ngữ (Language)</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Ngôn ngữ (Language)</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -79,7 +81,7 @@ export default function LanguageSettingsScreen() {
             key={language.code}
             style={[
               styles.languageItem,
-              index !== languages.length - 1 && styles.languageItemBorder
+              index !== languages.length - 1 && [styles.languageItemBorder, { borderBottomColor: colors.border }]
             ]}
             activeOpacity={0.7}
             onPress={() => setSelectedLanguage(language.code)}
@@ -87,11 +89,11 @@ export default function LanguageSettingsScreen() {
             {/* Radio Button */}
             <View style={styles.radioButton}>
               {selectedLanguage === language.code ? (
-                <View style={styles.radioButtonSelected}>
-                  <View style={styles.radioButtonInner} />
+                <View style={[styles.radioButtonSelected, { borderColor: colors.primary }]}>
+                  <View style={[styles.radioButtonInner, { backgroundColor: colors.primary }]} />
                 </View>
               ) : (
-                <View style={styles.radioButtonUnselected} />
+                <View style={[styles.radioButtonUnselected, { borderColor: isDarkMode ? colors.textMuted : colors.textMuted }]} />
               )}
             </View>
 
@@ -99,6 +101,7 @@ export default function LanguageSettingsScreen() {
             <Text 
               style={[
                 styles.languageName,
+                { color: colors.text },
                 language.rtl && styles.languageNameRtl
               ]}
             >
@@ -107,7 +110,7 @@ export default function LanguageSettingsScreen() {
 
             {/* Download Icon */}
             {language.hasDownload && (
-              <Ionicons name="download-outline" size={22} color="#64748b" />
+              <Ionicons name="download-outline" size={22} color={colors.textMuted} />
             )}
           </TouchableOpacity>
         ))}

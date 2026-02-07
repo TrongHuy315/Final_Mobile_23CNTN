@@ -4,6 +4,7 @@ import { AlarmManager } from "@/utils/alarm-manager";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from '@/context/ThemeContext';
 
 interface FlashAlarmScreenProps {
   visible: boolean;
@@ -11,6 +12,7 @@ interface FlashAlarmScreenProps {
 }
 
 export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenProps) {
+  const { colors, isDarkMode } = useTheme();
   const [volume, setVolume] = useState(100);
   const [time, setTime] = useState(0); 
   const [vibration, setVibration] = useState(true);
@@ -73,28 +75,28 @@ export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenP
       <View style={styles.modalOverlay}>
         <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={handleClose} />
 
-        <View style={styles.bottomSheet}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Báo thức nhanh</Text>
+        <View style={[styles.bottomSheet, { backgroundColor: colors.card }]}>
+          <View style={[styles.sheetHeader, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.sheetTitle, { color: colors.text }]}>Báo thức nhanh</Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#fff" />
+              <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
           <View style={[styles.content1, time === 0 && { opacity: 0.6 }]}>
-            <Ionicons name="add-outline" size={24} color="#fff" />
+            <Ionicons name="add-outline" size={24} color={colors.text} />
             <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
               {time >= 60 && (
                 <>
-                  <Text style={styles.bigText}>{Math.floor(time / 60)}</Text>
-                  <Text style={styles.unitText}>giờ</Text>
+                  <Text style={[styles.bigText, { color: colors.text }]}>{Math.floor(time / 60)}</Text>
+                  <Text style={[styles.unitText, { color: colors.textSecondary }]}>giờ</Text>
                 </>
               )}
-              <Text style={styles.bigText}>{time % 60}</Text>
-              <Text style={styles.unitText}>phút</Text>
+              <Text style={[styles.bigText, { color: colors.text }]}>{time % 60}</Text>
+              <Text style={[styles.unitText, { color: colors.textSecondary }]}>phút</Text>
             </View>
             <TouchableOpacity onPress={() => setTime(0)}>
-              <Ionicons name="reload-outline" size={24} color="#fff" />
+              <Ionicons name="reload-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -103,32 +105,32 @@ export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenP
           </Text>
 
           <View style={styles.content2}>
-            <TimeButton label="1 phút" onPress={() => setTime(t => Math.min(t + 1, 1440))} />
-            <TimeButton label="5 phút" onPress={() => setTime(t => Math.min(t + 5, 1440))} />
-            <TimeButton label="10 phút" onPress={() => setTime(t => Math.min(t + 10, 1440))} />
+            <TimeButton label="1 phút" onPress={() => setTime(t => Math.min(t + 1, 1440))} colors={colors} />
+            <TimeButton label="5 phút" onPress={() => setTime(t => Math.min(t + 5, 1440))} colors={colors} />
+            <TimeButton label="10 phút" onPress={() => setTime(t => Math.min(t + 10, 1440))} colors={colors} />
           </View>
 
           <View style={styles.content2}>
-            <TimeButton label="15 phút" onPress={() => setTime(t => Math.min(t + 15, 1440))} />
-            <TimeButton label="30 phút" onPress={() => setTime(t => Math.min(t + 30, 1440))} />
-            <TimeButton label="1 giờ" onPress={() => setTime(t => Math.min(t + 60, 1440))} />
+            <TimeButton label="15 phút" onPress={() => setTime(t => Math.min(t + 15, 1440))} colors={colors} />
+            <TimeButton label="30 phút" onPress={() => setTime(t => Math.min(t + 30, 1440))} colors={colors} />
+            <TimeButton label="1 giờ" onPress={() => setTime(t => Math.min(t + 60, 1440))} colors={colors} />
           </View>
 
           <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingText}>Âm thanh</Text>
+            <Text style={[styles.settingText, { color: colors.text }]}>Âm thanh</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.settingSubText}>Orkney</Text>
-              <Ionicons name="chevron-forward-outline" size={20} color="#64748b" />
+              <Text style={[styles.settingSubText, { color: colors.textMuted }]}>Orkney</Text>
+              <Ionicons name="chevron-forward-outline" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
 
           <View style={styles.controlRow}>
-            <Ionicons name={volume === 0 ? "volume-mute" : "volume-high"} size={24} color="#fff" />
+            <Ionicons name={volume === 0 ? "volume-mute" : "volume-high"} size={24} color={colors.text} />
             <View style={{ flex: 1, marginHorizontal: 15 }}>
               <DraggableSlider onValueChange={setVolume}/>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <MaterialIcons name="vibration" size={24} color="#fff" style={{ marginRight: 8 }} />
+              <MaterialIcons name="vibration" size={24} color={colors.text} style={{ marginRight: 8 }} />
               <Checkbox checked={vibration} onChange={setVibration} />
             </View>
           </View>
@@ -146,10 +148,10 @@ export default function FlashAlarmScreen({ visible, onClose }: FlashAlarmScreenP
   );
 }
 
-function TimeButton({ label, onPress }: { label: string; onPress: () => void }) {
+function TimeButton({ label, onPress, colors }: { label: string; onPress: () => void; colors: any }) {
   return (
-    <TouchableOpacity style={styles.timeCard} onPress={onPress}>
-      <Text style={styles.timeText}>{label}</Text>
+    <TouchableOpacity style={[styles.timeCard, { backgroundColor: colors.surface }]} onPress={onPress}>
+      <Text style={[styles.timeText, { color: colors.text }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -159,7 +161,6 @@ const styles = StyleSheet.create({
   modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.5)" },
   bottomSheet: {
     height: "75%",
-    backgroundColor: "#1a202c",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 30,
@@ -169,9 +170,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#2d3748",
   },
-  sheetTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  sheetTitle: { fontSize: 16, fontWeight: "600" },
   closeButton: { position: "absolute", right: 20 },
   content1: {
     flexDirection: "row",
@@ -180,8 +180,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     marginTop: 30,
   },
-  bigText: { fontSize: 50, fontWeight: "700", color: "#fff" },
-  unitText: { fontSize: 20, color: "#cbd5e0", marginLeft: 4, marginRight: 10, marginBottom: 10 },
+  bigText: { fontSize: 50, fontWeight: "700" },
+  unitText: { fontSize: 20, marginLeft: 4, marginRight: 10, marginBottom: 10 },
   alarmTimeText: { color: "#38b6ff", textAlign: "center", fontSize: 18, marginVertical: 15, fontWeight: '500' },
   content2: {
     flexDirection: "row",
@@ -192,12 +192,11 @@ const styles = StyleSheet.create({
   timeCard: {
     height: 45,
     width: "30%",
-    backgroundColor: "#2d3748",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 12,
   },
-  timeText: { color: "#fff", fontSize: 16 },
+  timeText: { fontSize: 16 },
   settingItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -205,8 +204,8 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 20,
   },
-  settingText: { color: "#fff", fontSize: 18 },
-  settingSubText: { color: "#64748b", fontSize: 16, marginRight: 5 },
+  settingText: { fontSize: 18 },
+  settingSubText: { fontSize: 16, marginRight: 5 },
   controlRow: {
     flexDirection: "row",
     alignItems: "center",

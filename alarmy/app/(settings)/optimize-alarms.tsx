@@ -2,8 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
   Image,
   LayoutAnimation,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,6 +15,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/context/ThemeContext';
+import { StatusBar } from 'expo-status-bar';
 
 // UIManager.setLayoutAnimationEnabledExperimental is no longer needed in New Architecture
 
@@ -25,8 +29,9 @@ interface ExpandableCardProps {
 }
 
 const ExpandableCard = ({ title, icon, isExpanded, onToggle, children }: ExpandableCardProps) => {
+  const { colors } = useTheme();
   return (
-    <View style={styles.expandableCard}>
+    <View style={[styles.expandableCard, { backgroundColor: colors.surface }]}>
       <TouchableOpacity 
         style={styles.cardHeader}
         activeOpacity={0.7}
@@ -34,17 +39,17 @@ const ExpandableCard = ({ title, icon, isExpanded, onToggle, children }: Expanda
       >
         <View style={styles.cardLeft}>
           {icon}
-          <Text style={styles.cardText}>{title}</Text>
+          <Text style={[styles.cardText, { color: colors.text }]}>{title}</Text>
         </View>
         <Ionicons 
           name={isExpanded ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#718096" 
+          color={colors.textMuted} 
         />
       </TouchableOpacity>
       
       {isExpanded && (
-        <View style={styles.cardContent}>
+        <View style={[styles.cardContent, { borderTopColor: colors.border }]}>
           {children}
         </View>
       )}
@@ -55,7 +60,30 @@ const ExpandableCard = ({ title, icon, isExpanded, onToggle, children }: Expanda
 export default function OptimizeAlarmsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
+
+  const handleOpenSettings = (title?: string, message?: string) => {
+    if (title && message) {
+      Alert.alert(
+        title,
+        message,
+        [
+          { text: 'Hủy', style: 'cancel' },
+          { 
+            text: 'Đi đến cài đặt', 
+            onPress: () => Linking.openSettings().catch(() => {
+              Alert.alert('Lỗi', 'Không thể mở cài đặt. Vui lòng mở thủ công.');
+            })
+          },
+        ]
+      );
+    } else {
+      Linking.openSettings().catch(() => {
+        Alert.alert('Lỗi', 'Không thể mở cài đặt. Vui lòng mở thủ công.');
+      });
+    }
+  };
 
   const toggleCard = (index: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -63,17 +91,17 @@ export default function OptimizeAlarmsScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#ffffff" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Tối ưu hóa báo thức</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>Tối ưu hóa báo thức</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -83,10 +111,10 @@ export default function OptimizeAlarmsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Title */}
-        <Text style={styles.title}>Báo thức của bạn không reo?</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Báo thức của bạn không reo?</Text>
 
         {/* Subtitle */}
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           Báo thức có thể sẽ bị hệ thống điện thoại chặn. 😢{'\n'}
           Vui lòng xem các hướng dẫn sau đây!
         </Text>
@@ -104,18 +132,20 @@ export default function OptimizeAlarmsScreen() {
             isExpanded={expandedCard === 0}
             onToggle={() => toggleCard(0)}
           >
-            <Text style={styles.contentDescription}>
+            <Text style={[styles.contentDescription, { color: colors.textSecondary }]}>
               Hãy cho phép 2 quyền sau để đảm bảo báo thức của bạn kêu.
             </Text>
             
             {/* Screenshot placeholder */}
             <View style={styles.screenshotContainer}>
-              <View style={styles.screenshotBox}>
+              <View style={[styles.screenshotBox, { backgroundColor: isDarkMode ? '#1a3a4a' : colors.surfaceVariant, borderColor: colors.border }]}>
                 <View style={styles.appInfoHeader}>
-                  <Ionicons name="chevron-back" size={16} color="#94a3b8" />
-                  <Text style={styles.appInfoTitle}>App info</Text>
+                  <Ionicons name="chevron-back" size={16} color={colors.textMuted} />
+                  <Text style={[styles.appInfoTitle, { color: colors.text }]}>App info</Text>
                   <View style={styles.headerDots}>
-                    <View style={styles.dot} /><View style={styles.dot} /><View style={styles.dotTriangle} />
+                    <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
+                    <View style={[styles.dot, { backgroundColor: colors.textMuted }]} />
+                    <View style={[styles.dotTriangle, { borderTopColor: colors.textMuted }]} />
                   </View>
                 </View>
                 
@@ -124,22 +154,22 @@ export default function OptimizeAlarmsScreen() {
                     <Ionicons name="alarm" size={20} color="#ffffff" />
                   </View>
                   <View>
-                    <Text style={styles.appName}>Alarmy</Text>
-                    <Text style={styles.appSubtext}>Version info</Text>
+                    <Text style={[styles.appName, { color: colors.text }]}>Alarmy</Text>
+                    <Text style={[styles.appSubtext, { color: colors.textMuted }]}>Version info</Text>
                   </View>
                 </View>
                 
-                <View style={styles.permissionRow}>
-                  <Text style={styles.permissionLabel}>Auto Start</Text>
+                <View style={[styles.permissionRow, { backgroundColor: isDarkMode ? '#2d4a5a' : colors.background }]}>
+                  <Text style={[styles.permissionLabel, { color: colors.text }]}>Auto Start</Text>
                   <View style={[styles.toggleSwitch, styles.toggleOn]}>
                     <View style={styles.toggleThumb} />
                   </View>
                 </View>
                 
-                <View style={styles.permissionRow}>
+                <View style={[styles.permissionRow, { backgroundColor: isDarkMode ? '#2d4a5a' : colors.background }]}>
                   <View>
-                    <Text style={styles.permissionLabel}>display over apps</Text>
-                    <Text style={styles.permissionSubtext}>display pop-up windows</Text>
+                    <Text style={[styles.permissionLabel, { color: colors.text }]}>display over apps</Text>
+                    <Text style={[styles.permissionSubtext, { color: colors.textMuted }]}>display pop-up windows</Text>
                   </View>
                   <View style={[styles.toggleSwitch, styles.toggleOn]}>
                     <View style={styles.toggleThumb} />
@@ -148,12 +178,18 @@ export default function OptimizeAlarmsScreen() {
               </View>
             </View>
             
-            <Text style={styles.noteText}>
+            <Text style={[styles.noteText, { color: colors.textMuted }]}>
               ※ Vị trí cài đặt có thể khác nhau tùy theo model máy và phiên bản hệ điều hành.
             </Text>
             
-            <TouchableOpacity style={styles.outlineButton}>
-              <Text style={styles.outlineButtonText}>Xem chi tiết</Text>
+            <TouchableOpacity 
+              style={[styles.outlineButton, { borderColor: colors.text }]}
+              onPress={() => handleOpenSettings(
+                'Quyền cần thiết',
+                'Vui lòng kiểm tra và cho phép các quyền "Tự khởi chạy" và "Hiển thị trên các ứng dụng khác" trong cài đặt.'
+              )}
+            >
+              <Text style={[styles.outlineButtonText, { color: colors.text }]}>Xem chi tiết</Text>
             </TouchableOpacity>
           </ExpandableCard>
 
@@ -168,39 +204,45 @@ export default function OptimizeAlarmsScreen() {
             isExpanded={expandedCard === 1}
             onToggle={() => toggleCard(1)}
           >
-            <Text style={styles.contentDescription}>
+            <Text style={[styles.contentDescription, { color: colors.textSecondary }]}>
               Cho phép Alarmy đổ chuông khi ở chế độ DND.
             </Text>
             
             {/* DND illustration */}
             <View style={styles.illustrationContainer}>
-              <View style={styles.dndIllustration}>
-                <View style={styles.moonIcon}>
+              <View style={[styles.dndIllustration, { backgroundColor: isDarkMode ? '#1a3a4a' : colors.surfaceVariant }]}>
+                <View style={[styles.moonIcon, { backgroundColor: isDarkMode ? '#1e3a5f' : colors.primary }]}>
                   <Ionicons name="moon" size={40} color="#ffffff" />
                 </View>
                 <View style={styles.plusBadge}>
                   <Ionicons name="add" size={16} color="#ffffff" />
                 </View>
-                <View style={styles.alarmBadge}>
+                <View style={[styles.alarmBadge, { backgroundColor: isDarkMode ? '#ffffff' : colors.surface }]}>
                   <Ionicons name="alarm" size={28} color="#ec4899" />
                 </View>
               </View>
             </View>
             
-            <Text style={styles.instructionText}>
+            <Text style={[styles.instructionText, { color: colors.text }]}>
               Đi đến [Cài đặt {'>'} Thông báo {'>'} Không làm phiền {'>'} Ứng dụng] và thêm Alarmy vào danh sách.
             </Text>
             
-            <Text style={styles.noteText}>
+            <Text style={[styles.noteText, { color: colors.textMuted }]}>
               ※ Vị trí cài đặt có thể khác nhau tùy theo model máy và phiên bản hệ điều hành.
             </Text>
             
-            <TouchableOpacity style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Đi đến cài đặt</Text>
+            <TouchableOpacity 
+              style={[styles.primaryButton, { borderColor: colors.text }]}
+              onPress={() => handleOpenSettings(
+                'Cho phép Không làm phiền',
+                'Vui lòng tìm mục [Thông báo > Không làm phiền > Ứng dụng] và thêm Alarmy vào danh sách cho phép.'
+              )}
+            >
+              <Text style={[styles.primaryButtonText, { color: colors.text }]}>Đi đến cài đặt</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.linkButton}>
-              <Text style={styles.linkButtonText}>Xem chi tiết</Text>
+              <Text style={[styles.linkButtonText, { color: colors.textSecondary }]}>Xem chi tiết</Text>
             </TouchableOpacity>
           </ExpandableCard>
 
@@ -215,58 +257,64 @@ export default function OptimizeAlarmsScreen() {
             isExpanded={expandedCard === 2}
             onToggle={() => toggleCard(2)}
           >
-            <Text style={styles.contentDescription}>
+            <Text style={[styles.contentDescription, { color: colors.textSecondary }]}>
               Nếu bạn đang sử dụng tính năng tiết kiệm pin hoặc tối ưu hóa pin, Alarmy có thể bị bắt buộc chấm dứt. Khi đó, báo thức của bạn không thể đổ chuông.
             </Text>
             
             {/* Battery illustration */}
             <View style={styles.illustrationContainer}>
-              <View style={styles.batteryIllustration}>
+              <View style={[styles.batteryIllustration, { backgroundColor: isDarkMode ? '#1a3a4a' : colors.surfaceVariant }]}>
                 <View style={styles.phoneWithBattery}>
-                  <View style={styles.phonePlaceholder}>
-                    <Ionicons name="phone-portrait" size={40} color="#3b82f6" />
+                  <View style={[styles.phonePlaceholder, { backgroundColor: isDarkMode ? '#1e3a5f' : colors.primary }]}>
+                    <Ionicons name="phone-portrait" size={40} color={isDarkMode ? "#3b82f6" : "#ffffff"} />
                   </View>
-                  <View style={styles.batteryBadge}>
+                  <View style={[styles.batteryBadge, { backgroundColor: isDarkMode ? '#1a3a4a' : colors.surfaceVariant }]}>
                     <Ionicons name="battery-half" size={20} color="#f59e0b" />
                   </View>
                 </View>
-                <View style={styles.bellCrossed}>
+                <View style={[styles.bellCrossed, { backgroundColor: isDarkMode ? '#fef3c7' : '#fde68a' }]}>
                   <Ionicons name="notifications-off" size={36} color="#f59e0b" />
                 </View>
               </View>
             </View>
             
-            <Text style={styles.instructionText}>
+            <Text style={[styles.instructionText, { color: colors.text }]}>
               Đi đến [Cài đặt {'>'} Ứng dụng {'>'} Alarmy {'>'} Pin] và chọn &quot;Không hạn chế&quot;.
             </Text>
             
-            <Text style={styles.noteText}>
+            <Text style={[styles.noteText, { color: colors.textMuted }]}>
               ※ Đối với một số thiết bị, hãy thêm Alarmy vào danh sách trong [Quản lý thiết bị {'>'} Pin {'>'} Ứng dụng chưa được tối ưu hóa].
             </Text>
             
-            <TouchableOpacity style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Đi đến cài đặt</Text>
+            <TouchableOpacity 
+              style={[styles.primaryButton, { borderColor: colors.text }]}
+              onPress={() => handleOpenSettings(
+                'Loại trừ tối ưu hóa pin',
+                'Vui lòng tìm mục [Pin] và chọn "Không hạn chế" cho Alarmy để đảm bảo báo thức hoạt động ổn định.'
+              )}
+            >
+              <Text style={[styles.primaryButtonText, { color: colors.text }]}>Đi đến cài đặt</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.linkButton}>
-              <Text style={styles.linkButtonText}>Xem chi tiết</Text>
+              <Text style={[styles.linkButtonText, { color: colors.textSecondary }]}>Xem chi tiết</Text>
             </TouchableOpacity>
           </ExpandableCard>
         </View>
 
         {/* Feedback Section */}
         <View style={styles.feedbackSection}>
-          <Text style={styles.feedbackText}>
+          <Text style={[styles.feedbackText, { color: colors.textSecondary }]}>
             Nếu bạn đang gặp bất kỳ vấn đề nào, vui lòng liên{'\n'}
             hệ với chúng tôi!
           </Text>
           
           <TouchableOpacity 
-            style={styles.feedbackButton}
+            style={[styles.feedbackButton, { borderColor: colors.text }]}
             activeOpacity={0.8}
             onPress={() => router.push('/send-feedback')}
           >
-            <Text style={styles.feedbackButtonText}>Gửi phản hồi</Text>
+            <Text style={[styles.feedbackButtonText, { color: colors.text }]}>Gửi phản hồi</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -277,7 +325,6 @@ export default function OptimizeAlarmsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     flexDirection: 'row',
@@ -286,7 +333,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   backButton: {
     width: 40,
@@ -297,7 +343,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
     flex: 1,
     textAlign: 'center',
     marginRight: 40,
@@ -316,12 +361,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#ffffff',
     marginBottom: 16,
   },
   subtitle: {
     fontSize: 14,
-    color: '#94a3b8',
     lineHeight: 20,
     marginBottom: 32,
   },
@@ -330,7 +373,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   expandableCard: {
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -363,7 +405,6 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#ffffff',
     flex: 1,
     lineHeight: 20,
   },
@@ -371,11 +412,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 20,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
   },
   contentDescription: {
     fontSize: 14,
-    color: '#94a3b8',
     lineHeight: 20,
     marginTop: 16,
     marginBottom: 20,
@@ -385,12 +424,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   screenshotBox: {
-    backgroundColor: '#1a3a4a',
     borderRadius: 16,
     padding: 16,
     width: '100%',
     borderWidth: 2,
-    borderColor: '#2d4a5a',
   },
   appInfoHeader: {
     flexDirection: 'row',
@@ -399,7 +436,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   appInfoTitle: {
-    color: '#ffffff',
     fontSize: 14,
     fontWeight: '500',
   },
@@ -411,7 +447,6 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#94a3b8',
   },
   dotTriangle: {
     width: 0,
@@ -421,7 +456,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#94a3b8',
   },
   appRow: {
     flexDirection: 'row',
@@ -438,29 +472,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   appName: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
   appSubtext: {
-    color: '#94a3b8',
     fontSize: 12,
   },
   permissionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#2d4a5a',
     padding: 12,
     borderRadius: 8,
     marginBottom: 8,
   },
   permissionLabel: {
-    color: '#ffffff',
     fontSize: 14,
   },
   permissionSubtext: {
-    color: '#94a3b8',
     fontSize: 12,
   },
   toggleSwitch: {
@@ -487,7 +516,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   dndIllustration: {
-    backgroundColor: '#1a3a4a',
     borderRadius: 16,
     padding: 30,
     flexDirection: 'row',
@@ -499,7 +527,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 16,
-    backgroundColor: '#1e3a5f',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -517,12 +544,10 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
   },
   batteryIllustration: {
-    backgroundColor: '#1a3a4a',
     borderRadius: 16,
     padding: 30,
     flexDirection: 'row',
@@ -538,7 +563,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 80,
     borderRadius: 8,
-    backgroundColor: '#1e3a5f',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -546,7 +570,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -5,
     right: -10,
-    backgroundColor: '#1a3a4a',
     borderRadius: 10,
     padding: 4,
   },
@@ -554,46 +577,39 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#fef3c7',
     justifyContent: 'center',
     alignItems: 'center',
   },
   instructionText: {
     fontSize: 14,
-    color: '#ffffff',
     lineHeight: 20,
     marginBottom: 12,
   },
   noteText: {
     fontSize: 12,
-    color: '#64748b',
     lineHeight: 18,
     marginBottom: 20,
   },
   primaryButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#ffffff',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 12,
   },
   primaryButtonText: {
-    color: '#ffffff',
     fontSize: 15,
     fontWeight: '600',
   },
   outlineButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#ffffff',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
   },
   outlineButtonText: {
-    color: '#ffffff',
     fontSize: 15,
     fontWeight: '600',
   },
@@ -602,7 +618,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   linkButtonText: {
-    color: '#94a3b8',
     fontSize: 14,
   },
   feedbackSection: {
@@ -611,14 +626,12 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     fontSize: 13,
-    color: '#94a3b8',
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 20,
   },
   feedbackButton: {
     borderWidth: 1,
-    borderColor: '#ffffff',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 32,
@@ -626,6 +639,5 @@ const styles = StyleSheet.create({
   feedbackButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ffffff',
   },
 });

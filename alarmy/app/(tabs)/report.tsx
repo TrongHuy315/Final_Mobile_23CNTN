@@ -14,11 +14,13 @@ import {
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AlarmManager, WakeUpRecord, SleepRecord } from '@/utils/alarm-manager';
+import { useTheme } from '@/context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ReportScreen() {
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
   const [wakeUpRecords, setWakeUpRecords] = useState<WakeUpRecord[]>([]);
   const [sleepRecords, setSleepRecords] = useState<SleepRecord[]>([]);
   const [activeTab, setActiveTab] = useState<'wakeup' | 'sleep'>('wakeup');
@@ -129,45 +131,45 @@ export default function ReportScreen() {
   };
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <StatusBar style="light" />
+    <SafeAreaProvider style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Text style={styles.headerTitle}>Báo cáo</Text>
+      <View style={[styles.header, { paddingTop: insets.top, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Báo cáo</Text>
       </View>
 
       {/* Week Navigation */}
-      <View style={styles.weekNav}>
+      <View style={[styles.weekNav, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => setWeekRange(weekRange - 1)}>
-          <Ionicons name="chevron-back" size={24} color="#3b82f6" />
+          <Ionicons name="chevron-back" size={24} color={colors.primary} />
         </TouchableOpacity>
-        <Text style={styles.weekLabel}>{weekLabel}</Text>
+        <Text style={[styles.weekLabel, { color: colors.text }]}>{weekLabel}</Text>
         <TouchableOpacity
           onPress={() => setWeekRange(weekRange + 1)}
           disabled={weekRange === 0}
         >
-          <Ionicons name="chevron-forward" size={24} color={weekRange === 0 ? '#475569' : '#3b82f6'} />
+          <Ionicons name="chevron-forward" size={24} color={weekRange === 0 ? colors.textMuted : colors.primary} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
+      <View style={[styles.tabsContainer, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'wakeup' && styles.tabActive]}
+          style={[styles.tab, activeTab === 'wakeup' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
           onPress={() => setActiveTab('wakeup')}
         >
-          <Ionicons name="sunny" size={18} color={activeTab === 'wakeup' ? '#fbbf24' : '#64748b'} />
-          <Text style={[styles.tabText, activeTab === 'wakeup' && styles.tabTextActive]}>
+          <Ionicons name="sunny" size={18} color={activeTab === 'wakeup' ? '#fbbf24' : colors.textMuted} />
+          <Text style={[styles.tabText, { color: colors.textSecondary }, activeTab === 'wakeup' && [styles.tabTextActive, { color: colors.text }]]}>
             Thức dậy
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'sleep' && styles.tabActive]}
+          style={[styles.tab, activeTab === 'sleep' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
           onPress={() => setActiveTab('sleep')}
         >
-          <Ionicons name="moon" size={18} color={activeTab === 'sleep' ? '#a78bfa' : '#64748b'} />
-          <Text style={[styles.tabText, activeTab === 'sleep' && styles.tabTextActive]}>
+          <Ionicons name="moon" size={18} color={activeTab === 'sleep' ? '#a78bfa' : colors.textMuted} />
+          <Text style={[styles.tabText, { color: colors.textSecondary }, activeTab === 'sleep' && [styles.tabTextActive, { color: colors.text }]]}>
             Giấc ngủ
           </Text>
         </TouchableOpacity>
@@ -182,23 +184,23 @@ export default function ReportScreen() {
           <>
             {/* Wake Up Stats */}
             <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{wakeUpStats.completed}</Text>
-                <Text style={styles.statLabel}>Hoàn thành</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{wakeUpStats.completed}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Hoàn thành</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{wakeUpStats.streak}</Text>
-                <Text style={styles.statLabel}>Chuỗi</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{wakeUpStats.streak}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Chuỗi</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{wakeUpStats.avgTime}</Text>
-                <Text style={styles.statLabel}>Giờ trung bình</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{wakeUpStats.avgTime}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Giờ trung bình</Text>
               </View>
             </View>
 
             {/* Wake Up Chart */}
             <View style={styles.chartSection}>
-              <Text style={styles.chartTitle}>Hoạt động hàng ngày</Text>
+              <Text style={[styles.chartTitle, { color: colors.text }]}>Hoạt động hàng ngày</Text>
               <View style={styles.dayChartContainer}>
                 {weekDates.map((date, index) => {
                   const record = filteredWakeUpRecords.find(r => r.date === date);
@@ -217,14 +219,14 @@ export default function ReportScreen() {
                       <View
                         style={[
                           styles.dayBox,
-                          completed ? styles.dayBoxCompleted : styles.dayBoxEmpty,
+                          completed ? styles.dayBoxCompleted : [styles.dayBoxEmpty, { backgroundColor: colors.surface }],
                         ]}
                       >
                         {completed && (
                           <Ionicons name="checkmark" size={16} color="#ffffff" />
                         )}
                       </View>
-                      <Text style={styles.dayLabel}>{getDayLabel(date, index)}</Text>
+                      <Text style={[styles.dayLabel, { color: colors.textMuted }]}>{getDayLabel(date, index)}</Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -233,11 +235,11 @@ export default function ReportScreen() {
 
             {/* Wake Up Records */}
             <View style={styles.recordsSection}>
-              <Text style={styles.recordsTitle}>Chi tiết</Text>
+              <Text style={[styles.recordsTitle, { color: colors.text }]}>Chi tiết</Text>
               {filteredWakeUpRecords.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <MaterialCommunityIcons name="sleep" size={48} color="#475569" />
-                  <Text style={styles.emptyStateText}>Không có dữ liệu tuần này</Text>
+                  <MaterialCommunityIcons name="sleep" size={48} color={colors.textMuted} />
+                  <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>Không có dữ liệu tuần này</Text>
                 </View>
               ) : (
                 <FlatList
@@ -246,7 +248,7 @@ export default function ReportScreen() {
                   scrollEnabled={false}
                   renderItem={({ item }) => (
                     <TouchableOpacity
-                      style={styles.recordItem}
+                      style={[styles.recordItem, { backgroundColor: colors.surface }]}
                       onPress={() => {
                         setSelectedRecord(item);
                         setDetailModalVisible(true);
@@ -268,13 +270,13 @@ export default function ReportScreen() {
                           />
                         </View>
                         <View style={styles.recordInfo}>
-                          <Text style={styles.recordDate}>{item.date}</Text>
-                          <Text style={styles.recordStatus}>
+                          <Text style={[styles.recordDate, { color: colors.text }]}>{item.date}</Text>
+                          <Text style={[styles.recordStatus, { color: colors.textSecondary }]}>
                             {item.taskCompleted ? 'Hoàn thành' : 'Chưa hoàn thành'}
                           </Text>
                         </View>
                       </View>
-                      <Text style={styles.recordTime}>
+                      <Text style={[styles.recordTime, { color: colors.primary }]}>
                         {formatTime(item.wakeUpTime)}
                       </Text>
                     </TouchableOpacity>
@@ -287,24 +289,24 @@ export default function ReportScreen() {
           <>
             {/* Sleep Stats */}
             <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{sleepStats.avgDuration}</Text>
-                <Text style={styles.statLabel}>Trung bình</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{sleepStats.avgDuration}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Trung bình</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{sleepStats.avgQuality}%</Text>
-                <Text style={styles.statLabel}>Chất lượng</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{sleepStats.avgQuality}%</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Chất lượng</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{filteredSleepRecords.length}</Text>
-                <Text style={styles.statLabel}>Ngày</Text>
+              <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.statValue, { color: colors.text }]}>{filteredSleepRecords.length}</Text>
+                <Text style={[styles.statLabel, { color: colors.textMuted }]}>Ngày</Text>
               </View>
             </View>
 
             {/* Sleep Chart */}
             <View style={styles.chartSection}>
-              <Text style={styles.chartTitle}>Hoạt động hàng ngày</Text>
-              <View style={styles.durationChartContainer}>
+              <Text style={[styles.chartTitle, { color: colors.text }]}>Hoạt động hàng ngày</Text>
+              <View style={[styles.durationChartContainer, { backgroundColor: colors.surface }]}>
                 {weekDates.map((date) => {
                   const record = filteredSleepRecords.find(r => r.date === date);
                   const heightPercent = record ? (record.duration / 480) * 100 : 0; // max 8 hours
@@ -318,7 +320,7 @@ export default function ReportScreen() {
                             height: `${Math.min(heightPercent, 100)}%`,
                             backgroundColor: record
                               ? `hsl(${200 + record.quality * 1.6}, 80%, 50%)`
-                              : '#1e293b',
+                              : isDarkMode ? '#1e293b' : '#e2e8f0',
                           },
                         ]}
                         onPress={() => {
@@ -328,7 +330,7 @@ export default function ReportScreen() {
                           }
                         }}
                       />
-                      <Text style={styles.durationLabel}>{dayLabel}</Text>
+                      <Text style={[styles.durationLabel, { color: colors.textMuted }]}>{dayLabel}</Text>
                     </View>
                   );
                 })}
@@ -337,11 +339,11 @@ export default function ReportScreen() {
 
             {/* Sleep Records */}
             <View style={styles.recordsSection}>
-              <Text style={styles.recordsTitle}>Chi tiết</Text>
+              <Text style={[styles.recordsTitle, { color: colors.text }]}>Chi tiết</Text>
               {filteredSleepRecords.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <MaterialCommunityIcons name="sleep" size={48} color="#475569" />
-                  <Text style={styles.emptyStateText}>Không có dữ liệu tuần này</Text>
+                  <MaterialCommunityIcons name="sleep" size={48} color={colors.textMuted} />
+                  <Text style={[styles.emptyStateText, { color: colors.textMuted }]}>Không có dữ liệu tuần này</Text>
                 </View>
               ) : (
                 <FlatList
@@ -350,7 +352,7 @@ export default function ReportScreen() {
                   scrollEnabled={false}
                   renderItem={({ item }) => (
                     <TouchableOpacity
-                      style={styles.recordItem}
+                      style={[styles.recordItem, { backgroundColor: colors.surface }]}
                       onPress={() => {
                         setSelectedRecord(item);
                         setDetailModalVisible(true);
@@ -361,13 +363,13 @@ export default function ReportScreen() {
                           <Ionicons name="moon" size={18} color="#ffffff" />
                         </View>
                         <View style={styles.recordInfo}>
-                          <Text style={styles.recordDate}>{item.date}</Text>
-                          <Text style={styles.recordStatus}>
+                          <Text style={[styles.recordDate, { color: colors.text }]}>{item.date}</Text>
+                          <Text style={[styles.recordStatus, { color: colors.textSecondary }]}>
                             {Math.floor(item.duration / 60)}h {item.duration % 60}m • Chất lượng {item.quality}%
                           </Text>
                         </View>
                       </View>
-                      <View style={styles.qualityBadge}>
+                      <View style={[styles.qualityBadge, { backgroundColor: isDarkMode ? '#1e293b' : colors.background }]}>
                         <Text style={styles.qualityBadgeText}>{item.quality}%</Text>
                       </View>
                     </TouchableOpacity>
@@ -387,34 +389,34 @@ export default function ReportScreen() {
         onRequestClose={() => setDetailModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { paddingTop: insets.top + 16 }]}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface, paddingTop: insets.top + 16 }]}>
             <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={() => setDetailModalVisible(false)}
             >
-              <Ionicons name="close" size={24} color="#ffffff" />
+              <Ionicons name="close" size={24} color={colors.text} />
             </TouchableOpacity>
 
             {selectedRecord && (
               <View>
-                <Text style={styles.modalTitle}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>
                   {activeTab === 'wakeup' ? 'Chi tiết thức dậy' : 'Chi tiết giấc ngủ'}
                 </Text>
 
                 {activeTab === 'wakeup' && selectedRecord && 'taskCompleted' in selectedRecord ? (
                   <>
-                    <View style={styles.modalDetailRow}>
-                      <Text style={styles.modalLabel}>Ngày</Text>
-                      <Text style={styles.modalValue}>{(selectedRecord as WakeUpRecord).date}</Text>
+                    <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                      <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Ngày</Text>
+                      <Text style={[styles.modalValue, { color: colors.text }]}>{(selectedRecord as WakeUpRecord).date}</Text>
                     </View>
-                    <View style={styles.modalDetailRow}>
-                      <Text style={styles.modalLabel}>Giờ thức dậy</Text>
-                      <Text style={styles.modalValue}>
+                    <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                      <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Giờ thức dậy</Text>
+                      <Text style={[styles.modalValue, { color: colors.text }]}>
                         {formatTime((selectedRecord as WakeUpRecord).wakeUpTime)}
                       </Text>
                     </View>
-                    <View style={styles.modalDetailRow}>
-                      <Text style={styles.modalLabel}>Trạng thái</Text>
+                    <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                      <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Trạng thái</Text>
                       <Text
                         style={[
                           styles.modalValue,
@@ -429,24 +431,24 @@ export default function ReportScreen() {
                   </>
                 ) : activeTab === 'sleep' && selectedRecord && 'duration' in selectedRecord ? (
                   <>
-                    <View style={styles.modalDetailRow}>
-                      <Text style={styles.modalLabel}>Ngày</Text>
-                      <Text style={styles.modalValue}>{(selectedRecord as SleepRecord).date}</Text>
+                    <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                      <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Ngày</Text>
+                      <Text style={[styles.modalValue, { color: colors.text }]}>{(selectedRecord as SleepRecord).date}</Text>
                     </View>
-                    <View style={styles.modalDetailRow}>
-                      <Text style={styles.modalLabel}>Thời gian ngủ</Text>
-                      <Text style={styles.modalValue}>
+                    <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                      <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Thời gian ngủ</Text>
+                      <Text style={[styles.modalValue, { color: colors.text }]}>
                         {Math.floor((selectedRecord as SleepRecord).duration / 60)}h {(selectedRecord as SleepRecord).duration % 60}m
                       </Text>
                     </View>
-                    <View style={styles.modalDetailRow}>
-                      <Text style={styles.modalLabel}>Chất lượng giấc ngủ</Text>
-                      <Text style={styles.modalValue}>{(selectedRecord as SleepRecord).quality}%</Text>
+                    <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                      <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Chất lượng giấc ngủ</Text>
+                      <Text style={[styles.modalValue, { color: colors.text }]}>{(selectedRecord as SleepRecord).quality}%</Text>
                     </View>
                     {(selectedRecord as SleepRecord).notes && (
-                      <View style={styles.modalDetailRow}>
-                        <Text style={styles.modalLabel}>Ghi chú</Text>
-                        <Text style={styles.modalValue}>{(selectedRecord as SleepRecord).notes}</Text>
+                      <View style={[styles.modalDetailRow, { borderBottomColor: colors.border }]}>
+                        <Text style={[styles.modalLabel, { color: colors.textSecondary }]}>Ghi chú</Text>
+                        <Text style={[styles.modalValue, { color: colors.text }]}>{(selectedRecord as SleepRecord).notes}</Text>
                       </View>
                     )}
                   </>
@@ -463,18 +465,15 @@ export default function ReportScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
   },
   header: {
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
   },
   weekNav: {
     flexDirection: 'row',
@@ -483,17 +482,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   weekLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
   },
   tabsContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
   },
   tab: {
     flex: 1,
@@ -506,15 +502,12 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: '#3b82f6',
   },
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
   },
   tabTextActive: {
-    color: '#ffffff',
   },
   content: {
     flex: 1,
@@ -528,7 +521,6 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -536,12 +528,10 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#ffffff',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#64748b',
   },
   chartSection: {
     marginBottom: 24,
@@ -549,7 +539,6 @@ const styles = StyleSheet.create({
   chartTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 12,
   },
   dayChartContainer: {
@@ -573,11 +562,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#22c55e',
   },
   dayBoxEmpty: {
-    backgroundColor: '#1e293b',
   },
   dayLabel: {
     fontSize: 11,
-    color: '#64748b',
     fontWeight: '500',
   },
   durationChartContainer: {
@@ -585,7 +572,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-around',
     height: 160,
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
   },
@@ -601,7 +587,6 @@ const styles = StyleSheet.create({
   },
   durationLabel: {
     fontSize: 11,
-    color: '#64748b',
     fontWeight: '500',
     marginTop: 8,
   },
@@ -611,14 +596,12 @@ const styles = StyleSheet.create({
   recordsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
     marginBottom: 12,
   },
   recordItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
@@ -651,20 +634,16 @@ const styles = StyleSheet.create({
   recordDate: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#ffffff',
     marginBottom: 2,
   },
   recordStatus: {
     fontSize: 12,
-    color: '#64748b',
   },
   recordTime: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#3b82f6',
   },
   qualityBadge: {
-    backgroundColor: '#1e293b',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -682,7 +661,6 @@ const styles = StyleSheet.create({
   emptyStateText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#64748b',
   },
   modalOverlay: {
     flex: 1,
@@ -690,7 +668,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1e293b',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 16,
@@ -704,7 +681,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffffff',
     marginBottom: 20,
   },
   modalDetailRow: {
@@ -712,16 +688,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#334155',
   },
   modalLabel: {
     fontSize: 14,
-    color: '#94a3b8',
   },
   modalValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
   },
 });
-
