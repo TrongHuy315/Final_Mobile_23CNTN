@@ -207,6 +207,37 @@ export default function AlarmRingingScreen() {
           }
         });
         return;
+      } else if (firstTask.type === 'squat') {
+        router.replace({
+          pathname: './squat-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '10',
+          }
+        });
+        return;
+      } else if (firstTask.type === 'typing') {
+        router.replace({
+          pathname: './typing-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '3',
+          }
+        });
+        return;
+      } else if (firstTask.type === 'qr_code') {
+        router.replace({
+          pathname: './qr-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            code: firstTask.settings?.code || '',
+            taskName: firstTask.name || 'Mã QR',
+          }
+        });
+        return;
       } else if (firstTask.type === 'flash') {
         router.replace({
           pathname: './flash-alarm',
