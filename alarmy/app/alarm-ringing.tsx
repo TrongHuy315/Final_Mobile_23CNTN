@@ -186,6 +186,16 @@ export default function AlarmRingingScreen() {
           }
         });
         return;
+      } else if (firstTask.type === 'steps') {
+        router.replace({
+          pathname: './step-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            itemCount: firstTask.settings?.itemCount?.toString() || '20',
+          }
+        });
+        return;
       } else if (firstTask.type === 'flash') {
         router.replace({
           pathname: './flash-alarm',

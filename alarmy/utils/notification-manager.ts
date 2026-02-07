@@ -1,9 +1,23 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+// Check if running in Expo Go
+const isExpoGo = Constants.appOwnership === 'expo';
+
+// Lazy-loaded notifications module (to avoid auto-registration in Expo Go)
+let Notifications: typeof import('expo-notifications') | null = null;
+
+async function getNotifications() {
+  if (!Notifications && !isExpoGo) {
+    Notifications = await import('expo-notifications');
+  }
+  return Notifications;
+}
 
 /**
  * Notification Manager for handling alarm notifications
  * Supports both foreground and background notifications
+ * Note: Push notifications are disabled in Expo Go (SDK 53+)
  */
 export class NotificationManager {
   private static isInitialized = false;
@@ -15,18 +29,21 @@ export class NotificationManager {
     if (this.isInitialized) return;
 
     try {
-      // Suppress warnings for Expo Go
-      const originalWarn = console.warn;
-      console.warn = (...args: any[]) => {
-        const message = args[0]?.toString?.() || '';
-        if (message.includes('expo-notifications') || message.includes('expo-av')) {
-          return; // Suppress Expo Go warnings
-        }
-        originalWarn(...args);
-      };
+      // Skip push notification setup in Expo Go (not supported in SDK 53+)
+      if (isExpoGo) {
+        console.log('📱 Running in Expo Go - push notifications disabled');
+        this.isInitialized = true;
+        return;
+      }
+
+      const notifs = await getNotifications();
+      if (!notifs) {
+        this.isInitialized = true;
+        return;
+      }
 
       // Set notification handler
-      Notifications.setNotificationHandler({
+      notifs.setNotificationHandler({
         handleNotification: async () => ({
           shouldShowAlert: true,
           shouldPlaySound: true,
@@ -39,21 +56,18 @@ export class NotificationManager {
       // Request permissions
       if (Platform.OS !== 'web') {
         try {
-          const { status } = await Notifications.requestPermissionsAsync();
+          const { status } = await notifs.requestPermissionsAsync();
           if (status !== 'granted') {
             // Silently continue - permissions denied but not critical
           }
         } catch (permError) {
-          // Notification permissions request failed (expected in Expo Go)
+          // Notification permissions request failed
         }
       }
 
-      // Restore console.warn
-      console.warn = originalWarn;
-
       this.isInitialized = true;
     } catch (error) {
-      // Silently fail - notification system not fully available in Expo Go
+      // Silently fail
       this.isInitialized = true;
     }
   }
@@ -71,7 +85,12 @@ export class NotificationManager {
     title: string = 'Báo thức',
     body: string = 'Đã đến giờ thức dậy'
   ): Promise<string | null> {
+    if (isExpoGo) return null;
+    
     try {
+      const notifs = await getNotifications();
+      if (!notifs) return null;
+
       const triggerTime = new Date(alarmTime);
       const now = new Date();
 
@@ -81,7 +100,7 @@ export class NotificationManager {
       }
 
       try {
-        const notificationId = await Notifications.scheduleNotificationAsync({
+        const notificationId = await notifs.scheduleNotificationAsync({
           identifier: alarmId,
           content: {
             title,
@@ -114,8 +133,13 @@ export class NotificationManager {
    * Cancel a scheduled alarm notification
    */
   static async cancelAlarmNotification(alarmId: string): Promise<boolean> {
+    if (isExpoGo) return false;
+    
     try {
-      await Notifications.cancelScheduledNotificationAsync(alarmId);
+      const notifs = await getNotifications();
+      if (!notifs) return false;
+
+      await notifs.cancelScheduledNotificationAsync(alarmId);
       return true;
     } catch (error) {
       // Silently fail - not critical
@@ -126,11 +150,14 @@ export class NotificationManager {
   /**
    * Get all scheduled notifications
    */
-  static async getAllScheduledNotifications(): Promise<
-    Notifications.NotificationRequest[]
-  > {
+  static async getAllScheduledNotifications(): Promise<any[]> {
+    if (isExpoGo) return [];
+    
     try {
-      return await Notifications.getAllScheduledNotificationsAsync();
+      const notifs = await getNotifications();
+      if (!notifs) return [];
+
+      return await notifs.getAllScheduledNotificationsAsync();
     } catch (error) {
       console.error('Error getting scheduled notifications:', error);
       return [];
@@ -145,8 +172,13 @@ export class NotificationManager {
     body: string,
     data?: Record<string, any>
   ): Promise<string | null> {
+    if (isExpoGo) return null;
+    
     try {
-      return await Notifications.scheduleNotificationAsync({
+      const notifs = await getNotifications();
+      if (!notifs) return null;
+
+      return await notifs.scheduleNotificationAsync({
         content: {
           title,
           body,
@@ -166,26 +198,46 @@ export class NotificationManager {
    * Listen to notification responses (user tapped notification)
    */
   static addNotificationResponseListener(
-    callback: (response: Notifications.NotificationResponse) => void
+    callback: (response: any) => void
   ) {
-    return Notifications.addNotificationResponseReceivedListener(callback);
+    if (isExpoGo) return { remove: () => {} };
+    
+    // Use synchronous require for listeners (they need to be set up early)
+    try {
+      const notifs = require('expo-notifications');
+      return notifs.addNotificationResponseReceivedListener(callback);
+    } catch {
+      return { remove: () => {} };
+    }
   }
 
   /**
    * Listen to foreground notifications
    */
   static addForegroundNotificationListener(
-    callback: (notification: Notifications.Notification) => void
+    callback: (notification: any) => void
   ) {
-    return Notifications.addNotificationReceivedListener(callback);
+    if (isExpoGo) return { remove: () => {} };
+    
+    try {
+      const notifs = require('expo-notifications');
+      return notifs.addNotificationReceivedListener(callback);
+    } catch {
+      return { remove: () => {} };
+    }
   }
 
   /**
    * Cancel all notifications
    */
   static async cancelAllNotifications(): Promise<void> {
+    if (isExpoGo) return;
+    
     try {
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      const notifs = await getNotifications();
+      if (!notifs) return;
+
+      await notifs.cancelAllScheduledNotificationsAsync();
       console.log('✅ Cancelled all scheduled notifications');
     } catch (error) {
       console.error('Error cancelling all notifications:', error);
@@ -201,8 +253,13 @@ export class NotificationManager {
     title: string = 'Hoàn thành nhiệm vụ',
     body: string = 'Vui lòng hoàn thành nhiệm vụ để dừng báo thức'
   ): Promise<string | null> {
+    if (isExpoGo) return null;
+    
     try {
-      return await Notifications.scheduleNotificationAsync({
+      const notifs = await getNotifications();
+      if (!notifs) return null;
+
+      return await notifs.scheduleNotificationAsync({
         content: {
           title,
           body,
@@ -229,8 +286,13 @@ export class NotificationManager {
     title: string = 'Chúc mừng!',
     body: string = 'Bạn đã hoàn thành nhiệm vụ'
   ): Promise<string | null> {
+    if (isExpoGo) return null;
+    
     try {
-      return await Notifications.scheduleNotificationAsync({
+      const notifs = await getNotifications();
+      if (!notifs) return null;
+
+      return await notifs.scheduleNotificationAsync({
         content: {
           title,
           body,
