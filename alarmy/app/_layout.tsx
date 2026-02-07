@@ -9,7 +9,7 @@ import { AuthProvider } from '@/hooks/useAuth';
 export const unstable_settings = {
   anchor: '(tabs)',
 };
-
+ 
 const CustomDarkTheme = {
   ...DarkTheme,
   colors: {
