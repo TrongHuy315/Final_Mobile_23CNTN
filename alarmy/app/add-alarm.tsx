@@ -942,6 +942,7 @@ export default function AddAlarmScreen() {
       iconColor: '#3a5a5f',
       settings: {
         itemCount: findColorsRoundCount,
+        difficulty: findColorsDifficulty,
       },
     };
     addTaskToSlot(newTask);

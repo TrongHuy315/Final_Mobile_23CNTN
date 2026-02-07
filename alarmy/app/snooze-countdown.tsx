@@ -103,6 +103,17 @@ export default function SnoozeCountdownScreen() {
           }
         });
         return;
+      } else if (firstTask.type === 'find_colors') {
+        router.replace({
+          pathname: './color-grid-task',
+          params: {
+            alarmId: activeAlarm.id,
+            alarmLabel: activeAlarm.label,
+            difficulty: firstTask.settings?.difficulty?.toString() || '2',
+            rounds: firstTask.settings?.itemCount?.toString() || '3',
+          }
+        });
+        return;
       }
     }
     router.replace('/');
